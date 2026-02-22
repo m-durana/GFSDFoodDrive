@@ -2,25 +2,30 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use App\Models\User;
-use Spatie\Permission\Models\Role;
 
 /**
  * Converts legacy integer permission levels to Spatie roles.
  *
- * This migration:
- * 1. Ensures the roles exist
- * 2. Assigns roles based on the permission column value
- * 3. Keeps the permission column for backward compatibility
+ * This migration only runs if spatie/laravel-permission is installed
+ * and the roles table exists. Safe to skip if Spatie isn't available yet.
  */
 return new class extends Migration
 {
     public function up(): void
     {
+        // Skip if Spatie permission tables don't exist yet
+        if (! Schema::hasTable('roles') || ! class_exists(\Spatie\Permission\Models\Role::class)) {
+            return;
+        }
+
+        $Role = \Spatie\Permission\Models\Role::class;
+
         // Ensure roles exist
-        Role::findOrCreate('family', 'web');
-        Role::findOrCreate('coordinator', 'web');
-        Role::findOrCreate('santa', 'web');
+        $Role::findOrCreate('family', 'web');
+        $Role::findOrCreate('coordinator', 'web');
+        $Role::findOrCreate('santa', 'web');
 
         // Map permission integers to role names
         $permissionMap = [
@@ -32,14 +37,17 @@ return new class extends Migration
         foreach ($permissionMap as $level => $roleName) {
             $users = User::where('permission', $level)->get();
             foreach ($users as $user) {
-                $user->assignRole($roleName);
+                if (method_exists($user, 'assignRole')) {
+                    $user->assignRole($roleName);
+                }
             }
         }
     }
 
     public function down(): void
     {
-        // Remove all role assignments (permission column still has the data)
-        DB::table('model_has_roles')->truncate();
+        if (Schema::hasTable('model_has_roles')) {
+            DB::table('model_has_roles')->truncate();
+        }
     }
 };

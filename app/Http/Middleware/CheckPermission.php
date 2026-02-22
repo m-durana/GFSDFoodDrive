@@ -9,10 +9,10 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckPermission
 {
     /**
-     * Handle an incoming request by checking Spatie roles.
+     * Handle an incoming request by checking role names.
      *
-     * Falls back to legacy integer permission check for users who haven't
-     * been migrated to Spatie roles yet.
+     * Uses Spatie hasAnyRole() when available, otherwise falls back to
+     * legacy integer permission column.
      *
      * Usage in routes: ->middleware('permission:family,santa')
      *
@@ -26,13 +26,14 @@ class CheckPermission
 
         $user = $request->user();
 
-        // Check Spatie roles first
-        if ($user->hasAnyRole($roles)) {
+        // Check Spatie roles if the trait is loaded
+        if (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($roles)) {
             return $next($request);
         }
 
         // Fallback: check legacy integer permission column
         $roleToPermission = [
+            'self_service' => 6,
             'family' => 7,
             'coordinator' => 8,
             'santa' => 9,
