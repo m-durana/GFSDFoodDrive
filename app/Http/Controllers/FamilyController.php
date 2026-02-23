@@ -13,8 +13,15 @@ class FamilyController extends Controller
 {
     public function index(Request $request): View
     {
+        $user = $request->user();
+
+        // Santa and coordinators see all families; family advisors see only their own
+        $families = ($user->isSanta() || $user->isCoordinator())
+            ? Family::orderBy('family_number')->get()
+            : $user->families;
+
         return view('family.index', [
-            'families' => $request->user()->families,
+            'families' => $families,
         ]);
     }
 

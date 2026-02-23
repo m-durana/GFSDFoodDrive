@@ -2,184 +2,272 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Delivery Day Sheets</title>
+    <title>Delivery Day Sheets — GFSD Food Drive</title>
     <style>
+        /* Matches original 709.docx - Maiandra GD, checkboxes, driver fields */
         @page {
             size: letter;
-            margin: 0.75in;
+            margin: 0.5in 0.6in;
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 11pt;
+            font-family: 'Maiandra GD', 'Gill Sans', 'Trebuchet MS', sans-serif;
+            font-size: 16pt;
             margin: 0;
             padding: 0;
-            color: #333;
+            color: #000;
         }
 
-        .family-section {
-            margin-bottom: 20pt;
-            padding: 12pt;
-            border: 1pt solid #999;
-            page-break-inside: avoid;
+        .delivery-page {
+            page-break-after: always;
         }
 
-        .family-header {
-            border-bottom: 1pt solid #ccc;
-            padding-bottom: 6pt;
-            margin-bottom: 8pt;
+        .delivery-page:last-child {
+            page-break-after: auto;
         }
 
-        .family-number {
-            font-size: 16pt;
+        /* Top section: Pickup/Delivery checkboxes */
+        .toggle-row {
+            font-size: 20pt;
             font-weight: bold;
-            float: right;
-            color: #c00;
+            text-align: center;
+            margin-bottom: 12pt;
+            padding-bottom: 8pt;
+            border-bottom: 2pt solid #000;
         }
 
-        .family-name {
+        .checkbox {
+            display: inline-block;
+            width: 18pt;
+            height: 18pt;
+            border: 2pt solid #000;
+            vertical-align: middle;
+            margin: 0 4pt;
+            text-align: center;
+            line-height: 16pt;
+            font-size: 14pt;
+        }
+
+        .checkbox.checked {
+            background: #000;
+            color: #fff;
+        }
+
+        /* Logistics fields */
+        .logistics-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10pt;
+        }
+
+        .logistics-grid td {
+            padding: 4pt 6pt;
+            font-size: 15pt;
+            vertical-align: bottom;
+        }
+
+        .logistics-grid .label {
+            font-weight: bold;
+            width: 35%;
+        }
+
+        .logistics-grid .line {
+            border-bottom: 1.5pt solid #000;
+        }
+
+        /* Section divider */
+        .section-divider {
+            border: none;
+            border-top: 2.5pt solid #000;
+            margin: 10pt 0;
+        }
+
+        /* Family info section */
+        .info-row {
+            margin: 6pt 0;
+            font-size: 16pt;
+            line-height: 1.6;
+        }
+
+        .info-row .label {
+            font-weight: bold;
+            font-size: 16pt;
+        }
+
+        .info-row .value {
+            font-size: 16pt;
+            border-bottom: 1pt solid #666;
+            padding-bottom: 1pt;
+        }
+
+        .info-row .value.empty {
+            display: inline-block;
+            min-width: 250pt;
+            border-bottom: 1pt solid #999;
+        }
+
+        /* Warning boxes */
+        .warning-box {
+            border: 2pt solid #c00;
+            background: #fff5f5;
+            padding: 6pt 10pt;
+            margin: 8pt 0;
             font-size: 14pt;
             font-weight: bold;
         }
 
-        .info-grid {
-            width: 100%;
-            border-collapse: collapse;
+        /* Bottom checkoff section */
+        .checkoff {
+            margin-top: 12pt;
+            padding-top: 8pt;
+            border-top: 1.5pt solid #000;
+            font-size: 14pt;
         }
 
-        .info-grid td {
-            padding: 3pt 8pt;
-            vertical-align: top;
-        }
-
-        .info-grid .label {
-            font-weight: bold;
-            width: 25%;
-            color: #555;
-        }
-
-        .info-grid .value {
-            width: 75%;
-        }
-
-        .warning {
-            background: #fff3cd;
-            border: 1pt solid #ffc107;
-            padding: 4pt 8pt;
-            margin-top: 6pt;
-            font-size: 10pt;
-        }
-
-        .pet-warning {
-            background: #f8d7da;
-            border: 1pt solid #f5c6cb;
-            padding: 4pt 8pt;
-            margin-top: 6pt;
-            font-size: 10pt;
-            font-weight: bold;
-        }
-
-        .delivery-status {
-            float: right;
-            font-size: 9pt;
-            padding: 2pt 8pt;
-            border: 1pt solid #ccc;
-            background: #f9f9f9;
-        }
-
-        .checkbox-line {
-            margin-top: 8pt;
-            font-size: 10pt;
-            color: #555;
-        }
-
-        .checkbox-line span {
+        .checkoff-item {
             display: inline-block;
-            width: 12pt;
-            height: 12pt;
-            border: 1pt solid #333;
-            margin-right: 4pt;
-            vertical-align: middle;
+            margin-right: 20pt;
+        }
+
+        .notes-line {
+            display: block;
+            margin-top: 8pt;
+            font-size: 14pt;
+        }
+
+        .notes-line .underline {
+            display: inline-block;
+            width: 80%;
+            border-bottom: 1pt solid #000;
         }
     </style>
 </head>
 <body>
     @forelse($families as $family)
-        <div class="family-section">
-            <div class="family-header">
-                <div class="family-number">#{{ $family->family_number }}</div>
-                @if($family->delivery_status)
-                    <div class="delivery-status">{{ $family->delivery_status->label() }}</div>
+        <div class="delivery-page">
+            <!-- Pickup / Delivery toggle -->
+            <div class="toggle-row">
+                @if($family->delivery_preference === 'Pickup')
+                    <span class="checkbox checked">X</span> PICKUP
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="checkbox"></span> DELIVERY
+                @elseif($family->delivery_preference === 'Delivery')
+                    <span class="checkbox"></span> PICKUP
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="checkbox checked">X</span> DELIVERY
+                @else
+                    <span class="checkbox"></span> PICKUP
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span class="checkbox"></span> DELIVERY
                 @endif
-                <div class="family-name">{{ $family->family_name }}</div>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <span style="font-size: 28pt; font-weight: bold;">#{{ $family->family_number }}</span>
             </div>
 
-            <table class="info-grid">
+            <!-- Logistics -->
+            <table class="logistics-grid">
                 <tr>
-                    <td class="label">Address:</td>
-                    <td class="value">{{ $family->address }}</td>
+                    <td class="label">Scheduled Time:</td>
+                    <td class="line">{{ $family->delivery_date }} {{ $family->delivery_time }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Phone:</td>
-                    <td class="value">{{ $family->phone1 }}</td>
+                    <td class="label">Driver:</td>
+                    <td class="line">{{ $family->delivery_team ?? '' }}</td>
                 </tr>
-                @if($family->phone2)
-                    <tr>
-                        <td class="label">Alt Phone:</td>
-                        <td class="value">{{ $family->phone2 }}</td>
-                    </tr>
-                @endif
-                @if($family->delivery_preference)
-                    <tr>
-                        <td class="label">Preference:</td>
-                        <td class="value">{{ $family->delivery_preference }}</td>
-                    </tr>
-                @endif
-                @if($family->delivery_date || $family->delivery_time)
-                    <tr>
-                        <td class="label">Scheduled:</td>
-                        <td class="value">{{ $family->delivery_date }} {{ $family->delivery_time }}</td>
-                    </tr>
-                @endif
-                @if($family->delivery_team)
-                    <tr>
-                        <td class="label">Team:</td>
-                        <td class="value">{{ $family->delivery_team }}</td>
-                    </tr>
-                @endif
                 <tr>
-                    <td class="label">Members:</td>
-                    <td class="value">{{ $family->number_of_family_members }} ({{ $family->number_of_adults }} adults, {{ $family->number_of_children }} children)</td>
+                    <td class="label">Departure Time:</td>
+                    <td class="line">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td class="label">Return Time:</td>
+                    <td class="line">&nbsp;</td>
                 </tr>
             </table>
 
-            @if($family->delivery_reason)
-                <div class="warning">
-                    <strong>Cannot deliver because:</strong> {{ $family->delivery_reason }}
+            <hr class="section-divider">
+
+            <!-- Family Information -->
+            <div class="info-row">
+                <span class="label">Name(s):</span>
+                <span class="value">{{ $family->family_name }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Phone:</span>
+                <span class="value">{{ $family->phone1 }}</span>
+            </div>
+
+            @if($family->phone2)
+                <div class="info-row">
+                    <span class="label">Alt Phone:</span>
+                    <span class="value">{{ $family->phone2 }}</span>
                 </div>
             @endif
 
-            @if($family->pet_information)
-                <div class="pet-warning">
-                    PETS: {{ $family->pet_information }}
+            <div class="info-row">
+                <span class="label">Additional Phone:</span>
+                <span class="value empty">&nbsp;</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Physical Address:</span>
+                <span class="value">{{ $family->address }}</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">New Address:</span>
+                <span class="value empty">&nbsp;</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Landmarks / Directions:</span>
+                <span class="value empty">&nbsp;</span>
+            </div>
+
+            @if($family->delivery_reason)
+                <div class="warning-box">
+                    Cannot deliver because: {{ $family->delivery_reason }}
                 </div>
             @endif
+
+            <div class="info-row">
+                <span class="label">Special Instructions:</span>
+                <span class="value empty">&nbsp;</span>
+            </div>
+
+            <div class="info-row">
+                <span class="label">Pets:</span>
+                <span class="value">{{ $family->pet_information ? $family->pet_information . ' (pet food included)' : 'None noted' }}</span>
+            </div>
 
             @if($family->preferred_language && $family->preferred_language !== 'English')
-                <div class="warning">
-                    <strong>Language:</strong> {{ $family->preferred_language }}
+                <div class="warning-box" style="border-color: #07c; background: #f0f7ff;">
+                    LANGUAGE: {{ $family->preferred_language }}
                 </div>
             @endif
 
-            <div class="checkbox-line">
-                <span></span> Delivered &nbsp;&nbsp;
-                <span></span> Left at door &nbsp;&nbsp;
-                <span></span> No answer &nbsp;&nbsp;
-                <span></span> Notes: ___________________________
+            <div class="info-row">
+                <span class="label">Family Size:</span>
+                <span class="value">{{ $family->number_of_family_members }} ({{ $family->number_of_adults }} adults, {{ $family->number_of_children }} children)</span>
+            </div>
+
+            <!-- Checkoff section -->
+            <div class="checkoff">
+                <span class="checkoff-item"><span class="checkbox"></span> Delivered</span>
+                <span class="checkoff-item"><span class="checkbox"></span> Left at door</span>
+                <span class="checkoff-item"><span class="checkbox"></span> No answer</span>
+                <span class="checkoff-item"><span class="checkbox"></span> Picked up</span>
+
+                <span class="notes-line">
+                    <span class="label">Notes:</span> <span class="underline">&nbsp;</span>
+                </span>
+                <span class="notes-line" style="margin-top: 4pt;">
+                    <span class="underline" style="width: 95%;">&nbsp;</span>
+                </span>
             </div>
         </div>
     @empty
-        <p style="text-align: center; padding: 2in; font-size: 14pt; color: #666;">No families match the selected filter.</p>
+        <p style="text-align: center; padding: 3in 0; font-size: 18pt; color: #666;">No families match the selected filter.</p>
     @endforelse
 </body>
 </html>

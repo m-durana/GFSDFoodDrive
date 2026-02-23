@@ -22,8 +22,13 @@
         }
     </script>
 
+    <!-- Prevent FOUC: hide until CSS loads -->
+    <style>body { visibility: hidden; }</style>
+
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>body { visibility: visible; }</style>
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">

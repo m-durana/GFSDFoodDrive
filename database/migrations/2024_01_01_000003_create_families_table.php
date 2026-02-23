@@ -21,7 +21,7 @@ return new class extends Migration
     {
         Schema::create('families', function (Blueprint $table) {
             $table->id();                                                          // FamilyID
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');      // userID FK
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // userID FK (nullable for self-service)
             $table->unsignedInteger('family_number')->nullable()->unique();        // FamilyNumber
 
             // Contact info

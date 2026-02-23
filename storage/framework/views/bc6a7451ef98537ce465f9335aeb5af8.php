@@ -56,10 +56,19 @@
                                 <input type="tel" name="phone2" id="phone2" value="<?php echo e(old('phone2')); ?>"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                             </div>
-                            <div class="md:col-span-2">
+                            <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
                                 <input type="email" name="email" id="email" value="<?php echo e(old('email')); ?>"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="preferred_language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Language</label>
+                                <select name="preferred_language" id="preferred_language"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    <option value="English" <?php echo e(old('preferred_language', 'English') === 'English' ? 'selected' : ''); ?>>English</option>
+                                    <option value="Spanish" <?php echo e(old('preferred_language') === 'Spanish' ? 'selected' : ''); ?>>Spanish</option>
+                                    <option value="Other" <?php echo e(old('preferred_language') === 'Other' ? 'selected' : ''); ?>>Other</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -121,10 +130,10 @@
                     </div>
                 </div>
 
-                <!-- School & Pets -->
+                <!-- School & Needs -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">School & Pets</h3>
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">School & Needs</h3>
                         <div class="space-y-4">
                             <div class="flex items-center space-x-6">
                                 <label class="inline-flex items-center">
@@ -141,9 +150,12 @@
                                 </label>
                             </div>
                             <div>
-                                <label for="pet_information" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Pet Information / Allergies</label>
-                                <textarea name="pet_information" id="pet_information" rows="2"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"><?php echo e(old('pet_information')); ?></textarea>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="needs_baby_supplies" value="1" <?php echo e(old('needs_baby_supplies') ? 'checked' : ''); ?>
+
+                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Family needs baby supplies / baby food</span>
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -153,7 +165,7 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Preferences</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
                                 <label for="delivery_preference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preference</label>
                                 <select name="delivery_preference" id="delivery_preference"
@@ -183,6 +195,11 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="mt-4">
+                            <label for="delivery_reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300">If family can't have items picked up, why?</label>
+                            <textarea name="delivery_reason" id="delivery_reason" rows="2"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"><?php echo e(old('delivery_reason')); ?></textarea>
+                        </div>
                     </div>
                 </div>
 
@@ -191,6 +208,11 @@
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Additional Information</h3>
                         <div class="space-y-4">
+                            <div>
+                                <label for="pet_information" class="block text-sm font-medium text-gray-700 dark:text-gray-300">What pets does family have?</label>
+                                <textarea name="pet_information" id="pet_information" rows="2" placeholder="e.g. 2 dogs, 1 cat (for pet food)"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"><?php echo e(old('pet_information')); ?></textarea>
+                            </div>
                             <div>
                                 <label for="need_for_help" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reason for Needing Help</label>
                                 <textarea name="need_for_help" id="need_for_help" rows="3"

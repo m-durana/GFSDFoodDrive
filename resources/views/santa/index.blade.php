@@ -12,7 +12,7 @@
                     <h3 class="text-lg font-medium mb-4">Welcome, Santa!</h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <a href="{{ route('santa.families') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                        <a href="{{ route('family.index') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100">All Families</h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">View all registered families</p>
                         </a>
@@ -31,6 +31,30 @@
                         <a href="{{ route('delivery.index') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100">Delivery Day</h4>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage delivery logistics</p>
+                        </a>
+                        <a href="{{ route('santa.volunteers') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Volunteer Assignment</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Assign families to volunteers</p>
+                        </a>
+                        <a href="{{ route('santa.shoppingList') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Lists</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Grocery lists by family size</p>
+                        </a>
+                        <a href="{{ route('santa.shoppingDay') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Day</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Assign coordinators to shop</p>
+                        </a>
+                        <a href="{{ route('santa.export') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Filter & Export</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Smart filters and CSV export</p>
+                        </a>
+                        <a href="{{ route('santa.reports') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Reports</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Stats, progress, and analytics</p>
+                        </a>
+                        <a href="{{ route('santa.duplicates') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
+                            <h4 class="font-medium text-gray-900 dark:text-gray-100">Duplicate Detection</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Find and merge duplicate families</p>
                         </a>
                         <a href="{{ route('santa.settings') }}" class="block p-6 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100">Settings</h4>

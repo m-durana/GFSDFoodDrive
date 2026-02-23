@@ -81,6 +81,53 @@
                     </div>
                 </div>
 
+                <!-- Google OAuth -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Google Sign-In (OAuth)</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            Enable "Sign in with Google" on the login page. Users must have a matching email in their account.
+                            Get credentials from <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-blue-600 hover:underline">Google Cloud Console</a>.
+                        </p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="google_client_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Google Client ID</label>
+                                <input type="text" name="google_client_id" id="google_client_id"
+                                    value="<?php echo e(\App\Models\Setting::get('google_client_id', '')); ?>"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                    placeholder="xxxx.apps.googleusercontent.com">
+                            </div>
+                            <div>
+                                <label for="google_client_secret" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Google Client Secret</label>
+                                <input type="password" name="google_client_secret" id="google_client_secret"
+                                    value="<?php echo e(\App\Models\Setting::get('google_client_secret', '')); ?>"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                    placeholder="Client secret">
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                <strong>Callback URL:</strong> <code><?php echo e(url('/auth/google/callback')); ?></code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geocode -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Address Geocoding</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            Geocode family addresses for the live delivery map. Uses free OpenStreetMap Nominatim service (rate limited to 1 req/sec).
+                        </p>
+                        <form method="POST" action="<?php echo e(route('santa.geocodeFamilies')); ?>" class="inline">
+                            <?php echo csrf_field(); ?>
+                            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition"
+                                    onclick="this.textContent='Geocoding...'; this.disabled=true; this.form.submit();">
+                                Geocode Missing Addresses
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Save -->
                 <div class="flex items-center justify-between mt-6">
                     <a href="<?php echo e(route('santa.index')); ?>" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">

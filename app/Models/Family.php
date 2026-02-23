@@ -14,6 +14,7 @@ class Family extends Model
 
     protected $fillable = [
         'user_id',
+        'volunteer_id',
         'family_number',
         'family_name',
         'address',
@@ -40,6 +41,8 @@ class Family extends Model
         'delivery_time',
         'delivery_reason',
         'delivery_team',
+        'latitude',
+        'longitude',
         'delivery_status',
         'need_for_help',
         'severe_need',
@@ -65,6 +68,8 @@ class Family extends Model
             'teenagers' => 'integer',
             'number_of_children' => 'integer',
             'number_of_family_members' => 'integer',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'delivery_status' => DeliveryStatus::class,
         ];
     }
@@ -74,8 +79,18 @@ class Family extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function volunteer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'volunteer_id');
+    }
+
     public function children(): HasMany
     {
         return $this->hasMany(Child::class);
+    }
+
+    public function deliveryLogs(): HasMany
+    {
+        return $this->hasMany(DeliveryLog::class);
     }
 }

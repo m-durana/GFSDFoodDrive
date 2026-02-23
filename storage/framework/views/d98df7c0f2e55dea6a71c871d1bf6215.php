@@ -95,7 +95,7 @@
                     <dl class="space-y-2 text-sm">
                         <?php if($family->need_for_help): ?><div><dt class="text-gray-500 dark:text-gray-400">Reason for help:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1"><?php echo e($family->need_for_help); ?></dd></div><?php endif; ?>
                         <?php if($family->severe_need): ?><div><dt class="text-red-500 dark:text-red-400 font-medium">Severe need:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1"><?php echo e($family->severe_need); ?></dd></div><?php endif; ?>
-                        <?php if($family->pet_information): ?><div><dt class="text-gray-500 dark:text-gray-400">Pets:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1"><?php echo e($family->pet_information); ?></dd></div><?php endif; ?>
+                        <?php if($family->pet_information): ?><div><dt class="text-gray-500 dark:text-gray-400">Pets (for pet food):</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1"><?php echo e($family->pet_information); ?></dd></div><?php endif; ?>
                         <?php if($family->other_questions): ?><div><dt class="text-gray-500 dark:text-gray-400">Other:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1"><?php echo e($family->other_questions); ?></dd></div><?php endif; ?>
                         <?php if($family->family_done): ?>
                             <div class="mt-2 inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs font-medium">Family Complete</div>
@@ -270,8 +270,16 @@
                                 <input type="text" name="clothing_styles" placeholder="Sporty, casual" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                             </div>
                             <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400">Clothes Size</label>
+                                <input type="text" name="clothes_size" placeholder="e.g. M (8-10), 4T" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                            </div>
+                            <div>
                                 <label class="block text-xs text-gray-500 dark:text-gray-400">Toy Ideas</label>
                                 <input type="text" name="toy_ideas" placeholder="Legos, art supplies" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-500 dark:text-gray-400">Gift Preferences</label>
+                                <input type="text" name="gift_preferences" placeholder="e.g. Practical gifts, toys preferred" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                             </div>
                             <div class="flex items-end">
                                 <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">

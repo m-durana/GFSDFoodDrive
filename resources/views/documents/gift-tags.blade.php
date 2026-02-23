@@ -2,113 +2,158 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Gift Tags</title>
+    <title>Gift Tags — GFSD Food Drive</title>
     <style>
-        /* Avery 8163 shipping labels: 2" x 4", 10 per page (2 columns, 5 rows) */
-        /* Letter paper: 8.5" x 11" */
+        /* Avery 8163 — 2 columns x 3 rows = 6 labels per letter page */
         @page {
             size: letter;
-            margin: 0.5in 0.15in;
+            margin: 0.5in;
         }
 
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 9pt;
+            font-family: 'Century Gothic', 'Trebuchet MS', Arial, sans-serif;
             margin: 0;
             padding: 0;
-        }
-
-        .labels-table {
-            width: 100%;
-            border-collapse: collapse;
-            page-break-inside: auto;
-        }
-
-        .labels-table td {
-            width: 50%;
-            height: 2in;
-            padding: 0.1in 0.15in;
-            vertical-align: top;
-            overflow: hidden;
-            border: 1px dashed #ccc; /* guides for cutting — remove for production */
-        }
-
-        .label-content {
-            height: 100%;
-        }
-
-        .family-number {
-            font-size: 18pt;
-            font-weight: bold;
-            float: right;
-            color: #333;
-        }
-
-        .child-info {
-            font-size: 9pt;
-            line-height: 1.3;
-        }
-
-        .child-info .field-label {
-            font-weight: bold;
-            color: #555;
-        }
-
-        .child-info .field-value {
             color: #000;
         }
 
-        /* Force page break after every 10 labels (5 rows of 2) */
-        .labels-table tr:nth-child(5n+1) {
-            page-break-before: auto;
+        .cards-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cards-table td.card {
+            width: 48%;
+            height: 3.0in;
+            vertical-align: top;
+            padding: 0.1in 0.15in;
+            border: 1px dashed #bbb;
+            overflow: hidden;
+        }
+
+        .cards-table td.spacer {
+            width: 4%;
+        }
+
+        .card-number {
+            font-size: 24pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 4pt;
+            color: #000;
+        }
+
+        .card-field {
+            font-size: 11pt;
+            line-height: 1.4;
+            margin-bottom: 2pt;
+        }
+
+        .card-field .label {
+            font-weight: bold;
+            font-size: 11pt;
+        }
+
+        .card-field .value {
+            font-size: 11pt;
+        }
+
+        .card-footer {
+            font-size: 8pt;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 6pt;
+            padding-top: 4pt;
+            border-top: 1px solid #999;
+            color: #333;
+            line-height: 1.3;
+        }
+
+        .card-footer .email {
+            font-weight: normal;
+            font-style: italic;
+            font-size: 7pt;
+        }
+
+        .page-break {
+            page-break-before: always;
         }
     </style>
 </head>
 <body>
     @if($children->count() === 0)
-        <p style="text-align: center; padding: 2in; font-size: 14pt; color: #666;">No children match the selected filter.</p>
+        <p style="text-align: center; padding: 3in 0; font-size: 18pt; color: #666;">No children match the selected filter.</p>
     @else
-        <table class="labels-table">
-            @foreach($children->chunk(2) as $rowIndex => $pair)
-                {{-- Start new page every 5 rows --}}
-                @if($rowIndex > 0 && $rowIndex % 5 === 0)
-                    </table>
-                    <div style="page-break-before: always;"></div>
-                    <table class="labels-table">
-                @endif
+        @foreach($children->chunk(2) as $rowIndex => $pair)
+            @if($rowIndex > 0 && $rowIndex % 3 === 0)
+                <div class="page-break"></div>
+            @endif
+            <table class="cards-table">
                 <tr>
                     @foreach($pair as $child)
-                        <td>
-                            <div class="label-content">
-                                <div class="family-number">#{{ $child->family->family_number }}</div>
-                                <div class="child-info">
-                                    <div><span class="field-label">{{ $child->gender }}</span>, Age <span class="field-value">{{ $child->age }}</span></div>
-                                    @if($child->clothing_options)
-                                        <div><span class="field-label">Clothing:</span> <span class="field-value">{{ $child->clothing_options }}</span></div>
-                                    @endif
-                                    @if($child->clothing_styles)
-                                        <div><span class="field-label">Styles:</span> <span class="field-value">{{ $child->clothing_styles }}</span></div>
-                                    @endif
-                                    @if($child->all_sizes)
-                                        <div><span class="field-label">Sizes:</span> <span class="field-value">{{ $child->all_sizes }}</span></div>
-                                    @endif
-                                    @if($child->toy_ideas)
-                                        <div><span class="field-label">Toy Ideas:</span> <span class="field-value">{{ $child->toy_ideas }}</span></div>
-                                    @endif
-                                    @if($child->gift_preferences)
-                                        <div><span class="field-label">Gift Pref:</span> <span class="field-value">{{ $child->gift_preferences }}</span></div>
-                                    @endif
+                        <td class="card">
+                            <table style="width: 100%; border: none; border-collapse: collapse;">
+                                <tr>
+                                    <td style="vertical-align: top; padding: 0; border: none;">
+                                        <div class="card-number">#{{ $child->family->family_number }}</div>
+                                    </td>
+                                    <td style="width: 1.0in; vertical-align: top; text-align: right; padding: 0; border: none;">
+                                        @if(isset($qrCodes[$child->id]))
+                                            <img src="{{ $qrCodes[$child->id] }}" alt="QR" style="width: 0.9in; height: 0.9in;">
+                                        @endif
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div class="card-field">
+                                <span class="label">Gender:</span> <span class="value">{{ $child->gender }}</span>
+                            </div>
+                            <div class="card-field">
+                                <span class="label">Age:</span> <span class="value">{{ $child->age }}</span>
+                            </div>
+                            @if($child->clothing_options)
+                                <div class="card-field">
+                                    <span class="label">Clothing:</span> <span class="value">{{ $child->clothing_options }}</span>
                                 </div>
+                            @endif
+                            @if($child->clothing_styles)
+                                <div class="card-field">
+                                    <span class="label">Styles:</span> <span class="value">{{ $child->clothing_styles }}</span>
+                                </div>
+                            @endif
+                            @if($child->all_sizes)
+                                <div class="card-field">
+                                    <span class="label">Sizes:</span> <span class="value">{{ $child->all_sizes }}</span>
+                                </div>
+                            @endif
+                            @if($child->toy_ideas)
+                                <div class="card-field">
+                                    <span class="label">Toy Ideas:</span> <span class="value">{{ $child->toy_ideas }}</span>
+                                </div>
+                            @endif
+                            @if($child->gift_preferences)
+                                <div class="card-field">
+                                    <span class="label">Gift Preferences:</span> <span class="value">{{ $child->gift_preferences }}</span>
+                                </div>
+                            @endif
+
+                            <div class="card-footer">
+                                Please bring in all gifts <u>UNWRAPPED</u><br>
+                                with this tag attached.<br>
+                                <span class="email">Questions? Email: fooddrive@gfalls.wednet.edu</span>
                             </div>
                         </td>
+                        @if($loop->first && $pair->count() > 1)
+                            <td class="spacer"></td>
+                        @endif
                     @endforeach
-                    {{-- Fill empty cell if odd number --}}
                     @if($pair->count() === 1)
-                        <td></td>
+                        <td class="spacer"></td>
+                        <td class="card" style="border-color: transparent;"></td>
                     @endif
                 </tr>
-            @endforeach
-        </table>
+            </table>
+        @endforeach
     @endif
 </body>
 </html>
