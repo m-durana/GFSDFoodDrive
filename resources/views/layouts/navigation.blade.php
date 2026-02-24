@@ -81,6 +81,9 @@
                 <a href="{{ route('santa.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Santa</a>
                 <a href="{{ route('delivery.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Day</a>
             @endif
+            @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
+                <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Coordinator</a>
+            @endif
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
             <div class="px-4">

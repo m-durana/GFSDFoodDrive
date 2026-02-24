@@ -210,6 +210,9 @@ class SantaController extends Controller
         return view('santa.settings', [
             'selfRegistration' => Setting::get('self_registration_enabled', '0') === '1',
             'seasonYear' => Setting::get('season_year', (string) date('Y')),
+            'adoptATagEnabled' => Setting::get('adopt_a_tag_enabled', '0') === '1',
+            'adoptATagDeadline' => Setting::get('adopt_a_tag_deadline', ''),
+            'adoptATagMessage' => Setting::get('adopt_a_tag_message', ''),
         ]);
     }
 
@@ -217,6 +220,12 @@ class SantaController extends Controller
     {
         Setting::set('self_registration_enabled', $request->boolean('self_registration_enabled') ? '1' : '0');
         Setting::set('season_year', $request->input('season_year', (string) date('Y')));
+        Setting::set('paper_size', $request->input('paper_size', 'letter'));
+
+        // Adopt-a-Tag settings
+        Setting::set('adopt_a_tag_enabled', $request->boolean('adopt_a_tag_enabled') ? '1' : '0');
+        Setting::set('adopt_a_tag_deadline', $request->input('adopt_a_tag_deadline', ''));
+        Setting::set('adopt_a_tag_message', $request->input('adopt_a_tag_message', ''));
 
         // Google OAuth settings
         if ($request->filled('google_client_id')) {
@@ -611,8 +620,10 @@ class SantaController extends Controller
             ->select('id', 'family_number', 'family_name', 'number_of_family_members')
             ->get();
 
+        $schoolRanges = SchoolRange::orderBy('sort_order')->get();
+
         return view('santa.shopping-list', compact(
-            'families', 'shoppingLists', 'totals', 'groceryItems', 'allFamilies'
+            'families', 'shoppingLists', 'totals', 'groceryItems', 'allFamilies', 'schoolRanges'
         ));
     }
 
@@ -980,46 +991,43 @@ class SantaController extends Controller
         $assignments = ShoppingAssignment::with('user')->get();
         $coordinators = User::where('permission', '>=', 8)->orderBy('first_name')->get();
 
-        // Get all grocery categories
-        $allCategories = GroceryItem::select('category')->distinct()->pluck('category')->toArray();
-
-        // Determine which categories/family ranges are already assigned
-        $assignedCategories = [];
+        // Determine which family ranges are already assigned
         $assignedRanges = [];
         foreach ($assignments as $a) {
-            if ($a->split_type === 'category') {
-                $assignedCategories = array_merge($assignedCategories, $a->categories ?? []);
-            } else {
+            if ($a->family_start && $a->family_end) {
                 $assignedRanges[] = ['start' => $a->family_start, 'end' => $a->family_end];
             }
         }
 
         $maxFamilyNumber = Family::max('family_number') ?? 0;
+        $schoolRanges = SchoolRange::orderBy('sort_order')->get();
 
         return view('santa.shopping-day', compact(
-            'assignments', 'coordinators', 'allCategories',
-            'assignedCategories', 'assignedRanges', 'maxFamilyNumber'
+            'assignments', 'coordinators', 'assignedRanges', 'maxFamilyNumber', 'schoolRanges'
         ));
     }
 
     public function createAssignment(Request $request): RedirectResponse
     {
         $request->validate([
-            'user_id' => ['required', 'exists:users,id'],
-            'split_type' => ['required', 'in:category,family_range'],
-            'categories' => ['required_if:split_type,category', 'nullable', 'array'],
-            'categories.*' => ['string'],
-            'family_start' => ['required_if:split_type,family_range', 'nullable', 'integer', 'min:1'],
-            'family_end' => ['required_if:split_type,family_range', 'nullable', 'integer', 'min:1'],
+            'user_id' => ['nullable', 'exists:users,id'],
+            'ninja_name' => ['required_without:user_id', 'nullable', 'string', 'max:255'],
+            'family_start' => ['required', 'integer', 'min:1'],
+            'family_end' => ['required', 'integer', 'min:1'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        ShoppingAssignment::create($request->only([
-            'user_id', 'split_type', 'categories', 'family_start', 'family_end', 'notes',
-        ]));
+        ShoppingAssignment::create([
+            'user_id' => $request->user_id ?: null,
+            'ninja_name' => $request->ninja_name,
+            'split_type' => 'family_range',
+            'family_start' => $request->family_start,
+            'family_end' => $request->family_end,
+            'notes' => $request->notes,
+        ]);
 
         return redirect()->route('santa.shoppingDay')
-            ->with('success', 'Shopping assignment created.');
+            ->with('success', 'Shopping assignment created. Share the link with the shopper!');
     }
 
     public function deleteAssignment(ShoppingAssignment $assignment): RedirectResponse

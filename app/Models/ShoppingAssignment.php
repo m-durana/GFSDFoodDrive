@@ -4,11 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class ShoppingAssignment extends Model
 {
     protected $fillable = [
         'user_id',
+        'token',
+        'ninja_name',
         'split_type',
         'categories',
         'family_start',
@@ -23,9 +27,33 @@ class ShoppingAssignment extends Model
         ];
     }
 
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::creating(function ($assignment) {
+            if (empty($assignment->token)) {
+                $assignment->token = Str::random(32);
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function checks(): HasMany
+    {
+        return $this->hasMany(ShoppingCheck::class);
+    }
+
+    public function getDisplayName(): string
+    {
+        if ($this->user) {
+            return $this->user->first_name . ' ' . $this->user->last_name;
+        }
+        return $this->ninja_name ?? 'Unknown';
     }
 
     /**

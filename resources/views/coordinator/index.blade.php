@@ -46,14 +46,23 @@
                                         <option value="all">All Children</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">School</label>
+                                    <select class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm js-school-select" data-start="gift_tag_range_start" data-end="gift_tag_range_end">
+                                        <option value="">All Schools</option>
+                                        @foreach($schoolRanges as $range)
+                                            <option value="{{ $range->id }}" data-start="{{ $range->range_start }}" data-end="{{ $range->range_end }}">{{ $range->school_name }} ({{ $range->range_start }}–{{ $range->range_end }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Range Start</label>
-                                        <input type="number" name="range_start" placeholder="1" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                        <input type="number" name="range_start" id="gift_tag_range_start" placeholder="1" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Range End</label>
-                                        <input type="number" name="range_end" placeholder="599" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                        <input type="number" name="range_end" id="gift_tag_range_end" placeholder="599" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                     </div>
                                 </div>
                                 <div>
@@ -73,14 +82,23 @@
                             <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Family Summary Sheets</h4>
                             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">One page per family with demographics. Replaces 708.docx mail merge.</p>
                             <form method="GET" action="{{ route('coordinator.familySummary') }}" target="_blank" class="space-y-3">
+                                <div>
+                                    <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">School</label>
+                                    <select class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm js-school-select" data-start="summary_range_start" data-end="summary_range_end">
+                                        <option value="">All Schools</option>
+                                        @foreach($schoolRanges as $range)
+                                            <option value="{{ $range->id }}" data-start="{{ $range->range_start }}" data-end="{{ $range->range_end }}">{{ $range->school_name }} ({{ $range->range_start }}–{{ $range->range_end }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Range Start</label>
-                                        <input type="number" name="range_start" placeholder="All" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                        <input type="number" name="range_start" id="summary_range_start" placeholder="All" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Range End</label>
-                                        <input type="number" name="range_end" placeholder="All" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                        <input type="number" name="range_end" id="summary_range_end" placeholder="All" min="1" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                     </div>
                                 </div>
                                 <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
@@ -114,11 +132,22 @@
                     </div>
 
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-4">
-                        Note: PDFs require the <code>barryvdh/laravel-dompdf</code> package. Run <code>composer update</code> to install.
-                        For large batches (400+ tags), generate in ranges of 50 to avoid timeouts.
+                        Note: PDFs require the <code>barryvdh/laravel-dompdf</code> package. Run <code>composer require barryvdh/laravel-dompdf</code> to install.
                     </p>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.js-school-select').forEach(function(select) {
+            select.addEventListener('change', function() {
+                var opt = this.options[this.selectedIndex];
+                var startId = this.dataset.start;
+                var endId = this.dataset.end;
+                document.getElementById(startId).value = opt.dataset.start || '';
+                document.getElementById(endId).value = opt.dataset.end || '';
+            });
+        });
+    </script>
 </x-app-layout>

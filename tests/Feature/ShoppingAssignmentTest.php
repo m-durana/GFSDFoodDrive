@@ -45,26 +45,27 @@ class ShoppingAssignmentTest extends TestCase
         $response->assertSee('Shopping Day');
     }
 
-    public function test_santa_can_create_category_assignment(): void
+    public function test_santa_can_create_ninja_assignment(): void
     {
         $response = $this->actingAs($this->santa)->post('/santa/shopping-day/assignments', [
-            'user_id' => $this->coordinator->id,
-            'split_type' => 'category',
-            'categories' => ['canned', 'dry'],
+            'ninja_name' => 'Jake the NINJA',
+            'family_start' => 1,
+            'family_end' => 50,
         ]);
 
         $response->assertRedirect('/santa/shopping-day');
         $this->assertDatabaseHas('shopping_assignments', [
-            'user_id' => $this->coordinator->id,
-            'split_type' => 'category',
+            'ninja_name' => 'Jake the NINJA',
+            'split_type' => 'family_range',
+            'family_start' => 1,
+            'family_end' => 50,
         ]);
     }
 
-    public function test_santa_can_create_family_range_assignment(): void
+    public function test_santa_can_create_coordinator_assignment(): void
     {
         $response = $this->actingAs($this->santa)->post('/santa/shopping-day/assignments', [
             'user_id' => $this->coordinator->id,
-            'split_type' => 'family_range',
             'family_start' => 1,
             'family_end' => 50,
         ]);
@@ -92,15 +93,16 @@ class ShoppingAssignmentTest extends TestCase
         $this->assertDatabaseMissing('shopping_assignments', ['id' => $assignment->id]);
     }
 
-    public function test_mobile_assignment_view_accessible_without_auth(): void
+    public function test_mobile_assignment_view_accessible_by_token(): void
     {
         $assignment = ShoppingAssignment::create([
             'user_id' => $this->coordinator->id,
-            'split_type' => 'category',
-            'categories' => ['canned'],
+            'split_type' => 'family_range',
+            'family_start' => 1,
+            'family_end' => 50,
         ]);
 
-        $response = $this->get("/shopping/assignment/{$assignment->id}");
+        $response = $this->get("/shopping/a/{$assignment->token}");
 
         $response->assertStatus(200);
         $response->assertSee($this->coordinator->first_name);

@@ -4,19 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Enums\GiftLevel;
 use App\Helpers\QrCodeHelper;
-use App\Jobs\GeneratePdfBatch;
 use App\Models\Child;
 use App\Models\Family;
+use App\Models\SchoolRange;
+use App\Models\Setting;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CoordinatorController extends Controller
 {
-    private const BATCH_SIZE = 50;
-
     public function index(): View
     {
         $stats = [
@@ -29,7 +25,9 @@ class CoordinatorController extends Controller
             'families_done' => Family::where('family_done', true)->count(),
         ];
 
-        return view('coordinator.index', compact('stats'));
+        $schoolRanges = SchoolRange::orderBy('sort_order')->get();
+
+        return view('coordinator.index', compact('stats', 'schoolRanges'));
     }
 
     public function giftTags(Request $request)
@@ -57,11 +55,6 @@ class CoordinatorController extends Controller
             Child::whereIn('id', $children->pluck('id'))->update(['mail_merged' => true]);
         }
 
-        // Batch if > 50 items
-        if ($children->count() > self::BATCH_SIZE && class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return $this->dispatchBatches('gift-tags', $children->pluck('id')->toArray());
-        }
-
         // Generate QR codes for each child
         $qrCodes = [];
         foreach ($children as $child) {
@@ -71,12 +64,14 @@ class CoordinatorController extends Controller
             );
         }
 
+        $paperSize = Setting::get('paper_size', 'letter');
+
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes'));
+            return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize'));
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', compact('children', 'filter', 'qrCodes'));
-        $pdf->setPaper('letter');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize'));
+        $pdf->setPaper($paperSize);
 
         return $pdf->stream('gift-tags.pdf');
     }
@@ -91,17 +86,14 @@ class CoordinatorController extends Controller
 
         $families = $query->whereNotNull('family_number')->orderBy('family_number')->get();
 
-        // Batch if > 50 items
-        if ($families->count() > self::BATCH_SIZE && class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return $this->dispatchBatches('family-summary', $families->pluck('id')->toArray());
-        }
+        $paperSize = Setting::get('paper_size', 'letter');
 
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             return response()->view('documents.family-summary', compact('families'));
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.family-summary', compact('families'));
-        $pdf->setPaper('letter');
+        $pdf->setPaper($paperSize);
 
         return $pdf->stream('family-summary.pdf');
     }
@@ -120,75 +112,15 @@ class CoordinatorController extends Controller
 
         $families = $query->orderBy('family_number')->get();
 
-        // Batch if > 50 items
-        if ($families->count() > self::BATCH_SIZE && class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return $this->dispatchBatches('delivery-day', $families->pluck('id')->toArray());
-        }
+        $paperSize = Setting::get('paper_size', 'letter');
 
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             return response()->view('documents.delivery-day', compact('families'));
         }
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.delivery-day', compact('families'));
-        $pdf->setPaper('letter');
+        $pdf->setPaper($paperSize);
 
         return $pdf->stream('delivery-day.pdf');
-    }
-
-    public function pdfStatus(string $batchId)
-    {
-        $statusFile = "pdf-batches/{$batchId}/status.json";
-
-        if (!Storage::exists($statusFile)) {
-            abort(404, 'Batch not found.');
-        }
-
-        $status = json_decode(Storage::get($statusFile), true);
-
-        return view('coordinator.pdf-status', compact('status', 'batchId'));
-    }
-
-    public function pdfDownload(string $batchId, int $batchNumber)
-    {
-        $file = "pdf-batches/{$batchId}/batch-{$batchNumber}.pdf";
-
-        if (!Storage::exists($file)) {
-            abort(404, 'PDF not ready yet.');
-        }
-
-        $type = json_decode(Storage::get("pdf-batches/{$batchId}/status.json"), true)['type'] ?? 'document';
-
-        return Storage::download($file, "{$type}-batch-{$batchNumber}.pdf");
-    }
-
-    private function dispatchBatches(string $type, array $itemIds)
-    {
-        $batchId = Str::uuid()->toString();
-        $chunks = array_chunk($itemIds, self::BATCH_SIZE);
-        $totalBatches = count($chunks);
-
-        // Initialize status file
-        $status = [
-            'type' => $type,
-            'total' => count($itemIds),
-            'total_batches' => $totalBatches,
-            'completed' => 0,
-            'batches' => [],
-        ];
-
-        foreach ($chunks as $index => $chunk) {
-            $batchNumber = $index + 1;
-            $status['batches'][$batchNumber] = ['status' => 'pending', 'file' => null];
-        }
-
-        Storage::makeDirectory("pdf-batches/{$batchId}");
-        Storage::put("pdf-batches/{$batchId}/status.json", json_encode($status));
-
-        // Dispatch jobs
-        foreach ($chunks as $index => $chunk) {
-            GeneratePdfBatch::dispatch($batchId, $index + 1, $type, $chunk);
-        }
-
-        return redirect()->route('coordinator.pdfStatus', $batchId);
     }
 }

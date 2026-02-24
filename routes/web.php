@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdoptionController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CoordinatorController;
@@ -92,21 +93,26 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('coordinator
     Route::get('/gift-tags', [CoordinatorController::class, 'giftTags'])->name('giftTags');
     Route::get('/family-summary', [CoordinatorController::class, 'familySummary'])->name('familySummary');
     Route::get('/delivery-day', [CoordinatorController::class, 'deliveryDay'])->name('deliveryDay');
-    Route::get('/pdf-status/{batchId}', [CoordinatorController::class, 'pdfStatus'])->name('pdfStatus');
-    Route::get('/pdf-download/{batchId}/{batchNumber}', [CoordinatorController::class, 'pdfDownload'])->name('pdfDownload');
 });
 
 // QR Code scan routes (public, secured by signed URLs)
 Route::get('/scan/{child}', [ScanController::class, 'show'])->name('scan.show')->middleware('signed');
 Route::put('/scan/{child}', [ScanController::class, 'update'])->name('scan.update');
 
-// Mobile shopping companion (public route for volunteers)
-Route::get('/shopping/assignment/{assignment}', [ShoppingController::class, 'assignment'])->name('shopping.assignment');
+// Mobile shopping companion (public routes for volunteers/NINJAs)
+Route::get('/shopping/a/{token}', [ShoppingController::class, 'assignmentByToken'])->name('shopping.assignment');
 Route::get('/shopping/{family_number}', [ShoppingController::class, 'checklist'])->name('shopping.checklist');
 
 // Google OAuth routes
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+
+// Adopt-a-Tag Portal (public when enabled)
+Route::get('/adopt', [AdoptionController::class, 'index'])->name('adopt.index');
+Route::get('/adopt/mine/{token}', [AdoptionController::class, 'confirmation'])->name('adopt.confirmation');
+Route::post('/adopt/mine/{token}/delivered', [AdoptionController::class, 'markDelivered'])->name('adopt.markDelivered');
+Route::get('/adopt/{child}', [AdoptionController::class, 'show'])->name('adopt.show');
+Route::post('/adopt/{child}/claim', [AdoptionController::class, 'claim'])->name('adopt.claim')->middleware('throttle:5,1');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
@@ -132,4 +138,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::post('/duplicates/dismiss', [SantaController::class, 'dismissDuplicate'])->name('dismissDuplicate');
     Route::post('/duplicates/merge', [SantaController::class, 'mergeFamilies'])->name('mergeFamilies');
     Route::post('/geocode-families', [SantaController::class, 'geocodeFamilies'])->name('geocodeFamilies');
+    Route::get('/adoptions', [AdoptionController::class, 'adminDashboard'])->name('adoptions');
+    Route::post('/adoptions/{child}/release', [AdoptionController::class, 'release'])->name('releaseAdoption');
+    Route::post('/adoptions/{child}/complete', [AdoptionController::class, 'complete'])->name('completeAdoption');
 });

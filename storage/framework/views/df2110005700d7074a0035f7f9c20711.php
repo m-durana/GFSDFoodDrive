@@ -81,6 +81,21 @@
                     </div>
                 </div>
 
+                <!-- Paper Size -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">PDF Paper Size</h3>
+                        <div>
+                            <label for="paper_size" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Paper Size for Gift Tags, Family Summaries, and Delivery Sheets</label>
+                            <select name="paper_size" id="paper_size"
+                                class="mt-1 block w-48 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                <option value="letter" <?php echo e(\App\Models\Setting::get('paper_size', 'letter') === 'letter' ? 'selected' : ''); ?>>US Letter (8.5 x 11)</option>
+                                <option value="a4" <?php echo e(\App\Models\Setting::get('paper_size', 'letter') === 'a4' ? 'selected' : ''); ?>>A4 (210 x 297mm)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Google OAuth -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6">
                     <div class="p-6">

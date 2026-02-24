@@ -165,46 +165,44 @@
                                     </div>
 
                                     <!-- Actions -->
-                                    <div class="flex flex-col space-y-2 min-w-fit">
+                                    <div class="flex flex-col space-y-2 w-52 shrink-0">
                                         <!-- Team assignment -->
-                                        <form method="POST" action="{{ route('delivery.updateTeam', $family) }}" class="flex items-center space-x-1">
+                                        <form method="POST" action="{{ route('delivery.updateTeam', $family) }}" class="flex items-center gap-1">
                                             @csrf
                                             @method('PUT')
                                             <input type="text" name="delivery_team" value="{{ $family->delivery_team }}" placeholder="Team..."
-                                                   class="w-24 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-1.5 py-1">
-                                            <button type="submit" class="px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200">Set</button>
+                                                   class="flex-1 min-w-0 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-2 py-1">
+                                            <button type="submit" class="shrink-0 px-2 py-1 bg-gray-200 dark:bg-gray-600 rounded text-xs hover:bg-gray-300 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200">Set</button>
                                         </form>
 
                                         <!-- Quick status update -->
-                                        <form method="POST" action="{{ route('delivery.updateStatus', $family) }}" class="flex items-center space-x-1">
+                                        <form method="POST" action="{{ route('delivery.updateStatus', $family) }}" class="flex items-center gap-1">
                                             @csrf
                                             @method('PUT')
-                                            <select name="delivery_status" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-1 py-1">
+                                            <select name="delivery_status" class="flex-1 min-w-0 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs pl-2 pr-7 py-1">
                                                 <option value="pending" {{ $family->delivery_status?->value === 'pending' ? 'selected' : '' }}>Pending</option>
                                                 <option value="in_transit" {{ $family->delivery_status?->value === 'in_transit' ? 'selected' : '' }}>In Transit</option>
                                                 <option value="delivered" {{ $family->delivery_status?->value === 'delivered' ? 'selected' : '' }}>Delivered</option>
                                                 <option value="picked_up" {{ $family->delivery_status?->value === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
                                             </select>
-                                            <button type="submit" class="px-2 py-1 bg-red-700 text-white rounded text-xs hover:bg-red-600">Go</button>
+                                            <button type="submit" class="shrink-0 px-2 py-1 bg-red-700 text-white rounded text-xs hover:bg-red-600">Go</button>
                                         </form>
 
                                         <!-- Add log note -->
-                                        <form method="POST" action="{{ route('delivery.addLog', $family) }}" class="flex flex-col space-y-1">
+                                        <form method="POST" action="{{ route('delivery.addLog', $family) }}" class="flex flex-col gap-1">
                                             @csrf
-                                            <div class="flex items-center space-x-1">
-                                                <select name="status" class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-1 py-1">
-                                                    <option value="delivered">Delivered</option>
-                                                    <option value="left_at_door">Left at door</option>
-                                                    <option value="no_answer">No answer</option>
-                                                    <option value="attempted">Attempted</option>
-                                                    <option value="picked_up">Picked up</option>
-                                                    <option value="note">Note</option>
-                                                </select>
-                                            </div>
-                                            <div class="flex items-center space-x-1">
+                                            <select name="status" class="w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs pl-2 pr-7 py-1">
+                                                <option value="delivered">Delivered</option>
+                                                <option value="left_at_door">Left at door</option>
+                                                <option value="no_answer">No answer</option>
+                                                <option value="attempted">Attempted</option>
+                                                <option value="picked_up">Picked up</option>
+                                                <option value="note">Note</option>
+                                            </select>
+                                            <div class="flex items-center gap-1">
                                                 <input type="text" name="notes" placeholder="Notes..."
-                                                       class="flex-1 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-1.5 py-1">
-                                                <button type="submit" class="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-500">Log</button>
+                                                       class="flex-1 min-w-0 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs px-2 py-1">
+                                                <button type="submit" class="shrink-0 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-500">Log</button>
                                             </div>
                                         </form>
                                     </div>

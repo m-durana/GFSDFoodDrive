@@ -30,15 +30,13 @@ class ShoppingController extends Controller
     }
 
     /**
-     * Mobile coordinator assignment checklist.
-     * No auth required — access via link or QR code.
+     * Mobile shopping checklist accessed by token.
+     * No auth required — NINJAs and coordinators access via shareable link.
      */
-    public function assignment(ShoppingAssignment $assignment): View
+    public function assignmentByToken(string $token): View
     {
-        $assignment->load('user');
-        $shoppingList = $assignment->getShoppingList();
-        $totalItems = $assignment->getTotalItems();
+        $assignment = ShoppingAssignment::where('token', $token)->firstOrFail();
 
-        return view('shopping.assignment', compact('assignment', 'shoppingList', 'totalItems'));
+        return view('shopping.assignment', compact('assignment'));
     }
 }

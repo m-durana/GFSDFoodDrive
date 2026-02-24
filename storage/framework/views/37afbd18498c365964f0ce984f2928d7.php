@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="bg-gray-100 dark:bg-gray-900">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title><?php echo e(config('app.name', 'GFSD Food Drive')); ?></title>
@@ -30,7 +30,7 @@
 
     <style>body { visibility: visible; }</style>
 </head>
-<body class="font-sans antialiased">
+<body class="font-sans antialiased pb-safe">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         <?php echo $__env->make('layouts.navigation', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 

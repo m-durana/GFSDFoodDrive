@@ -31,18 +31,22 @@ class TestDataSeeder extends Seeder
         'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis',
         'Wilson', 'Taylor', 'Anderson', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin',
         'Thompson', 'Young', 'Lee', 'Walker', 'Allen', 'Hall', 'Wright', 'Scott', 'Green',
+        'Baker', 'Adams', 'Nelson', 'Hill', 'King', 'Campbell', 'Mitchell', 'Roberts',
+        'Carter', 'Phillips', 'Evans', 'Turner', 'Parker', 'Collins', 'Edwards', 'Stewart',
+        'Morris', 'Murphy', 'Cook', 'Rogers', 'Morgan', 'Peterson', 'Cooper', 'Reed', 'Bailey',
     ];
 
     private array $lastNamesSpanish = [
         'Hernandez', 'Lopez', 'Martinez', 'Gonzalez', 'Rodriguez', 'Perez', 'Sanchez',
         'Ramirez', 'Torres', 'Flores', 'Rivera', 'Gomez', 'Diaz', 'Cruz', 'Morales',
+        'Castillo', 'Reyes', 'Ortiz', 'Vargas', 'Mendoza',
     ];
 
     private array $childFirstNamesM = [
         'Liam', 'Noah', 'Oliver', 'Elijah', 'James', 'Aiden', 'Lucas', 'Mason',
         'Ethan', 'Logan', 'Jackson', 'Sebastian', 'Mateo', 'Jack', 'Owen',
         'Theodore', 'Asher', 'Henry', 'Leo', 'Julian', 'Wyatt', 'Christopher',
-        'Sebastián', 'Diego', 'Andres', 'Marco', 'Gabriel',
+        'Sebastian', 'Diego', 'Andres', 'Marco', 'Gabriel',
     ];
 
     private array $childFirstNamesF = [
@@ -53,34 +57,83 @@ class TestDataSeeder extends Seeder
     ];
 
     // ---------------------------------------------------------------------------
-    // Address data pools
+    // Real Granite Falls area addresses with pre-computed lat/lng
     // ---------------------------------------------------------------------------
 
-    private array $streetNames = [
-        'Maple Ave', 'Oak Street', 'Cedar Lane', 'Pine Drive', 'Elm Court',
-        'Birch Way', 'Willow Road', 'Spruce Circle', 'Aspen Blvd', 'Fir Street',
-        'Mountain View Dr', 'Valley Road', 'Hillside Ave', 'Riverside Dr', 'Lakeview Ct',
-        'Clearwater Lane', 'Sunridge Way', 'Forest Grove Rd', 'Meadow Creek Dr', 'Rolling Hills Blvd',
-        'Granite Falls Rd', 'Cascade Ave', 'Evergreen Way', 'Summit Drive', 'Canyon Road',
-    ];
-
-    private array $cities = [
-        'Granite Falls', 'Granite Falls', 'Granite Falls', 'Granite Falls', // weighted toward local
-        'Lake Stevens', 'Snohomish', 'Monroe',
+    private array $realAddresses = [
+        // Granite Falls (98252)
+        ['street' => 'S Granite Ave',       'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0849, 'lng' => -121.9687],
+        ['street' => 'N Alder Ave',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0870, 'lng' => -121.9690],
+        ['street' => 'Stanley St',          'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0855, 'lng' => -121.9665],
+        ['street' => 'Pioneer St',          'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0862, 'lng' => -121.9710],
+        ['street' => 'Quarry Rd',           'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0820, 'lng' => -121.9600],
+        ['street' => 'Robe Menzel Rd',      'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0780, 'lng' => -121.9520],
+        ['street' => 'Jordan Rd',           'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0900, 'lng' => -121.9750],
+        ['street' => 'Mountain Loop Hwy',   'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0830, 'lng' => -121.9450],
+        ['street' => 'Menzel Lake Rd',      'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0750, 'lng' => -121.9580],
+        ['street' => 'Cascade Ave NE',      'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0875, 'lng' => -121.9630],
+        ['street' => 'Galena St',           'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0840, 'lng' => -121.9700],
+        ['street' => 'Union Ave',           'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0858, 'lng' => -121.9675],
+        ['street' => 'Waite Mill Rd',       'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0810, 'lng' => -121.9550],
+        ['street' => '142nd St NE',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0890, 'lng' => -121.9610],
+        ['street' => 'Granite Ave',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0845, 'lng' => -121.9695],
+        ['street' => 'E Pioneer St',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0860, 'lng' => -121.9650],
+        ['street' => 'W Stanley St',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0852, 'lng' => -121.9720],
+        ['street' => 'Alder Ave N',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0868, 'lng' => -121.9680],
+        ['street' => 'E Galena St',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0843, 'lng' => -121.9660],
+        ['street' => 'S Alder Ave',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0835, 'lng' => -121.9692],
+        ['street' => 'N Granite Ave',       'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0878, 'lng' => -121.9685],
+        ['street' => 'Wabash Ave',          'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0847, 'lng' => -121.9640],
+        ['street' => 'Saratoga Ave',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0865, 'lng' => -121.9715],
+        ['street' => 'Railroad Ave',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0850, 'lng' => -121.9705],
+        ['street' => 'Robe Menzel Rd E',    'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0795, 'lng' => -121.9510],
+        ['street' => 'Mountain Loop Hwy N', 'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0910, 'lng' => -121.9430],
+        ['street' => 'Jordan Rd N',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0915, 'lng' => -121.9760],
+        ['street' => 'Quarry Rd E',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0825, 'lng' => -121.9580],
+        ['street' => 'Union Ave N',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0873, 'lng' => -121.9670],
+        ['street' => 'Pioneer St E',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0856, 'lng' => -121.9645],
+        ['street' => 'Cascade Ave',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0880, 'lng' => -121.9625],
+        ['street' => 'Menzel Lake Rd E',    'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0760, 'lng' => -121.9570],
+        ['street' => 'Waite Mill Rd N',     'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0818, 'lng' => -121.9545],
+        ['street' => 'Granite Ave S',       'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0838, 'lng' => -121.9698],
+        ['street' => 'Galena St W',         'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0842, 'lng' => -121.9725],
+        ['street' => 'Stanley St E',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0854, 'lng' => -121.9655],
+        ['street' => '142nd St NE N',       'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0895, 'lng' => -121.9605],
+        ['street' => 'Railroad Ave S',      'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0833, 'lng' => -121.9708],
+        ['street' => 'Saratoga Ave N',      'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0870, 'lng' => -121.9718],
+        ['street' => 'Wabash Ave S',        'city' => 'Granite Falls', 'zip' => '98252', 'lat' => 48.0840, 'lng' => -121.9635],
+        // Lake Stevens (98258)
+        ['street' => '91st Ave NE',         'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0150, 'lng' => -122.0640],
+        ['street' => '20th St NE',          'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0180, 'lng' => -122.0700],
+        ['street' => 'Hartford Dr',         'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0200, 'lng' => -122.0580],
+        ['street' => 'Grade Rd',            'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0130, 'lng' => -122.0720],
+        ['street' => 'Callow Rd',           'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0250, 'lng' => -122.0550],
+        ['street' => '91st Ave SE',         'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0100, 'lng' => -122.0650],
+        ['street' => '24th St NE',          'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0190, 'lng' => -122.0680],
+        ['street' => 'Hartford Dr N',       'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0220, 'lng' => -122.0590],
+        ['street' => 'Grade Rd N',          'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0140, 'lng' => -122.0730],
+        ['street' => 'Callow Rd S',         'city' => 'Lake Stevens', 'zip' => '98258', 'lat' => 48.0260, 'lng' => -122.0540],
+        // Snohomish (98290)
+        ['street' => 'Avenue D',            'city' => 'Snohomish',    'zip' => '98290', 'lat' => 47.9127, 'lng' => -122.0987],
+        ['street' => 'Maple Ave',           'city' => 'Snohomish',    'zip' => '98290', 'lat' => 47.9140, 'lng' => -122.0960],
+        ['street' => 'Pine Ave',            'city' => 'Snohomish',    'zip' => '98290', 'lat' => 47.9135, 'lng' => -122.0975],
+        ['street' => 'Ludwig Rd',           'city' => 'Snohomish',    'zip' => '98290', 'lat' => 47.9150, 'lng' => -122.0940],
+        ['street' => 'Avenue D N',          'city' => 'Snohomish',    'zip' => '98290', 'lat' => 47.9160, 'lng' => -122.0990],
+        // Monroe (98272)
+        ['street' => 'Main St',             'city' => 'Monroe',       'zip' => '98272', 'lat' => 47.8554, 'lng' => -121.9710],
+        ['street' => 'Lewis St',            'city' => 'Monroe',       'zip' => '98272', 'lat' => 47.8560, 'lng' => -121.9730],
+        ['street' => 'Blakely Ave',         'city' => 'Monroe',       'zip' => '98272', 'lat' => 47.8548, 'lng' => -121.9700],
+        ['street' => 'Old Owen Rd',         'city' => 'Monroe',       'zip' => '98272', 'lat' => 47.8580, 'lng' => -121.9750],
+        ['street' => 'Main St S',           'city' => 'Monroe',       'zip' => '98272', 'lat' => 47.8540, 'lng' => -121.9720],
     ];
 
     // ---------------------------------------------------------------------------
-    // Delivery data pools
+    // Delivery / child data pools
     // ---------------------------------------------------------------------------
 
     private array $deliveryTimes = [
-        '9:00 AM - 11:00 AM',
-        '11:00 AM - 1:00 PM',
-        '1:00 PM - 3:00 PM',
-        '3:00 PM - 5:00 PM',
-        'Morning',
-        'Afternoon',
-        'Anytime',
+        '9:00 AM - 11:00 AM', '11:00 AM - 1:00 PM', '1:00 PM - 3:00 PM',
+        '3:00 PM - 5:00 PM', 'Morning', 'Afternoon', 'Anytime',
     ];
 
     private array $deliveryReasons = [
@@ -93,11 +146,8 @@ class TestDataSeeder extends Seeder
     ];
 
     private array $petInfos = [
-        'Large dog, please knock loudly',
-        '2 cats, indoor only',
-        'Friendly dog, will bark',
-        'Dog on chain in backyard',
-        'No pets',
+        'Large dog, please knock loudly', '2 cats, indoor only',
+        'Friendly dog, will bark', 'Dog on chain in backyard', 'No pets',
     ];
 
     private array $needForHelpTexts = [
@@ -119,12 +169,8 @@ class TestDataSeeder extends Seeder
 
     private array $deliveryTeams = ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'];
 
-    // ---------------------------------------------------------------------------
-    // Child data pools
-    // ---------------------------------------------------------------------------
-
     private array $schools = [
-        'Mountain Way', 'Mountain Way', 'Mountain Way', // weighted
+        'Mountain Way', 'Mountain Way', 'Mountain Way',
         'Monte Cristo', 'Monte Cristo',
         'GFMS', 'GFMS',
         'GFHS', 'GFHS',
@@ -132,69 +178,37 @@ class TestDataSeeder extends Seeder
         'None/Other',
     ];
 
-    private array $clothesSizes = [
-        // Toddler/infant
-        '12M', '18M', '24M', '2T', '3T', '4T',
-        // Children
-        'XS (4-5)', 'S (6-7)', 'M (8-10)', 'L (10-12)',
-        // Teen / adult sizes
-        'XS', 'S', 'M', 'L', 'XL',
-        // Numeric
-        '4', '5', '6', '7', '8', '10', '12', '14', '16',
-    ];
-
     private array $clothingStyles = [
-        'Casual, comfortable clothes',
-        'Loves bright colors',
-        'Prefers sporty / athletic wear',
-        'Likes hoodies and sweatpants',
-        'Into Minecraft / gaming themes',
-        'Loves dinosaurs and animals',
-        'Prefers dresses and skirts',
-        'Likes anything Disney',
-        'Into superheroes (Marvel/DC)',
-        'Prefers neutral colors, nothing too flashy',
-        'Loves LOL Dolls and Barbie themes',
-        'Into outdoor / camping style',
+        'Casual, comfortable clothes', 'Loves bright colors',
+        'Prefers sporty / athletic wear', 'Likes hoodies and sweatpants',
+        'Into Minecraft / gaming themes', 'Loves dinosaurs and animals',
+        'Prefers dresses and skirts', 'Likes anything Disney',
+        'Into superheroes (Marvel/DC)', 'Prefers neutral colors, nothing too flashy',
+        'Loves LOL Dolls and Barbie themes', 'Into outdoor / camping style',
     ];
 
     private array $clothingOptions = [
-        'Shirts, pants, socks',
-        'Pants and shirts only — has enough socks',
-        'Coat / jacket needed most',
-        'Shoes (size 6Y), pants, shirts',
-        'Underwear and socks most needed',
-        'Winter coat, boots, warm layers',
-        'Anything warm — very limited wardrobe',
-        'PJs, shirts, pants',
-        'Jeans and hoodies',
+        'Shirts, pants, socks', 'Pants and shirts only — has enough socks',
+        'Coat / jacket needed most', 'Shoes (size 6Y), pants, shirts',
+        'Underwear and socks most needed', 'Winter coat, boots, warm layers',
+        'Anything warm — very limited wardrobe', 'PJs, shirts, pants', 'Jeans and hoodies',
     ];
 
     private array $toyIdeas = [
-        'LEGO sets, anything Minecraft',
-        'Barbies, art supplies, craft kits',
-        'Hot Wheels, remote control cars',
-        'Board games, puzzles',
-        'Stuffed animals, pretend play kitchen',
-        'Sports equipment (basketball, soccer ball)',
-        'Books, educational toys',
-        'Slime kits, science experiments',
-        'Baby toys — stacking rings, soft blocks',
-        'LOL Surprise dolls, nail polish sets',
-        'Nerf guns, outdoor toys',
-        'Video games (Nintendo Switch)',
+        'LEGO sets, anything Minecraft', 'Barbies, art supplies, craft kits',
+        'Hot Wheels, remote control cars', 'Board games, puzzles',
+        'Stuffed animals, pretend play kitchen', 'Sports equipment (basketball, soccer ball)',
+        'Books, educational toys', 'Slime kits, science experiments',
+        'Baby toys — stacking rings, soft blocks', 'LOL Surprise dolls, nail polish sets',
+        'Nerf guns, outdoor toys', 'Video games (Nintendo Switch)',
         'Musical instruments — small keyboard, ukulele',
-        'Art supplies — markers, sketchbooks',
-        'Anything Pokemon or Star Wars',
+        'Art supplies — markers, sketchbooks', 'Anything Pokemon or Star Wars',
     ];
 
     private array $giftPreferences = [
-        'No preference, anything appreciated',
-        'Prefer practical gifts (clothing, books)',
-        'Loves hands-on activities and crafts',
-        'Prefers toys over clothing',
-        'Clothing preferred over toys',
-        'Books and educational materials appreciated',
+        'No preference, anything appreciated', 'Prefer practical gifts (clothing, books)',
+        'Loves hands-on activities and crafts', 'Prefers toys over clothing',
+        'Clothing preferred over toys', 'Books and educational materials appreciated',
         'Mix of toys and clothing',
     ];
 
@@ -211,33 +225,23 @@ class TestDataSeeder extends Seeder
     ];
 
     private array $adopterNames = [
-        'The Henderson Family',
-        'Grace Community Church',
-        'Boeing Employees Group',
-        'Granite Falls Rotary',
-        'The Kowalski Family',
-        'Mountain View PTA',
-        'Snohomish County Teachers',
-        'The Nakamura Family',
-        'VFW Post 3617',
+        'The Henderson Family', 'Grace Community Church', 'Boeing Employees Group',
+        'Granite Falls Rotary', 'The Kowalski Family', 'Mountain View PTA',
+        'Snohomish County Teachers', 'The Nakamura Family', 'VFW Post 3617',
         'Frontier Bank Staff',
     ];
 
     private array $giftsReceivedTexts = [
-        'Received coat, 2 shirts, pants, shoes',
-        'LEGO City set, book, shirt',
-        'Barbie Dream House, 2 outfits',
-        'Basketball, shoes (size 7), 3 shirts',
-        'Books, art kit, warm pajamas',
-        'Remote control car, pants, 2 shirts, socks',
-        'Stuffed animals, dress, shoes',
-        'Board games, hoodie, jeans',
+        'Received coat, 2 shirts, pants, shoes', 'LEGO City set, book, shirt',
+        'Barbie Dream House, 2 outfits', 'Basketball, shoes (size 7), 3 shirts',
+        'Books, art kit, warm pajamas', 'Remote control car, pants, 2 shirts, socks',
+        'Stuffed animals, dress, shoes', 'Board games, hoodie, jeans',
     ];
 
     private array $whereIsTagValues = ['at store', 'with volunteer', 'returned'];
 
     // ---------------------------------------------------------------------------
-    // Helper: pick a random element from an array
+    // Helpers
     // ---------------------------------------------------------------------------
 
     private function pick(array $arr): mixed
@@ -256,9 +260,7 @@ class TestDataSeeder extends Seeder
 
     public function run(): void
     {
-        // Ensure school ranges exist before we do anything else
         $this->call(SchoolRangeSeeder::class);
-
         $this->createTestUsers();
         $this->createFamiliesWithChildren();
     }
@@ -269,43 +271,30 @@ class TestDataSeeder extends Seeder
 
     private function createTestUsers(): void
     {
-        // Santa (admin) — permission 9
         $santa = User::firstOrCreate(
             ['username' => 'santa_admin'],
             [
-                'first_name' => 'Nick',
-                'last_name'  => 'Claus',
-                'email'      => 'santa@gfsd.test',
-                'password'   => 'password',
-                'permission' => 9,
+                'first_name' => 'Nick', 'last_name' => 'Claus',
+                'email' => 'santa@gfsd.test', 'password' => 'password', 'permission' => 9,
             ]
         );
 
-        // Family advisor — permission 7
         $advisor = User::firstOrCreate(
             ['username' => 'family_advisor'],
             [
-                'first_name' => 'Mary',
-                'last_name'  => 'Helper',
-                'email'      => 'advisor@gfsd.test',
-                'password'   => 'password',
-                'permission' => 7,
+                'first_name' => 'Mary', 'last_name' => 'Helper',
+                'email' => 'advisor@gfsd.test', 'password' => 'password', 'permission' => 7,
             ]
         );
 
-        // Coordinator — permission 8
         $coordinator = User::firstOrCreate(
             ['username' => 'coord_01'],
             [
-                'first_name' => 'Pat',
-                'last_name'  => 'Coordinator',
-                'email'      => 'coordinator@gfsd.test',
-                'password'   => 'password',
-                'permission' => 8,
+                'first_name' => 'Pat', 'last_name' => 'Coordinator',
+                'email' => 'coordinator@gfsd.test', 'password' => 'password', 'permission' => 8,
             ]
         );
 
-        // Assign Spatie roles if available
         if (class_exists(\Spatie\Permission\Models\Role::class)) {
             if (method_exists($santa, 'syncRoles')) {
                 $santa->syncRoles(['santa']);
@@ -318,704 +307,140 @@ class TestDataSeeder extends Seeder
     }
 
     // ---------------------------------------------------------------------------
-    // Families + children
+    // Families + children — 75 families, ~210 children
     // ---------------------------------------------------------------------------
 
     private function createFamiliesWithChildren(): void
     {
         $familyUser = User::where('username', 'family_advisor')->first();
 
-        // -----------------------------------------------------------------------
-        // Family definitions
-        // Each entry: [language, delivery_pref, date, adults_f, adults_m, children_data[], options]
-        // options keys: family_number, delivery_reason, pet_info, severe_need, need_for_help,
-        //               needs_baby_supplies, has_crhs_children, has_gfhs_children,
-        //               delivery_status, delivery_team, family_done
-        // -----------------------------------------------------------------------
+        // School -> typical family number range (matches SchoolRangeSeeder defaults)
+        // Crossroads: 1-99, GFHS: 100-199, GFMS: 200-299, Monte Cristo: 300-399, Mountain Way: 400-499, Special: 500-599
 
-        $familyDefs = [
-            // --- 15 families WITH family numbers ---
-
-            // 0: Crossroads range (1-99)
-            [
-                'last_name'   => 'Williams',
-                'language'    => 'English',
-                'address_num' => '412',
-                'street'      => 'Maple Ave',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-4201',
-                'phone2'      => '360-691-4202',
-                'email'       => 'williams@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '8',  'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '11', 'school' => 'Crossroads'],
-                    ['gender' => 'M', 'age' => '5',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'family_number'   => 14,
-                    'delivery_status' => 'delivered',
-                    'delivery_team'   => 'Team A',
-                    'family_done'     => true,
-                    'has_crhs_children' => false,
-                ],
-            ],
-
-            // 1: Crossroads range
-            [
-                'last_name'   => 'Hernandez',
-                'language'    => 'Spanish',
-                'address_num' => '218',
-                'street'      => 'Oak Street',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-5510',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '3',  'school' => 'None/Other'],
-                    ['gender' => 'M', 'age' => '6',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '10', 'school' => 'Crossroads'],
-                ],
-                'opts' => [
-                    'family_number'      => 27,
-                    'needs_baby_supplies'=> true,
-                    'need_for_help'      => 'Single mother of three, lost job in October',
-                    'delivery_preference'=> 'Delivery',
-                    'delivery_date'      => 'December 18',
-                    'delivery_time'      => '11:00 AM - 1:00 PM',
-                    'delivery_reason'    => 'No transportation',
-                    'delivery_status'    => 'delivered',
-                    'delivery_team'      => 'Team B',
-                    'family_done'        => true,
-                ],
-            ],
-
-            // 2: Crossroads range
-            [
-                'last_name'   => 'Brown',
-                'language'    => 'English',
-                'address_num' => '804',
-                'street'      => 'Cedar Lane',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-7734',
-                'phone2'      => '206-555-0138',
-                'email'       => 'jbrown@example.com',
-                'adults_f'    => 2, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '7', 'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '9', 'school' => 'Crossroads'],
-                ],
-                'opts' => [
-                    'family_number'   => 52,
-                    'delivery_status' => 'pending',
-                    'pet_information' => 'Friendly dog, will bark',
-                ],
-            ],
-
-            // 3: High School range (100-199)
-            [
-                'last_name'   => 'Johnson',
-                'language'    => 'English',
-                'address_num' => '1103',
-                'street'      => 'Pine Drive',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-2290',
-                'phone2'      => null,
-                'email'       => 'tjohnson@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '15', 'school' => 'GFHS'],
-                    ['gender' => 'M', 'age' => '17', 'school' => 'GFHS'],
-                ],
-                'opts' => [
-                    'family_number'   => 108,
-                    'has_gfhs_children' => true,
-                    'delivery_preference' => 'Pickup',
-                    'delivery_date'   => 'December 19',
-                    'delivery_time'   => '10:00 AM - 12:00 PM',
-                    'delivery_status' => 'picked_up',
-                    'family_done'     => true,
-                ],
-            ],
-
-            // 4: High School range
-            [
-                'last_name'   => 'Martinez',
-                'language'    => 'Spanish',
-                'address_num' => '320',
-                'street'      => 'Elm Court',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-8847',
-                'phone2'      => '360-691-8848',
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '14', 'school' => 'GFHS'],
-                    ['gender' => 'F', 'age' => '12', 'school' => 'GFMS'],
-                    ['gender' => 'M', 'age' => '9',  'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '6',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'family_number'   => 137,
-                    'has_gfhs_children' => true,
-                    'severe_need'     => 'Father in hospital, no income coming in',
-                    'need_for_help'   => 'Father disabled, mother is sole provider',
-                    'delivery_preference' => 'Delivery',
-                    'delivery_date'   => 'December 18',
-                    'delivery_time'   => '1:00 PM - 3:00 PM',
-                    'delivery_reason' => 'Single parent, cannot leave children',
-                    'delivery_status' => 'in_transit',
-                    'delivery_team'   => 'Team C',
-                ],
-            ],
-
-            // 5: High School range
-            [
-                'last_name'   => 'Thompson',
-                'language'    => 'English',
-                'address_num' => '567',
-                'street'      => 'Birch Way',
-                'city'        => 'Lake Stevens',
-                'phone1'      => '425-334-9901',
-                'phone2'      => null,
-                'email'       => 'sthompson@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '16', 'school' => 'GFHS'],
-                    ['gender' => 'F', 'age' => '13', 'school' => 'GFMS'],
-                ],
-                'opts' => [
-                    'family_number'   => 162,
-                    'has_gfhs_children' => true,
-                    'delivery_preference' => 'Pickup',
-                    'delivery_date'   => 'December 18',
-                    'delivery_status' => 'pending',
-                ],
-            ],
-
-            // 6: Middle School range (200-299)
-            [
-                'last_name'   => 'Garcia',
-                'language'    => 'Spanish',
-                'address_num' => '774',
-                'street'      => 'Willow Road',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-3357',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '11', 'school' => 'GFMS'],
-                    ['gender' => 'M', 'age' => '8',  'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '2',  'school' => 'None/Other'],
-                ],
-                'opts' => [
-                    'family_number'      => 211,
-                    'needs_baby_supplies'=> true,
-                    'need_for_help'      => 'Recently laid off, father working two part-time jobs',
-                    'severe_need'        => 'Facing eviction next month, utilities shut off',
-                    'delivery_preference'=> 'Delivery',
-                    'delivery_date'      => 'December 18',
-                    'delivery_time'      => '9:00 AM - 11:00 AM',
-                    'delivery_reason'    => 'No transportation',
-                    'delivery_status'    => 'delivered',
-                    'delivery_team'      => 'Team D',
-                    'family_done'        => true,
-                ],
-            ],
-
-            // 7: Middle School range
-            [
-                'last_name'   => 'Davis',
-                'language'    => 'English',
-                'address_num' => '1520',
-                'street'      => 'Spruce Circle',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-4490',
-                'phone2'      => '360-691-4491',
-                'email'       => 'rdavis@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '13', 'school' => 'GFMS'],
-                    ['gender' => 'F', 'age' => '10', 'school' => 'Crossroads'],
-                    ['gender' => 'M', 'age' => '7',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '4',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'family_number'   => 248,
-                    'delivery_status' => 'pending',
-                    'pet_information' => 'Large dog, please knock loudly',
-                ],
-            ],
-
-            // 8: Middle School range
-            [
-                'last_name'   => 'Lopez',
-                'language'    => 'Spanish',
-                'address_num' => '98',
-                'street'      => 'Aspen Blvd',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-6612',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '12', 'school' => 'GFMS'],
-                    ['gender' => 'F', 'age' => '9',  'school' => 'Crossroads'],
-                    ['gender' => 'M', 'age' => '5',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'family_number'   => 275,
-                    'delivery_preference' => 'Delivery',
-                    'delivery_date'   => 'December 19',
-                    'delivery_time'   => '3:00 PM - 5:00 PM',
-                    'delivery_reason' => 'Works during pickup hours',
-                    'delivery_status' => 'in_transit',
-                    'delivery_team'   => 'Team A',
-                ],
-            ],
-
-            // 9: Monte Cristo range (300-399)
-            [
-                'last_name'   => 'Wilson',
-                'language'    => 'English',
-                'address_num' => '2211',
-                'street'      => 'Fir Street',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-8801',
-                'phone2'      => '360-691-8802',
-                'email'       => 'kwilson@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '6',  'school' => 'Monte Cristo'],
-                    ['gender' => 'M', 'age' => '8',  'school' => 'Monte Cristo'],
-                    ['gender' => 'F', 'age' => '14', 'school' => 'GFHS'],
-                ],
-                'opts' => [
-                    'family_number'   => 312,
-                    'has_gfhs_children' => true,
-                    'delivery_preference' => 'Pickup',
-                    'delivery_date'   => 'December 19',
-                    'delivery_status' => 'picked_up',
-                    'family_done'     => true,
-                ],
-            ],
-
-            // 10: Monte Cristo range
-            [
-                'last_name'   => 'Anderson',
-                'language'    => 'Other',
-                'address_num' => '445',
-                'street'      => 'Mountain View Dr',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-3345',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '4',  'school' => 'None/Other'],
-                    ['gender' => 'F', 'age' => '7',  'school' => 'Monte Cristo'],
-                    ['gender' => 'M', 'age' => '1',  'school' => 'None/Other'],
-                ],
-                'opts' => [
-                    'family_number'      => 358,
-                    'needs_baby_supplies'=> true,
-                    'need_for_help'      => 'Both parents working minimum wage, barely covering rent',
-                    'delivery_preference'=> 'Delivery',
-                    'delivery_date'      => 'December 18',
-                    'delivery_time'      => '1:00 PM - 3:00 PM',
-                    'delivery_reason'    => 'No transportation',
-                    'delivery_status'    => 'pending',
-                ],
-            ],
-
-            // 11: Monte Cristo range
-            [
-                'last_name'   => 'Taylor',
-                'language'    => 'English',
-                'address_num' => '678',
-                'street'      => 'Valley Road',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-2276',
-                'phone2'      => '360-691-2277',
-                'email'       => 'btaylor@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '9',  'school' => 'Monte Cristo'],
-                    ['gender' => 'M', 'age' => '11', 'school' => 'Monte Cristo'],
-                ],
-                'opts' => [
-                    'family_number'   => 387,
-                    'delivery_status' => 'pending',
-                ],
-            ],
-
-            // 12: Mountain Way range (400-499)
-            [
-                'last_name'   => 'White',
-                'language'    => 'English',
-                'address_num' => '1334',
-                'street'      => 'Hillside Ave',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-5544',
-                'phone2'      => null,
-                'email'       => 'dwhite@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '5', 'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '7', 'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '3', 'school' => 'None/Other'],
-                ],
-                'opts' => [
-                    'family_number'   => 415,
-                    'delivery_preference' => 'Delivery',
-                    'delivery_date'   => 'December 18',
-                    'delivery_time'   => '9:00 AM - 11:00 AM',
-                    'delivery_reason' => 'Mobility issues, cannot come to school',
-                    'delivery_status' => 'delivered',
-                    'delivery_team'   => 'Team E',
-                    'family_done'     => true,
-                    'pet_information' => '2 cats, indoor only',
-                ],
-            ],
-
-            // 13: Mountain Way range
-            [
-                'last_name'   => 'Rodriguez',
-                'language'    => 'Spanish',
-                'address_num' => '892',
-                'street'      => 'Riverside Dr',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-7723',
-                'phone2'      => '360-691-7724',
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '6',  'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '8',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '10', 'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '0',  'school' => 'None/Other'],
-                ],
-                'opts' => [
-                    'family_number'      => 451,
-                    'needs_baby_supplies'=> true,
-                    'need_for_help'      => 'Parents recently immigrated, limited work authorization',
-                    'delivery_preference'=> 'Delivery',
-                    'delivery_date'      => 'December 19',
-                    'delivery_time'      => '11:00 AM - 1:00 PM',
-                    'delivery_reason'    => 'No transportation',
-                    'delivery_status'    => 'in_transit',
-                    'delivery_team'      => 'Team B',
-                ],
-            ],
-
-            // 14: Mountain Way range
-            [
-                'last_name'   => 'Jackson',
-                'language'    => 'English',
-                'address_num' => '2056',
-                'street'      => 'Lakeview Ct',
-                'city'        => 'Lake Stevens',
-                'phone1'      => '425-334-6612',
-                'phone2'      => null,
-                'email'       => 'cjackson@example.com',
-                'adults_f'    => 2, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '7',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '9',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'family_number'   => 488,
-                    'delivery_preference' => 'Pickup',
-                    'delivery_date'   => 'December 18',
-                    'delivery_status' => 'pending',
-                ],
-            ],
-
-            // --- 10 families WITHOUT family numbers ---
-
-            // 15: No number
-            [
-                'last_name'   => 'Miller',
-                'language'    => 'English',
-                'address_num' => '334',
-                'street'      => 'Clearwater Lane',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-1123',
-                'phone2'      => null,
-                'email'       => 'tmiller@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '5',  'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '8',  'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '12', 'school' => 'GFMS'],
-                ],
-                'opts' => [],
-            ],
-
-            // 16: No number
-            [
-                'last_name'   => 'Gonzalez',
-                'language'    => 'Spanish',
-                'address_num' => '756',
-                'street'      => 'Sunridge Way',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-9988',
-                'phone2'      => '360-691-9989',
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '3',  'school' => 'None/Other'],
-                    ['gender' => 'F', 'age' => '6',  'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '10', 'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '13', 'school' => 'GFMS'],
-                ],
-                'opts' => [
-                    'need_for_help' => 'Grandmother raising grandchildren on fixed income',
-                    'severe_need'   => 'Domestic violence situation, recently in shelter',
-                ],
-            ],
-
-            // 17: No number
-            [
-                'last_name'   => 'Moore',
-                'language'    => 'English',
-                'address_num' => '1890',
-                'street'      => 'Forest Grove Rd',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-3312',
-                'phone2'      => null,
-                'email'       => 'amoore@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '4',  'school' => 'Mountain Way'],
-                    ['gender' => 'M', 'age' => '6',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'delivery_preference' => 'Pickup',
-                    'delivery_date'       => 'December 19',
-                ],
-            ],
-
-            // 18: No number
-            [
-                'last_name'   => 'Torres',
-                'language'    => 'Spanish',
-                'address_num' => '503',
-                'street'      => 'Meadow Creek Dr',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-7756',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '7',  'school' => 'Monte Cristo'],
-                    ['gender' => 'F', 'age' => '5',  'school' => 'Monte Cristo'],
-                    ['gender' => 'M', 'age' => '2',  'school' => 'None/Other'],
-                ],
-                'opts' => [
-                    'needs_baby_supplies' => true,
-                    'delivery_preference' => 'Delivery',
-                    'delivery_date'       => 'December 18',
-                    'delivery_time'       => '11:00 AM - 1:00 PM',
-                    'delivery_reason'     => 'No transportation',
-                ],
-            ],
-
-            // 19: No number
-            [
-                'last_name'   => 'Harris',
-                'language'    => 'English',
-                'address_num' => '2340',
-                'street'      => 'Rolling Hills Blvd',
-                'city'        => 'Snohomish',
-                'phone1'      => '360-568-4490',
-                'phone2'      => '360-568-4491',
-                'email'       => 'charris@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '14', 'school' => 'GFHS'],
-                    ['gender' => 'M', 'age' => '16', 'school' => 'GFHS'],
-                ],
-                'opts' => [
-                    'has_gfhs_children'  => true,
-                    'delivery_preference'=> 'Pickup',
-                    'delivery_date'      => 'December 18',
-                ],
-            ],
-
-            // 20: No number
-            [
-                'last_name'   => 'Nguyen',
-                'language'    => 'Other',
-                'address_num' => '188',
-                'street'      => 'Granite Falls Rd',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-6634',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '9',  'school' => 'Crossroads'],
-                    ['gender' => 'F', 'age' => '11', 'school' => 'Crossroads'],
-                    ['gender' => 'M', 'age' => '6',  'school' => 'Mountain Way'],
-                ],
-                'opts' => [
-                    'need_for_help' => 'Both parents working minimum wage, barely covering rent',
-                ],
-            ],
-
-            // 21: No number
-            [
-                'last_name'   => 'Lewis',
-                'language'    => 'English',
-                'address_num' => '910',
-                'street'      => 'Cascade Ave',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-5529',
-                'phone2'      => '360-691-5530',
-                'email'       => 'mlewis@example.com',
-                'adults_f'    => 2, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '6',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '8',  'school' => 'Crossroads'],
-                ],
-                'opts' => [],
-            ],
-
-            // 22: No number
-            [
-                'last_name'   => 'Ramirez',
-                'language'    => 'Spanish',
-                'address_num' => '641',
-                'street'      => 'Evergreen Way',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-8843',
-                'phone2'      => null,
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '5',  'school' => 'Mountain Way'],
-                    ['gender' => 'F', 'age' => '8',  'school' => 'Monte Cristo'],
-                    ['gender' => 'M', 'age' => '12', 'school' => 'GFMS'],
-                    ['gender' => 'F', 'age' => '15', 'school' => 'GFHS'],
-                ],
-                'opts' => [
-                    'has_gfhs_children' => true,
-                    'need_for_help'     => 'Father disabled, mother is sole provider',
-                    'delivery_preference'=> 'Delivery',
-                    'delivery_date'     => 'December 19',
-                    'delivery_time'     => '3:00 PM - 5:00 PM',
-                    'delivery_reason'   => 'Works night shift, available mornings only',
-                ],
-            ],
-
-            // 23: No number
-            [
-                'last_name'   => 'Robinson',
-                'language'    => 'English',
-                'address_num' => '1717',
-                'street'      => 'Summit Drive',
-                'city'        => 'Monroe',
-                'phone1'      => '360-794-3312',
-                'phone2'      => null,
-                'email'       => 'trobinson@example.com',
-                'adults_f'    => 1, 'adults_m' => 1,
-                'children'    => [
-                    ['gender' => 'M', 'age' => '11', 'school' => 'GFMS'],
-                    ['gender' => 'F', 'age' => '13', 'school' => 'GFMS'],
-                ],
-                'opts' => [],
-            ],
-
-            // 24: No number
-            [
-                'last_name'   => 'Flores',
-                'language'    => 'Spanish',
-                'address_num' => '388',
-                'street'      => 'Canyon Road',
-                'city'        => 'Granite Falls',
-                'phone1'      => '360-691-4417',
-                'phone2'      => '360-691-4418',
-                'email'       => null,
-                'adults_f'    => 1, 'adults_m' => 0,
-                'children'    => [
-                    ['gender' => 'F', 'age' => '1',  'school' => 'None/Other'],
-                    ['gender' => 'M', 'age' => '4',  'school' => 'None/Other'],
-                    ['gender' => 'F', 'age' => '7',  'school' => 'Monte Cristo'],
-                ],
-                'opts' => [
-                    'needs_baby_supplies' => true,
-                    'need_for_help'       => 'Single mother of three, lost job in October',
-                    'severe_need'         => 'House fire destroyed most belongings two months ago',
-                ],
-            ],
-        ];
-
-        // -----------------------------------------------------------------------
-        // Child detail pools: indexed by child position for deterministic data
-        // -----------------------------------------------------------------------
+        // Map for deterministic school assignment based on age
+        $schoolByAge = function (int $age): string {
+            if ($age <= 2) return 'None/Other';
+            if ($age <= 5) return $this->pick(['Mountain Way', 'Monte Cristo', 'None/Other']);
+            if ($age <= 9) return $this->pick(['Mountain Way', 'Monte Cristo', 'Crossroads']);
+            if ($age <= 12) return $this->pick(['GFMS', 'Crossroads', 'Monte Cristo']);
+            if ($age <= 14) return $this->pick(['GFMS', 'GFHS']);
+            return 'GFHS';
+        };
 
         $clothesSizesByAge = [
-            // age => typical size
-            '0'  => '12M',  '1'  => '18M', '2'  => '2T',  '3'  => '3T',
-            '4'  => '4T',   '5'  => 'XS (4-5)', '6'  => 'S (6-7)',
-            '7'  => 'S (6-7)', '8' => 'M (8-10)', '9' => 'M (8-10)',
-            '10' => 'L (10-12)', '11' => 'L (10-12)', '12' => 'L (10-12)',
-            '13' => 'S', '14' => 'M', '15' => 'M', '16' => 'L', '17' => 'L',
+            0 => '12M', 1 => '18M', 2 => '2T', 3 => '3T', 4 => '4T',
+            5 => 'XS (4-5)', 6 => 'S (6-7)', 7 => 'S (6-7)', 8 => 'M (8-10)',
+            9 => 'M (8-10)', 10 => 'L (10-12)', 11 => 'L (10-12)', 12 => 'L (10-12)',
+            13 => 'S', 14 => 'M', 15 => 'M', 16 => 'L', 17 => 'L',
         ];
 
-        // Adoptable child pool (indices of children that will be adopted)
-        // tracked globally across families
-        $childCounter   = 0;
-        $adoptedIndices = [2, 5, 8, 11, 15, 19, 23, 28, 33, 38];
-        $mergedIndices  = [0, 3, 6, 9, 12, 16, 20, 25, 30, 35, 40];
-        $tagIndices     = [1, 4, 7, 10, 13, 17, 21, 26, 31, 36];
-        $giftsIndices   = [2, 5, 9, 14, 18, 22, 27, 32, 37];
+        // Generate 75 family definitions
+        $totalFamilies = 75;
+        $familiesWithNumbers = 50; // first 50 get numbers, last 25 are unassigned
 
-        foreach ($familyDefs as $idx => $def) {
-            $opts = $def['opts'];
+        // Pre-assign family numbers to the first 50 families, spread across school ranges
+        // Crossroads(1-99): 8 families, GFHS(100-199): 8, GFMS(200-299): 9, Monte Cristo(300-399): 9, Mountain Way(400-499): 10, Special(500-599): 6
+        $familyNumbers = [];
+        $rangeAssignments = [
+            ['start' => 1, 'end' => 99, 'count' => 8],     // Crossroads
+            ['start' => 100, 'end' => 199, 'count' => 8],   // GFHS
+            ['start' => 200, 'end' => 299, 'count' => 9],   // GFMS
+            ['start' => 300, 'end' => 399, 'count' => 9],   // Monte Cristo
+            ['start' => 400, 'end' => 499, 'count' => 10],  // Mountain Way
+            ['start' => 500, 'end' => 599, 'count' => 6],   // Special Case
+        ];
 
-            $femaleAdults = $def['adults_f'];
-            $maleAdults   = $def['adults_m'];
-            $numAdults    = $femaleAdults + $maleAdults;
+        foreach ($rangeAssignments as $ra) {
+            $step = max(1, intdiv($ra['end'] - $ra['start'], $ra['count'] + 1));
+            for ($i = 0; $i < $ra['count']; $i++) {
+                $familyNumbers[] = $ra['start'] + $step * ($i + 1);
+            }
+        }
 
-            // Count children by age group
-            $infants      = 0;
-            $youngChildren = 0;
-            $childrenCount = 0;
-            $tweens       = 0;
-            $teenagers    = 0;
+        // Languages: ~70% English, ~25% Spanish, ~5% Other
+        $languages = array_merge(
+            array_fill(0, 52, 'English'),
+            array_fill(0, 19, 'Spanish'),
+            array_fill(0, 4, 'Other')
+        );
 
-            foreach ($def['children'] as $child) {
-                $age = (int) $child['age'];
-                if ($age <= 1)       $infants++;
-                elseif ($age <= 5)   $youngChildren++;
-                elseif ($age <= 9)   $childrenCount++;
-                elseif ($age <= 12)  $tweens++;
-                else                 $teenagers++;
+        // Delivery status distribution
+        $statuses = ['pending', 'pending', 'pending', 'delivered', 'delivered', 'in_transit', 'picked_up'];
+
+        // Gift level pattern: ~30% none(0), ~20% partial(1), ~20% moderate(2), ~30% full(3)
+        $giftLevelPattern = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3];
+
+        $childCounter = 0;
+
+        // Deterministic seed for reproducible "random" data
+        mt_srand(42);
+
+        for ($fIdx = 0; $fIdx < $totalFamilies; $fIdx++) {
+            $lang = $languages[$fIdx];
+            $isSpanish = $lang === 'Spanish';
+
+            $lastName = $isSpanish
+                ? $this->pickIndex($this->lastNamesSpanish, $fIdx)
+                : $this->pickIndex($this->lastNamesEnglish, $fIdx);
+
+            $addr = $this->realAddresses[$fIdx % count($this->realAddresses)];
+            $houseNum = 100 + ($fIdx * 47) % 2900; // spread house numbers
+            $fullAddress = "{$houseNum} {$addr['street']}, {$addr['city']}, WA {$addr['zip']}";
+
+            // Number of children: 1-5, avg ~2.8
+            $childPattern = [2, 3, 2, 3, 4, 2, 3, 1, 3, 2, 4, 3, 2, 5, 3, 2, 3, 2, 4, 3];
+            $numKids = $childPattern[$fIdx % count($childPattern)];
+
+            $femaleAdults = mt_rand(0, 1) ? 1 : 2;
+            $maleAdults = $femaleAdults === 2 ? 0 : mt_rand(0, 1);
+            $numAdults = $femaleAdults + $maleAdults;
+
+            // Decide delivery preference
+            $hasNumber = $fIdx < $familiesWithNumbers;
+            $deliveryPref = mt_rand(0, 2) === 0 ? 'Pickup' : 'Delivery';
+            $deliveryDate = mt_rand(0, 1) ? 'December 18' : 'December 19';
+            $needsDelivery = $deliveryPref === 'Delivery';
+
+            // Some families have special needs
+            $hasNeed = mt_rand(0, 3) === 0;
+            $hasSevere = mt_rand(0, 7) === 0;
+            $hasBaby = false;
+            $hasPet = mt_rand(0, 4) === 0;
+
+            $status = $hasNumber ? $this->pick($statuses) : null;
+            $team = ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTeams) : null;
+            $familyDone = $hasNumber && mt_rand(0, 4) === 0;
+
+            // Generate children ages
+            $childrenDefs = [];
+            $infants = 0; $youngChildren = 0; $childrenCount = 0; $tweens = 0; $teenagers = 0;
+
+            for ($c = 0; $c < $numKids; $c++) {
+                // Ages weighted toward 3-12 range
+                $agePool = [0, 1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17];
+                $age = $agePool[($fIdx * 7 + $c * 13) % count($agePool)];
+                $gender = ($fIdx + $c) % 2 === 0 ? 'M' : 'F';
+                $school = $schoolByAge($age);
+
+                if ($age <= 1) { $infants++; $hasBaby = true; }
+                elseif ($age <= 5) $youngChildren++;
+                elseif ($age <= 9) $childrenCount++;
+                elseif ($age <= 12) $tweens++;
+                else $teenagers++;
+
+                $childrenDefs[] = ['age' => $age, 'gender' => $gender, 'school' => $school];
             }
 
-            $numChildren = $infants + $youngChildren + $childrenCount + $tweens + $teenagers;
-            $numMembers  = $numAdults + $numChildren;
-
-            // Build first name from language pool
-            $lang = $def['language'];
-            $firstNamePool = match ($lang) {
-                'Spanish' => $this->firstNamesSpanish,
-                default   => $this->firstNamesEnglish,
-            };
-            $lastName  = $def['last_name'];
-            $firstName = $this->pickIndex($firstNamePool, $idx);
+            $numChildren = count($childrenDefs);
+            $numMembers = $numAdults + $numChildren;
 
             $familyData = [
                 'user_id'                => $familyUser->id,
                 'family_name'            => $lastName,
-                'address'                => $def['address_num'] . ' ' . $def['street'] . ', ' . $def['city'] . ', WA',
-                'phone1'                 => $def['phone1'],
-                'phone2'                 => $def['phone2'],
-                'email'                  => $def['email'],
+                'address'                => $fullAddress,
+                'phone1'                 => '360-691-' . str_pad((string)(1000 + $fIdx * 37) % 10000, 4, '0', STR_PAD_LEFT),
+                'phone2'                 => mt_rand(0, 2) === 0 ? '360-691-' . str_pad((string)(5000 + $fIdx * 23) % 10000, 4, '0', STR_PAD_LEFT) : null,
+                'email'                  => mt_rand(0, 1) ? strtolower($lastName) . $fIdx . '@example.com' : null,
                 'preferred_language'     => $lang,
                 'female_adults'          => $femaleAdults,
                 'male_adults'            => $maleAdults,
@@ -1027,76 +452,66 @@ class TestDataSeeder extends Seeder
                 'teenagers'              => $teenagers,
                 'number_of_children'     => $numChildren,
                 'number_of_family_members' => $numMembers,
-                'has_crhs_children'      => $opts['has_crhs_children'] ?? false,
-                'has_gfhs_children'      => $opts['has_gfhs_children'] ?? false,
-                'needs_baby_supplies'    => $opts['needs_baby_supplies'] ?? false,
-                'pet_information'        => $opts['pet_information'] ?? null,
-                'delivery_preference'    => $opts['delivery_preference'] ?? null,
-                'delivery_date'          => $opts['delivery_date'] ?? null,
-                'delivery_time'          => $opts['delivery_time'] ?? null,
-                'delivery_reason'        => $opts['delivery_reason'] ?? null,
-                'delivery_team'          => $opts['delivery_team'] ?? null,
-                'delivery_status'        => $opts['delivery_status'] ?? null,
-                'need_for_help'          => $opts['need_for_help'] ?? null,
-                'severe_need'            => $opts['severe_need'] ?? null,
-                'family_done'            => $opts['family_done'] ?? false,
-                'family_number'          => $opts['family_number'] ?? null,
+                'has_crhs_children'      => false,
+                'has_gfhs_children'      => $teenagers > 0,
+                'needs_baby_supplies'    => $hasBaby,
+                'pet_information'        => $hasPet ? $this->pick($this->petInfos) : null,
+                'delivery_preference'    => $hasNumber ? $deliveryPref : null,
+                'delivery_date'          => $hasNumber ? $deliveryDate : null,
+                'delivery_time'          => ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTimes) : null,
+                'delivery_reason'        => $needsDelivery ? $this->pick($this->deliveryReasons) : null,
+                'delivery_team'          => $team,
+                'delivery_status'        => $status,
+                'need_for_help'          => $hasNeed ? $this->pick($this->needForHelpTexts) : null,
+                'severe_need'            => $hasSevere ? $this->pick($this->severeNeedTexts) : null,
+                'family_done'            => $familyDone,
+                'family_number'          => $hasNumber ? $familyNumbers[$fIdx] : null,
+                'latitude'               => $addr['lat'] + (($fIdx * 17 % 100) - 50) * 0.0001,
+                'longitude'              => $addr['lng'] + (($fIdx * 31 % 100) - 50) * 0.0001,
             ];
 
             $family = Family::create($familyData);
 
-            // -------------------------------------------------------------------
-            // Children for this family
-            // -------------------------------------------------------------------
-
-            foreach ($def['children'] as $childDef) {
-                $age        = $childDef['age'];
-                $gender     = $childDef['gender'];
-                $school     = $childDef['school'];
-                $ageInt     = (int) $age;
+            // Create children
+            foreach ($childrenDefs as $c => $childDef) {
+                $age = $childDef['age'];
+                $gender = $childDef['gender'];
                 $clothesSize = $clothesSizesByAge[$age] ?? 'M';
 
-                $isAdopted  = in_array($childCounter, $adoptedIndices, true);
-                $isMerged   = in_array($childCounter, $mergedIndices, true);
-                $hasTag     = in_array($childCounter, $tagIndices, true);
-                $hasGifts   = in_array($childCounter, $giftsIndices, true);
+                $giftLevel = $giftLevelPattern[$childCounter % count($giftLevelPattern)];
+                $isMerged = $childCounter % 5 < 2;
+                $isAdopted = $childCounter % 8 === 0;
+                $hasGifts = $giftLevel >= 2;
+                $hasTag = $childCounter % 6 === 0;
 
-                $styleIdx   = ($childCounter + $idx) % count($this->clothingStyles);
-                $optionIdx  = ($childCounter + $idx * 2) % count($this->clothingOptions);
-                $toyIdx     = ($childCounter + $idx * 3) % count($this->toyIdeas);
-                $prefIdx    = ($childCounter + $idx) % count($this->giftPreferences);
-                $sizesIdx   = ($childCounter + $idx * 4) % count($this->allSizesOptions);
+                Child::create([
+                    'family_id'            => $family->id,
+                    'gender'               => $gender,
+                    'age'                  => (string) $age,
+                    'school'               => $childDef['school'],
+                    'clothes_size'         => $clothesSize,
+                    'clothing_styles'      => $this->pickIndex($this->clothingStyles, $childCounter),
+                    'clothing_options'     => $this->pickIndex($this->clothingOptions, $childCounter),
+                    'toy_ideas'            => $age >= 1 ? $this->pickIndex($this->toyIdeas, $childCounter) : 'Infant toys — rattles, soft blocks',
+                    'gift_preferences'     => $this->pickIndex($this->giftPreferences, $childCounter),
+                    'all_sizes'            => $this->pickIndex($this->allSizesOptions, $childCounter),
+                    'mail_merged'          => $isMerged,
+                    'gifts_received'       => $hasGifts ? $this->pickIndex($this->giftsReceivedTexts, $childCounter) : null,
+                    'gift_level'           => $giftLevel,
+                    'where_is_tag'         => $hasTag ? $this->pickIndex($this->whereIsTagValues, $childCounter) : null,
+                    'adopter_name'         => $isAdopted ? $this->pickIndex($this->adopterNames, $childCounter) : null,
+                    'adopter_contact_info' => $isAdopted ? '425-555-' . str_pad((string)(1000 + $childCounter), 4, '0', STR_PAD_LEFT) : null,
+                ]);
 
-                // Gift level: cycle 0,1,2,3,0,1... skewed toward 0 and 3
-                $giftLevelMap = [0, 0, 1, 2, 3, 3, 0, 1, 3, 2, 0, 3, 1, 0, 2, 3];
-                $giftLevel    = $giftLevelMap[$childCounter % count($giftLevelMap)];
-
-                $childData = [
-                    'family_id'           => $family->id,
-                    'gender'              => $gender,
-                    'age'                 => $age,
-                    'school'              => $school,
-                    'clothes_size'        => $clothesSize,
-                    'clothing_styles'     => $this->clothingStyles[$styleIdx],
-                    'clothing_options'    => $this->clothingOptions[$optionIdx],
-                    'toy_ideas'           => ($ageInt >= 1) ? $this->toyIdeas[$toyIdx] : 'Infant toys — rattles, soft blocks',
-                    'gift_preferences'    => $this->giftPreferences[$prefIdx],
-                    'all_sizes'           => $this->allSizesOptions[$sizesIdx],
-                    'mail_merged'         => $isMerged,
-                    'gifts_received'      => $hasGifts ? $this->giftsReceivedTexts[$childCounter % count($this->giftsReceivedTexts)] : null,
-                    'gift_level'          => $giftLevel,
-                    'where_is_tag'        => $hasTag ? $this->whereIsTagValues[$childCounter % count($this->whereIsTagValues)] : null,
-                    'adopter_name'        => $isAdopted ? $this->adopterNames[$childCounter % count($this->adopterNames)] : null,
-                    'adopter_contact_info'=> $isAdopted ? '425-555-' . str_pad((string)(1000 + $childCounter), 4, '0', STR_PAD_LEFT) : null,
-                ];
-
-                Child::create($childData);
                 $childCounter++;
             }
         }
 
+        // Reset mt_srand
+        mt_srand();
+
         $totalChildren = Child::count();
-        $this->command->info("Created 25 families with {$totalChildren} children.");
-        $this->command->info('15 families have family numbers assigned, 10 are unnumbered (ready for assignment).');
+        $this->command->info("Created {$totalFamilies} families with {$totalChildren} children.");
+        $this->command->info("{$familiesWithNumbers} families have family numbers assigned, " . ($totalFamilies - $familiesWithNumbers) . " are unnumbered (ready for assignment).");
     }
 }

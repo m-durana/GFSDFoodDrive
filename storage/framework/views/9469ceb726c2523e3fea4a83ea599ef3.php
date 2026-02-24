@@ -27,57 +27,57 @@
         }
 
         .big-number {
-            font-size: 100pt;
+            font-size: 72pt;
             font-weight: bold;
             text-align: center;
             margin: 0;
-            padding: 20pt 0 10pt 0;
+            padding: 10pt 0 5pt 0;
             line-height: 1;
         }
 
         .big-number-label {
-            font-size: 28pt;
+            font-size: 20pt;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 10pt;
+            margin-bottom: 5pt;
         }
 
         .summary-line {
-            font-size: 28pt;
+            font-size: 20pt;
             font-weight: bold;
             text-decoration: underline;
-            margin: 10pt 0;
+            margin: 6pt 0;
             text-align: center;
         }
 
         .divider {
             border: none;
             border-top: 3pt solid #000;
-            margin: 15pt 0;
+            margin: 8pt 0;
         }
 
         .age-section {
             text-align: center;
-            margin: 8pt 0;
+            margin: 4pt 0;
         }
 
         .age-label {
-            font-size: 24pt;
+            font-size: 18pt;
             font-weight: bold;
             text-decoration: underline;
         }
 
         .age-count {
-            font-size: 36pt;
+            font-size: 24pt;
             font-weight: bold;
-            margin: 5pt 0 15pt 0;
+            margin: 2pt 0 8pt 0;
         }
 
         .info-line {
-            font-size: 24pt;
+            font-size: 18pt;
             font-weight: bold;
             text-align: center;
-            margin: 10pt 0;
+            margin: 6pt 0;
         }
 
         .info-line .field-value {
@@ -87,12 +87,12 @@
         }
 
         .boxes-section {
-            margin-top: 30pt;
+            margin-top: 15pt;
             text-align: center;
         }
 
         .boxes-label {
-            font-size: 28pt;
+            font-size: 20pt;
             font-weight: bold;
         }
 

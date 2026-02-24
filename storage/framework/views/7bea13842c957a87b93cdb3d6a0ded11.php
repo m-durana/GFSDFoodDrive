@@ -42,7 +42,7 @@
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Generate Shopping List</h3>
                 <form method="GET" action="<?php echo e(route('santa.shoppingList')); ?>" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Single Family</label>
                             <select name="family_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
@@ -55,13 +55,22 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">School</label>
+                            <select id="sl_school_select" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <option value="">All Schools</option>
+                                <?php $__currentLoopData = $schoolRanges; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $range): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($range->id); ?>" data-start="<?php echo e($range->range_start); ?>" data-end="<?php echo e($range->range_end); ?>"><?php echo e($range->school_name); ?> (<?php echo e($range->range_start); ?>–<?php echo e($range->range_end); ?>)</option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range Start</label>
-                            <input type="number" name="family_number_start" value="<?php echo e(request('family_number_start')); ?>"
+                            <input type="number" name="family_number_start" id="sl_range_start" value="<?php echo e(request('family_number_start')); ?>"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 1">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range End</label>
-                            <input type="number" name="family_number_end" value="<?php echo e(request('family_number_end')); ?>"
+                            <input type="number" name="family_number_end" id="sl_range_end" value="<?php echo e(request('family_number_end')); ?>"
                                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 99">
                         </div>
                     </div>
@@ -156,6 +165,14 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('sl_school_select').addEventListener('change', function() {
+            var opt = this.options[this.selectedIndex];
+            document.getElementById('sl_range_start').value = opt.dataset.start || '';
+            document.getElementById('sl_range_end').value = opt.dataset.end || '';
+        });
+    </script>
  <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal4619374cef299e94fd7263111d0abc69)): ?>
