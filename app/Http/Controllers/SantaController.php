@@ -237,6 +237,14 @@ class SantaController extends Controller
         // Delivery dates
         Setting::set('delivery_dates', $request->input('delivery_dates', ''));
 
+        // Delivery time range
+        Setting::set('delivery_time_start', $request->input('delivery_time_start', '08:00'));
+        Setting::set('delivery_time_end', $request->input('delivery_time_end', '21:00'));
+
+        // Delivery sheet footer
+        Setting::set('delivery_return_to', $request->input('delivery_return_to', 'System Engineers'));
+        Setting::set('hs_phone_number', $request->input('hs_phone_number', ''));
+
         // Notifications
         Setting::set('notifications_enabled', $request->boolean('notifications_enabled') ? '1' : '0');
 
@@ -925,37 +933,80 @@ class SantaController extends Controller
 
         $geocoded = 0;
         $errors = 0;
+        $orsKey = Setting::get('openrouteservice_key');
 
         foreach ($families as $family) {
-            try {
-                $response = Http::withHeaders([
-                    'User-Agent' => 'GFSDFoodDrive/1.0',
-                ])->get('https://nominatim.openstreetmap.org/search', [
-                    'q' => $family->address,
-                    'format' => 'json',
-                    'limit' => 1,
+            $coords = $this->geocodeAddress($family->address, $orsKey);
+
+            if ($coords) {
+                $family->update([
+                    'latitude' => $coords['lat'],
+                    'longitude' => $coords['lng'],
                 ]);
-
-                if ($response->successful() && count($response->json()) > 0) {
-                    $result = $response->json()[0];
-                    $family->update([
-                        'latitude' => $result['lat'],
-                        'longitude' => $result['lon'],
-                    ]);
-                    $geocoded++;
-                } else {
-                    $errors++;
-                }
-
-                // Respect Nominatim rate limit (1 req/sec)
-                usleep(1100000);
-            } catch (\Exception $e) {
+                $geocoded++;
+            } else {
                 $errors++;
             }
+
+            // Rate limit: 1 req/sec for Nominatim
+            usleep(1100000);
         }
 
         return redirect()->route('santa.settings')
             ->with('success', "Geocoded {$geocoded} families. {$errors} could not be geocoded.");
+    }
+
+    /**
+     * Try to geocode an address using Nominatim, falling back to ORS.
+     */
+    private function geocodeAddress(string $address, ?string $orsKey = null): ?array
+    {
+        // Try Nominatim first (free, no key needed)
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'GFSDFoodDrive/1.0',
+            ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
+                'q' => $address,
+                'format' => 'json',
+                'limit' => 1,
+                'countrycodes' => 'us',
+            ]);
+
+            if ($response->successful() && count($response->json()) > 0) {
+                $result = $response->json()[0];
+                return ['lat' => (float) $result['lat'], 'lng' => (float) $result['lon']];
+            }
+        } catch (\Exception $e) {
+            // Fall through to ORS
+        }
+
+        // Try OpenRouteService geocoding if key available
+        if ($orsKey) {
+            try {
+                $response = Http::withHeaders([
+                    'Authorization' => $orsKey,
+                ])->timeout(10)->get('https://api.openrouteservice.org/geocode/search', [
+                    'text' => $address,
+                    'size' => 1,
+                    'boundary.country' => 'US',
+                ]);
+
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $features = $data['features'] ?? [];
+                    if (count($features) > 0) {
+                        $coords = $features[0]['geometry']['coordinates'] ?? null;
+                        if ($coords) {
+                            return ['lat' => (float) $coords[1], 'lng' => (float) $coords[0]];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fall through
+            }
+        }
+
+        return null;
     }
 
     private function duplicateScore(Family $a, Family $b): int

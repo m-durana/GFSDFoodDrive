@@ -25,10 +25,27 @@
                 </div>
             @endif
 
+            {{-- Import All Button --}}
+            <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-6">
+                <h3 class="text-lg font-medium text-green-900 dark:text-green-100 mb-2">Quick Import</h3>
+                <p class="text-sm text-green-700 dark:text-green-300 mb-4">
+                    Import both Family Table and Child Table in one click. Families are imported first, then children are linked automatically.
+                </p>
+                <form method="POST" action="{{ route('santa.seasons.importAllAccess') }}">
+                    @csrf
+                    <input type="hidden" name="path" value="{{ $path }}">
+                    <input type="hidden" name="season_year" value="{{ $seasonYear }}">
+                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-600 text-sm font-medium transition"
+                            onclick="this.textContent='Importing all tables...'; this.disabled=true; this.form.submit();">
+                        Import All (Families + Children)
+                    </button>
+                </form>
+            </div>
+
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Tables Found</h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    Select a table to import. Import <strong>Family Table first</strong>, then Child Table (children link to families by family number).
+                    Or import tables individually. Import <strong>Family Table first</strong>, then Child Table (children link to families by family number or Access ID).
                 </p>
 
                 <div class="space-y-3">

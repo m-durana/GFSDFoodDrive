@@ -326,6 +326,87 @@ class SeasonController extends Controller
     }
 
     /**
+     * Import all tables (Family Table + Child Table) from an Access database in one click.
+     */
+    public function importAllAccess(Request $request)
+    {
+        $request->validate([
+            'path' => ['required', 'string'],
+            'season_year' => ['required', 'integer', 'between:2000,2099'],
+        ]);
+
+        $fullPath = storage_path('app/' . $request->input('path'));
+        if (! file_exists($fullPath)) {
+            return back()->with('error', 'Upload expired. Please upload again.');
+        }
+
+        $seasonYear = (int) $request->input('season_year');
+        $accessService = new AccessImportService();
+        $excelService = new ExcelImportService();
+        $tables = $accessService->listTables($fullPath);
+
+        $messages = [];
+        $allErrors = [];
+
+        // 1. Import Family Table first
+        $familyTable = collect($tables)->first(fn($t) => stripos($t, 'family') !== false && stripos($t, 'child') === false);
+        if ($familyTable) {
+            $rows = $accessService->readTable($fullPath, $familyTable);
+            $result = $excelService->importFamiliesFromRows($rows, $seasonYear);
+            $messages[] = "Families ({$familyTable}): {$result['imported']} imported, {$result['skipped']} skipped.";
+            $allErrors = array_merge($allErrors, $result['errors']);
+        }
+
+        // 2. Import Child Table, building Access Family ID → our family ID map
+        $childTable = collect($tables)->first(fn($t) => stripos($t, 'child') !== false);
+        if ($childTable) {
+            $childRows = $accessService->readTable($fullPath, $childTable);
+
+            // Build family ID map from Access's Family Table
+            $familyIdMap = null;
+            if ($familyTable) {
+                try {
+                    $familyRows = $accessService->readTable($fullPath, $familyTable);
+                    $ourFamilies = Family::withoutGlobalScopes()
+                        ->where('season_year', $seasonYear)
+                        ->whereNotNull('family_number')
+                        ->pluck('id', 'family_number')
+                        ->toArray();
+
+                    $familyIdMap = [];
+                    foreach ($familyRows as $fRow) {
+                        $accessId = $fRow['Family ID'] ?? $fRow['ID'] ?? null;
+                        $famNum = $fRow['Family Number'] ?? $fRow['FamilyNumber'] ?? null;
+                        if ($accessId && $famNum && isset($ourFamilies[(int) $famNum])) {
+                            $familyIdMap[$accessId] = $ourFamilies[(int) $famNum];
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Fall through
+                }
+            }
+
+            $result = $excelService->importChildrenFromRows($childRows, $seasonYear, $familyIdMap);
+            $messages[] = "Children ({$childTable}): {$result['imported']} imported, {$result['skipped']} skipped.";
+            $allErrors = array_merge($allErrors, $result['errors']);
+        }
+
+        if (empty($messages)) {
+            return back()->with('error', 'No Family Table or Child Table found in this database.');
+        }
+
+        // Auto-create Season record
+        $stats = Season::computeStats($seasonYear);
+        Season::updateOrCreate(['year' => $seasonYear], $stats);
+
+        @unlink($fullPath);
+
+        return redirect()->route('santa.seasons.import')
+            ->with('success', implode(' ', $messages))
+            ->with('import_errors', $allErrors);
+    }
+
+    /**
      * Import a pre-loaded legacy database file (from .claude/Legacy DBS/).
      */
     public function importLegacy(Request $request)

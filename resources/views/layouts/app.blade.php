@@ -48,5 +48,6 @@
             {{ $slot }}
         </main>
     </div>
+    @include('partials.grinch-overscroll')
 </body>
 </html>

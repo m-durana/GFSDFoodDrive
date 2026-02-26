@@ -36,11 +36,19 @@
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Legacy Databases</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        These Access databases were found in the project. Click "Import" to load tables from a database.
+                        These Access databases were found in the project. Click "Import" to load families and children from a database.
                         @if(!$accessDriver)
                             <span class="text-amber-600 dark:text-amber-400 font-medium">Note: No Access driver detected &mdash; install ODBC driver (Windows) or mdbtools (Linux) first.</span>
                         @endif
                     </p>
+
+                    {{-- Explanation of file types --}}
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded p-3 mb-4 text-sm text-blue-700 dark:text-blue-300">
+                        <strong>File types explained:</strong>
+                        <code>*_be</code> = Back-End database (contains the actual data &mdash; import this one).
+                        <code>*_fe Admin</code> = Front-End (Access forms/UI only, no data).
+                        <code>*Survey*</code> = Survey entry form (may contain registration data).
+                    </div>
 
                     <div class="space-y-3">
                         @foreach($legacyFiles as $year => $files)

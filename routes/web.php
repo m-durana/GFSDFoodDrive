@@ -16,18 +16,8 @@ use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
 use Illuminate\Support\Facades\Route;
 
-// Root route: redirect authenticated users to their dashboard, guests to homepage
+// Root route: show public homepage for everyone
 Route::get('/', function () {
-    if (auth()->check()) {
-        $user = auth()->user();
-        if ($user->isSanta()) {
-            return redirect()->route('santa.index');
-        }
-        if ($user->isCoordinator()) {
-            return redirect()->route('coordinator.index');
-        }
-        return redirect()->route('family.index');
-    }
     $selfRegistrationEnabled = \App\Models\Setting::get('self_registration_enabled', false);
     $adoptionEnabled = \App\Models\Setting::get('adoption_enabled', true);
     return view('welcome', compact('selfRegistrationEnabled', 'adoptionEnabled'));
@@ -42,6 +32,18 @@ Route::middleware('guest')->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    // Dashboard redirect: sends user to their role-appropriate page
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        if ($user->isSanta()) {
+            return redirect()->route('santa.index');
+        }
+        if ($user->isCoordinator()) {
+            return redirect()->route('coordinator.index');
+        }
+        return redirect()->route('family.index');
+    })->name('dashboard');
 });
 
 // Family routes: accessible by Family and Santa roles
@@ -117,6 +119,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::get('/seasons/import/access-tables', [SeasonController::class, 'accessTables'])->name('seasons.accessTables');
     Route::post('/seasons/import/access-preview', [SeasonController::class, 'previewAccessTable'])->name('seasons.previewAccessTable');
     Route::post('/seasons/import/legacy', [SeasonController::class, 'importLegacy'])->name('seasons.importLegacy');
+    Route::post('/seasons/import/all-access', [SeasonController::class, 'importAllAccess'])->name('seasons.importAllAccess');
     Route::post('/seasons/archive', [SeasonController::class, 'archive'])->name('seasons.archive');
     Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
     Route::get('/seasons/{season}/families', [SeasonController::class, 'families'])->name('seasons.families');

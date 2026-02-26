@@ -5,24 +5,26 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreFamilyRequest;
 use App\Models\Family;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class SelfServiceController extends Controller
 {
-    public function create(): View
+    public function create(): View|Response
     {
         if (Setting::get('self_registration_enabled', '0') !== '1') {
-            abort(403, 'Family self-registration is currently disabled.');
+            return $this->closedResponse();
         }
 
         return view('self-service.create');
     }
 
-    public function store(StoreFamilyRequest $request): RedirectResponse
+    public function store(StoreFamilyRequest $request): RedirectResponse|Response
     {
         if (Setting::get('self_registration_enabled', '0') !== '1') {
-            abort(403, 'Family self-registration is currently disabled.');
+            return $this->closedResponse();
         }
 
         $data = $request->validated();
@@ -45,12 +47,25 @@ class SelfServiceController extends Controller
         return redirect()->route('self-service.success');
     }
 
-    public function success(): View
+    public function success(): View|Response
     {
         if (Setting::get('self_registration_enabled', '0') !== '1') {
-            abort(403, 'Family self-registration is currently disabled.');
+            return $this->closedResponse();
         }
 
         return view('self-service.success');
+    }
+
+    private function closedResponse(): Response
+    {
+        $advisors = User::where('permission', '>=', 8)
+            ->whereNotNull('position')
+            ->orderBy('name')
+            ->get(['name', 'position', 'school_source']);
+
+        return response(
+            view('self-service.closed', compact('advisors')),
+            200
+        );
     }
 }

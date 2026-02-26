@@ -25,6 +25,7 @@
 
                         <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Operations</p>
                         <a href="#delivery-dates" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Delivery Dates</a>
+                        <a href="#delivery-time-range" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Delivery Time Range</a>
                         <a href="#season" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Season</a>
                         <a href="#coordinator-positions" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Coordinator Positions</a>
                         <a href="#paper-size" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Paper Size</a>
@@ -154,6 +155,50 @@
                                     <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                                     Add Date
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Delivery Time Range -->
+                        <div id="delivery-time-range" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Time Range</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Allowed time window for deliveries (shown on driver pages and delivery sheets).</p>
+                                <div class="flex items-center gap-3">
+                                    <div>
+                                        <label for="delivery_time_start" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Start</label>
+                                        <input type="time" name="delivery_time_start" id="delivery_time_start"
+                                            value="{{ Setting::get('delivery_time_start', '08:00') }}"
+                                            class="block w-36 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    </div>
+                                    <span class="text-gray-400 mt-5">to</span>
+                                    <div>
+                                        <label for="delivery_time_end" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">End</label>
+                                        <input type="time" name="delivery_time_end" id="delivery_time_end"
+                                            value="{{ Setting::get('delivery_time_end', '21:00') }}"
+                                            class="block w-36 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    </div>
+                                </div>
+
+                                <!-- Delivery sheet footer settings -->
+                                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Delivery Sheet Footer</h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="delivery_return_to" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Return form to</label>
+                                            <input type="text" name="delivery_return_to" id="delivery_return_to"
+                                                value="{{ Setting::get('delivery_return_to', 'System Engineers') }}"
+                                                placeholder="System Engineers"
+                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        </div>
+                                        <div>
+                                            <label for="hs_phone_number" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">HS Phone Number</label>
+                                            <input type="text" name="hs_phone_number" id="hs_phone_number"
+                                                value="{{ Setting::get('hs_phone_number', '') }}"
+                                                placeholder="(360) 691-7717"
+                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

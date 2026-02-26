@@ -66,6 +66,7 @@ class ExcelImportService
     private const CHILD_COLUMNS = [
         'familynumber' => '_family_number',
         'familyid' => '_family_id',
+        'familydone' => '_ignore',
         'gender' => 'gender',
         'age' => 'age',
         'school' => 'school',
@@ -226,7 +227,7 @@ class ExcelImportService
         }
 
         $headers = array_keys($rows[0]);
-        $columnMapping = $this->buildColumnMapping($headers, self::FAMILY_COLUMNS);
+        $columnMapping = $this->buildAssocColumnMapping($headers, self::FAMILY_COLUMNS);
 
         return $this->importFamilyRows($rows, $columnMapping, $seasonYear, 'assoc');
     }
@@ -241,7 +242,7 @@ class ExcelImportService
         }
 
         $headers = array_keys($rows[0]);
-        $columnMapping = $this->buildColumnMapping($headers, self::CHILD_COLUMNS);
+        $columnMapping = $this->buildAssocColumnMapping($headers, self::CHILD_COLUMNS);
 
         return $this->importChildRows($rows, $columnMapping, $seasonYear, 'assoc', $familyIdMap);
     }
@@ -281,6 +282,11 @@ class ExcelImportService
                     }
                 }
 
+                // Normalize delivery_status enum (legacy data may be uppercase)
+                if (isset($data['delivery_status'])) {
+                    $data['delivery_status'] = $this->normalizeDeliveryStatus($data['delivery_status']);
+                }
+
                 Family::withoutGlobalScopes()->create($data);
                 $imported++;
             } catch (\Exception $e) {
@@ -313,6 +319,9 @@ class ExcelImportService
                     ? $this->mapAssocRow($row, $columnMapping)
                     : $this->mapRow($row, $columnMapping);
 
+                // Remove internal/ignored fields
+                unset($data['_ignore']);
+
                 // Resolve family link
                 $ourFamilyId = null;
 
@@ -342,7 +351,7 @@ class ExcelImportService
                     $data['age'] = (int) $data['age'];
                 }
                 if (isset($data['gift_level'])) {
-                    $data['gift_level'] = (int) $data['gift_level'];
+                    $data['gift_level'] = min(3, max(0, (int) $data['gift_level']));
                 }
                 if (isset($data['mail_merged'])) {
                     $data['mail_merged'] = $this->castBool($data['mail_merged']);
@@ -359,6 +368,23 @@ class ExcelImportService
     }
 
     // ── Helpers ──────────────────────────────────────────────────────
+
+    /**
+     * Build column mapping for associative rows (Access DB).
+     * Maps original header string → DB column name.
+     */
+    private function buildAssocColumnMapping(array $headers, array $columnMap): array
+    {
+        $mapping = [];
+        foreach ($headers as $header) {
+            if ($header === null || $header === '') continue;
+            $normalized = $this->normalizeHeader($header);
+            if (isset($columnMap[$normalized])) {
+                $mapping[$header] = $columnMap[$normalized];
+            }
+        }
+        return $mapping;
+    }
 
     private function buildColumnMapping(array $headers, array $columnMap): array
     {
@@ -402,5 +428,19 @@ class ExcelImportService
         if (is_bool($value)) return $value;
         $str = strtolower(trim((string) $value));
         return in_array($str, ['yes', '1', 'true', 'y'], true);
+    }
+
+    private function normalizeDeliveryStatus(mixed $value): ?string
+    {
+        $str = strtolower(trim((string) $value));
+        $map = [
+            'pending' => 'pending',
+            'in_transit' => 'in_transit',
+            'in transit' => 'in_transit',
+            'delivered' => 'delivered',
+            'picked_up' => 'picked_up',
+            'picked up' => 'picked_up',
+        ];
+        return $map[$str] ?? null;
     }
 }

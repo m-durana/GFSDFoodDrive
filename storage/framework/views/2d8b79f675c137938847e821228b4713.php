@@ -119,8 +119,21 @@
             attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        const stops = <?php echo json_encode($route->families->map(fn($f) => [
-            'lat' => (float) $f->latitude, 'lng' => (float) $f->longitude, 'order' => $f->route_order) ?>;
+        <?php
+            $stopsData = $route->families->map(function($f) {
+                return [
+                    'lat' => (float) $f->latitude,
+                    'lng' => (float) $f->longitude,
+                    'order' => $f->route_order,
+                    'number' => $f->family_number,
+                    'name' => $f->family_name,
+                    'status' => $f->delivery_status?->value ?? 'pending',
+                ];
+            })->filter(function($s) {
+                return $s['lat'] && $s['lng'];
+            })->values();
+        ?>
+        const stops = <?php echo json_encode($stopsData, 15, 512) ?>;
 
         const bounds = [];
         const polyline = [];
@@ -168,6 +181,7 @@
             map.setView([48.08, -121.97], 13);
         }
     </script>
+    <?php echo $__env->make('partials.grinch-overscroll', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
 </html>
 <?php /**PATH C:\Users\mirod\Documents\Code\JetBrains\GFSDFoodDrive\resources\views/delivery-routes/driver.blade.php ENDPATH**/ ?>

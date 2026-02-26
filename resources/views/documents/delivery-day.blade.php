@@ -265,6 +265,14 @@
                     <span class="underline" style="width: 95%;">&nbsp;</span>
                 </span>
             </div>
+
+            <!-- Return instructions -->
+            <div style="margin-top: 10pt; padding-top: 6pt; border-top: 1pt solid #999; font-size: 12pt; color: #444; text-align: center;">
+                Return this form to {{ \App\Models\Setting::get('delivery_return_to', 'System Engineers') }}.
+                @if(\App\Models\Setting::get('hs_phone_number'))
+                    Problems? HS Phone: <strong>{{ \App\Models\Setting::get('hs_phone_number') }}</strong>
+                @endif
+            </div>
         </div>
     @empty
         <p style="text-align: center; padding: 3in 0; font-size: 18pt; color: #666;">No families match the selected filter.</p>

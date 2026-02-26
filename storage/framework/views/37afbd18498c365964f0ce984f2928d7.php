@@ -50,6 +50,7 @@
 
         </main>
     </div>
+    <?php echo $__env->make('partials.grinch-overscroll', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 </body>
 </html>
 <?php /**PATH C:\Users\mirod\Documents\Code\JetBrains\GFSDFoodDrive\resources\views/layouts/app.blade.php ENDPATH**/ ?>
