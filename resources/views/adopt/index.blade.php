@@ -50,6 +50,7 @@
                             <option value="">All</option>
                             <option value="Male" {{ request('gender') === 'Male' ? 'selected' : '' }}>Boy</option>
                             <option value="Female" {{ request('gender') === 'Female' ? 'selected' : '' }}>Girl</option>
+                            <option value="Other" {{ request('gender') === 'Other' ? 'selected' : '' }}>Other</option>
                         </select>
                     </div>
                     <div>
@@ -98,19 +99,10 @@
                            class="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-red-300 dark:hover:border-red-700 transition p-5">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center space-x-3">
-                                    <!-- Gender icon -->
-                                    @if(strtolower($child->gender ?? '') === 'female')
-                                        <div class="w-10 h-10 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-2 13.72V18H8v2h2v2h4v-2h2v-2h-2v-2.28A7 7 0 0012 2zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
-                                        </div>
-                                    @else
-                                        <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                            <svg class="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 1h5v5h-2V3.41L14.06 7.86A7 7 0 1012.64 7l4.45-4.45H15.5V1zM12 19a5 5 0 100-10 5 5 0 000 10z"/></svg>
-                                        </div>
-                                    @endif
+                                    <x-gender-icon :gender="$child->gender" size="sm" />
                                     <div>
                                         <p class="font-semibold text-gray-900 dark:text-gray-100">
-                                            {{ $child->gender ?? 'Child' }}, Age {{ $child->age ?? '?' }}
+                                            {{ strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child') }}, Age {{ $child->age ?? '?' }}
                                         </p>
                                         @if($child->school)
                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $child->school }}</p>

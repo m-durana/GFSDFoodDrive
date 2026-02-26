@@ -21,6 +21,8 @@ class User extends Authenticatable
         'email',
         'password',
         'permission',
+        'school_source',
+        'position',
         'last_lat',
         'last_lng',
         'last_location_at',

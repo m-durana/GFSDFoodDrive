@@ -6,13 +6,17 @@ use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\DeliveryDayController;
 use App\Http\Controllers\FamilyController;
+use App\Http\Controllers\FamilyStatusController;
 use App\Http\Controllers\SantaController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\SeasonController;
+use App\Http\Controllers\CommandCenterController;
+use App\Http\Controllers\DeliveryRouteController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
 use Illuminate\Support\Facades\Route;
 
-// Root route: redirect authenticated users to their dashboard, guests to login
+// Root route: redirect authenticated users to their dashboard, guests to homepage
 Route::get('/', function () {
     if (auth()->check()) {
         $user = auth()->user();
@@ -24,7 +28,9 @@ Route::get('/', function () {
         }
         return redirect()->route('family.index');
     }
-    return redirect()->route('login');
+    $selfRegistrationEnabled = \App\Models\Setting::get('self_registration_enabled', false);
+    $adoptionEnabled = \App\Models\Setting::get('adoption_enabled', true);
+    return view('welcome', compact('selfRegistrationEnabled', 'adoptionEnabled'));
 })->name('home');
 
 // Guest routes (login)
@@ -85,6 +91,40 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::post('/users', [SantaController::class, 'storeUser'])->name('storeUser');
     Route::put('/users/{user}', [SantaController::class, 'updateUser'])->name('updateUser');
     Route::put('/users/{user}/reset-password', [SantaController::class, 'resetPassword'])->name('resetPassword');
+
+    // Command Center
+    Route::get('/command-center', [CommandCenterController::class, 'index'])->name('commandCenter');
+    Route::get('/command-center/data', [CommandCenterController::class, 'data'])->name('commandCenter.data');
+
+    // Delivery Routes
+    Route::get('/delivery-routes', [DeliveryRouteController::class, 'index'])->name('deliveryRoutes.index');
+    Route::post('/delivery-routes', [DeliveryRouteController::class, 'store'])->name('deliveryRoutes.store');
+    Route::delete('/delivery-routes/{deliveryRoute}', [DeliveryRouteController::class, 'destroy'])->name('deliveryRoutes.destroy');
+    Route::post('/delivery-routes/optimize', [DeliveryRouteController::class, 'optimize'])->name('deliveryRoutes.optimize');
+    Route::put('/delivery-routes/{deliveryRoute}/families', [DeliveryRouteController::class, 'updateFamilies'])->name('deliveryRoutes.updateFamilies');
+
+    // Backups
+    Route::get('/backups', [SantaController::class, 'backups'])->name('backups');
+    Route::post('/backups/create', [SantaController::class, 'createBackup'])->name('createBackup');
+    Route::get('/backups/download/{filename}', [SantaController::class, 'downloadBackup'])->name('downloadBackup');
+    Route::post('/backups/rollback', [SantaController::class, 'rollbackBackup'])->name('rollbackBackup');
+
+    // Season Archive & Import
+    Route::get('/seasons', [SeasonController::class, 'index'])->name('seasons.index');
+    Route::get('/seasons/import', [SeasonController::class, 'importForm'])->name('seasons.import');
+    Route::post('/seasons/import/preview', [SeasonController::class, 'previewImport'])->name('seasons.previewImport');
+    Route::post('/seasons/import/execute', [SeasonController::class, 'executeImport'])->name('seasons.executeImport');
+    Route::get('/seasons/import/access-tables', [SeasonController::class, 'accessTables'])->name('seasons.accessTables');
+    Route::post('/seasons/import/access-preview', [SeasonController::class, 'previewAccessTable'])->name('seasons.previewAccessTable');
+    Route::post('/seasons/import/legacy', [SeasonController::class, 'importLegacy'])->name('seasons.importLegacy');
+    Route::post('/seasons/archive', [SeasonController::class, 'archive'])->name('seasons.archive');
+    Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
+    Route::get('/seasons/{season}/families', [SeasonController::class, 'families'])->name('seasons.families');
+});
+
+// Family status token regeneration (coordinator+)
+Route::middleware(['auth', 'permission:coordinator,santa'])->group(function () {
+    Route::post('/family/{family}/regenerate-status', [FamilyStatusController::class, 'regenerateToken'])->name('family.regenerateStatus');
 });
 
 // Coordinator routes: accessible by Coordinator and Santa roles
@@ -107,12 +147,20 @@ Route::get('/shopping/{family_number}', [ShoppingController::class, 'checklist']
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 
+// Family Status Page (public when enabled)
+Route::get('/family-status/{token}', [FamilyStatusController::class, 'show'])->name('family.status');
+
 // Adopt-a-Tag Portal (public when enabled)
 Route::get('/adopt', [AdoptionController::class, 'index'])->name('adopt.index');
 Route::get('/adopt/mine/{token}', [AdoptionController::class, 'confirmation'])->name('adopt.confirmation');
 Route::post('/adopt/mine/{token}/delivered', [AdoptionController::class, 'markDelivered'])->name('adopt.markDelivered');
 Route::get('/adopt/{child}', [AdoptionController::class, 'show'])->name('adopt.show');
 Route::post('/adopt/{child}/claim', [AdoptionController::class, 'claim'])->name('adopt.claim')->middleware('throttle:5,1');
+
+// Driver route view (public, token-secured)
+Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverView'])->name('delivery.driverView');
+Route::post('/delivery/route/{token}/complete/{family}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
+Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');

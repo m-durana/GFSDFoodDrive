@@ -36,8 +36,15 @@
             </div>
 
             <!-- Map container -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden" style="height: 70vh;">
+            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden relative" style="height: 70vh;">
                 <div id="map" style="width: 100%; height: 100%;"></div>
+                <div id="no-data-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100/80 dark:bg-gray-800/80 z-[1000]">
+                    <div class="text-center p-8">
+                        <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
+                        <p class="text-lg font-medium text-gray-600 dark:text-gray-300">No geocoded families</p>
+                        <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Families need addresses first, then geocode them from<br><a href="<?php echo e(route('santa.settings')); ?>" class="text-blue-500 hover:underline">Settings &rarr; Address Geocoding</a></p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -115,6 +122,14 @@
                     if (allPoints.length > 0 && !window._boundsSet) {
                         map.fitBounds(allPoints, { padding: [30, 30] });
                         window._boundsSet = true;
+                    }
+
+                    // Show empty state if no data
+                    const overlay = document.getElementById('no-data-overlay');
+                    if (data.families.length === 0 && data.volunteers.length === 0) {
+                        overlay.classList.remove('hidden');
+                    } else {
+                        overlay.classList.add('hidden');
                     }
 
                     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();

@@ -42,6 +42,9 @@ class CoordinatorController extends Controller
             $query->where('mail_merged', false);
         }
 
+        // Always exclude adopted children — their gifts come from adopters, not tags
+        $query->whereNull('adoption_token');
+
         if ($request->filled('range_start') && $request->filled('range_end')) {
             $query->whereHas('family', function ($q) use ($request) {
                 $q->whereBetween('family_number', [$request->range_start, $request->range_end]);
@@ -55,13 +58,14 @@ class CoordinatorController extends Controller
             Child::whereIn('id', $children->pluck('id'))->update(['mail_merged' => true]);
         }
 
-        // Generate QR codes for each child
+        // Generate QR codes — link to adopt page so community members can claim digitally
+        $adoptEnabled = Setting::get('adopt_a_tag_enabled', '0') === '1';
         $qrCodes = [];
         foreach ($children as $child) {
-            $qrCodes[$child->id] = QrCodeHelper::generateBase64(
-                QrCodeHelper::scanUrl($child->id),
-                3
-            );
+            $url = $adoptEnabled
+                ? route('adopt.show', $child)
+                : QrCodeHelper::scanUrl($child->id);
+            $qrCodes[$child->id] = QrCodeHelper::generateBase64($url, 3);
         }
 
         $paperSize = Setting::get('paper_size', 'letter');

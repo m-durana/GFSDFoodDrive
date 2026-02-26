@@ -27,17 +27,9 @@
             <!-- Child Info Card -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
                 <div class="flex items-center space-x-4 mb-6">
-                    @if(strtolower($child->gender ?? '') === 'female')
-                        <div class="w-14 h-14 rounded-full bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center">
-                            <svg class="w-7 h-7 text-pink-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-2 13.72V18H8v2h2v2h4v-2h2v-2h-2v-2.28A7 7 0 0012 2zm0 12a5 5 0 110-10 5 5 0 010 10z"/></svg>
-                        </div>
-                    @else
-                        <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                            <svg class="w-7 h-7 text-blue-500" fill="currentColor" viewBox="0 0 24 24"><path d="M15.5 1h5v5h-2V3.41L14.06 7.86A7 7 0 1012.64 7l4.45-4.45H15.5V1zM12 19a5 5 0 100-10 5 5 0 000 10z"/></svg>
-                        </div>
-                    @endif
+                    <x-gender-icon :gender="$child->gender" size="lg" />
                     <div>
-                        <h2 class="text-xl font-bold">{{ $child->gender ?? 'Child' }}, Age {{ $child->age ?? '?' }}</h2>
+                        <h2 class="text-xl font-bold">{{ strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child') }}, Age {{ $child->age ?? '?' }}</h2>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             Family #{{ $child->family->family_number }}
                             @if($child->school) &middot; {{ $child->school }} @endif
@@ -112,14 +104,29 @@
                         </div>
 
                         <div>
-                            <label for="adopter_contact_info" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email or Phone *</label>
-                            <input type="text" id="adopter_contact_info" name="adopter_contact_info" value="{{ old('adopter_contact_info') }}" required
+                            <label for="adopter_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                            <input type="email" id="adopter_email" name="adopter_email" value="{{ old('adopter_email') }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
-                                placeholder="jane@example.com or (360) 555-1234">
-                            @error('adopter_contact_info')
+                                placeholder="jane@example.com">
+                            @error('adopter_email')
                                 <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div>
+                            <label for="adopter_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+                            <input type="tel" id="adopter_phone" name="adopter_phone" value="{{ old('adopter_phone') }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                placeholder="(360) 555-1234">
+                            @error('adopter_phone')
+                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <p class="text-xs text-gray-500 dark:text-gray-400">At least one contact method is required.</p>
+                        @error('contact')
+                            <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                        @enderror
 
                         <button type="submit" class="w-full px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-600 font-medium transition text-center">
                             Adopt This Tag

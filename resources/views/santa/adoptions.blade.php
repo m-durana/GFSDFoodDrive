@@ -40,7 +40,7 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
                         <select name="status" onchange="this.form.submit()"
-                            class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm">
+                            class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
                             <option value="adopted" {{ $status === 'adopted' ? 'selected' : '' }}>Adopted (pending drop-off)</option>
                             <option value="dropped_off" {{ $status === 'dropped_off' ? 'selected' : '' }}>Dropped Off</option>
                             <option value="overdue" {{ $status === 'overdue' ? 'selected' : '' }}>Overdue</option>
@@ -69,7 +69,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($children as $child)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 text-gray-900 dark:text-gray-100">
                                     <td class="px-4 py-3 text-sm font-mono">
                                         @if($child->family)
                                             {{ $child->family->family_number }}
@@ -82,7 +82,17 @@
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-sm">{{ $child->adopter_name ?? '—' }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ $child->adopter_contact_info ?? '—' }}</td>
+                                    <td class="px-4 py-3 text-sm">
+                                        @if($child->adopter_email)
+                                            <span class="block">{{ $child->adopter_email }}</span>
+                                        @endif
+                                        @if($child->adopter_phone)
+                                            <span class="block text-gray-500 dark:text-gray-400">{{ $child->adopter_phone }}</span>
+                                        @endif
+                                        @if(!$child->adopter_email && !$child->adopter_phone)
+                                            —
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm">
                                         {{ $child->adopted_at ? $child->adopted_at->format('M j') : '—' }}
                                     </td>

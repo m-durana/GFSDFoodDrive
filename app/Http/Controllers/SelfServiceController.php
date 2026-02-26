@@ -28,7 +28,7 @@ class SelfServiceController extends Controller
         $data = $request->validated();
 
         // Compute totals
-        $data['number_of_adults'] = ($data['female_adults'] ?? 0) + ($data['male_adults'] ?? 0);
+        $data['number_of_adults'] = ($data['female_adults'] ?? 0) + ($data['male_adults'] ?? 0) + ($data['other_adults'] ?? 0);
         $data['number_of_children'] = ($data['infants'] ?? 0) + ($data['young_children'] ?? 0)
             + ($data['children_count'] ?? 0) + ($data['tweens'] ?? 0) + ($data['teenagers'] ?? 0);
         $data['number_of_family_members'] = $data['number_of_adults'] + $data['number_of_children'];

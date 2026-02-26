@@ -36,7 +36,7 @@
 
                     <form method="POST" action="{{ route('santa.storeUser') }}" class="space-y-4">
                         @csrf
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
                                 <input type="text" name="username" id="username" value="{{ old('username') }}" required
@@ -74,6 +74,30 @@
                                 @enderror
                             </div>
                             <div>
+                                <label for="school_source" class="block text-sm font-medium text-gray-700 dark:text-gray-300">School</label>
+                                <select name="school_source" id="school_source"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    <option value="">-- None --</option>
+                                    @foreach($schools as $school)
+                                        <option value="{{ $school }}" {{ old('school_source') === $school ? 'selected' : '' }}>{{ $school }}</option>
+                                    @endforeach
+                                    <option value="Other" {{ old('school_source') === 'Other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                @error('school_source')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div class="js-position-wrapper" style="display:none;">
+                                <label for="position" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Position</label>
+                                <select name="position" id="position"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    <option value="">-- None --</option>
+                                    @foreach($positions as $pos)
+                                        <option value="{{ $pos }}" {{ old('position') === $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
                                 <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
                                 <div class="mt-1 flex rounded-md shadow-sm">
                                     <input type="text" name="password" id="password" required
@@ -108,6 +132,8 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">First Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Name</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Position</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">School</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">New Password</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -136,6 +162,25 @@
                                                     <option value="family" {{ $u->permission === 7 ? 'selected' : '' }}>Family Entry</option>
                                                     <option value="coordinator" {{ $u->permission === 8 ? 'selected' : '' }}>Coordinator</option>
                                                     <option value="santa" {{ $u->permission === 9 ? 'selected' : '' }}>Santa</option>
+                                                </select>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap js-row-position" @if(!in_array($u->permission, [8, 9])) style="display:none;" @endif>
+                                                <select name="position"
+                                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                                    <option value="">-- None --</option>
+                                                    @foreach($positions as $pos)
+                                                        <option value="{{ $pos }}" {{ $u->position === $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <select name="school_source"
+                                                    class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                                    <option value="">-- None --</option>
+                                                    @foreach($schools as $school)
+                                                        <option value="{{ $school }}" {{ $u->school_source === $school ? 'selected' : '' }}>{{ $school }}</option>
+                                                    @endforeach
+                                                    <option value="Other" {{ $u->school_source === 'Other' ? 'selected' : '' }}>Other</option>
                                                 </select>
                                             </td>
                                             <td class="px-4 py-3 whitespace-nowrap">
@@ -176,5 +221,31 @@
                 setTimeout(() => document.getElementById('copy-confirm').classList.add('hidden'), 2000);
             });
         }
+
+        // Show/hide position field based on role selection
+        var newRoleSelect = document.getElementById('role');
+        if (newRoleSelect) {
+            newRoleSelect.addEventListener('change', function() {
+                var show = this.value === 'coordinator' || this.value === 'santa';
+                document.querySelectorAll('.js-position-wrapper').forEach(function(el) {
+                    el.style.display = show ? '' : 'none';
+                });
+            });
+            // Trigger on load
+            newRoleSelect.dispatchEvent(new Event('change'));
+        }
+
+        // For inline edit rows: show/hide position cell when role changes
+        document.querySelectorAll('select[name="role"]').forEach(function(sel) {
+            if (sel.id === 'role') return; // skip the create form one
+            sel.addEventListener('change', function() {
+                var show = this.value === 'coordinator' || this.value === 'santa';
+                var row = this.closest('tr');
+                if (row) {
+                    var posCell = row.querySelector('.js-row-position');
+                    if (posCell) posCell.style.display = show ? '' : 'none';
+                }
+            });
+        });
     </script>
 </x-app-layout>

@@ -32,6 +32,7 @@ class StoreFamilyRequest extends FormRequest
             'preferred_language' => ['nullable', 'string', 'in:English,Spanish,Other'],
             'female_adults' => ['required', 'integer', 'min:0', 'max:50'],
             'male_adults' => ['required', 'integer', 'min:0', 'max:50'],
+            'other_adults' => ['required', 'integer', 'min:0', 'max:50'],
             'infants' => ['required', 'integer', 'min:0', 'max:50'],
             'young_children' => ['required', 'integer', 'min:0', 'max:50'],
             'children_count' => ['required', 'integer', 'min:0', 'max:50'],

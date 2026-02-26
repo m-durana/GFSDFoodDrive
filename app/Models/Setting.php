@@ -8,14 +8,22 @@ class Setting extends Model
 {
     protected $fillable = ['key', 'value'];
 
+    protected static array $cache = [];
+
     /**
      * Get a setting value by key, with optional default.
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        $setting = static::where('key', $key)->first();
+        if (array_key_exists($key, static::$cache)) {
+            return static::$cache[$key];
+        }
 
-        return $setting ? $setting->value : $default;
+        $setting = static::where('key', $key)->first();
+        $value = $setting ? $setting->value : $default;
+        static::$cache[$key] = $value;
+
+        return $value;
     }
 
     /**
@@ -27,5 +35,15 @@ class Setting extends Model
             ['key' => $key],
             ['value' => $value]
         );
+
+        static::$cache[$key] = $value;
+    }
+
+    /**
+     * Clear the in-memory cache.
+     */
+    public static function clearCache(): void
+    {
+        static::$cache = [];
     }
 }

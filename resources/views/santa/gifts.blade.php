@@ -125,7 +125,7 @@
                                             </td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
                                                 @if($child->adopter_name)
-                                                    <span title="{{ $child->adopter_contact_info }}">{{ $child->adopter_name }}</span>
+                                                    <span title="{{ $child->adopter_email ?: $child->adopter_phone }}">{{ $child->adopter_name }}</span>
                                                 @else
                                                     <span class="text-gray-400 dark:text-gray-500">—</span>
                                                 @endif

@@ -37,7 +37,7 @@
                         <!-- Gift Tags (706) -->
                         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Gift Tags</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Avery 8163 labels (2"x4", 10/page). Replaces 706.docx mail merge.</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Avery 8163 labels (2"x4", 10/page)</p>
                             <form method="GET" action="{{ route('coordinator.giftTags') }}" target="_blank" class="space-y-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Filter</label>
@@ -80,7 +80,7 @@
                         <!-- Family Summary (708) -->
                         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Family Summary Sheets</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">One page per family with demographics. Replaces 708.docx mail merge.</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">One page per family with demographics</p>
                             <form method="GET" action="{{ route('coordinator.familySummary') }}" target="_blank" class="space-y-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">School</label>
@@ -110,14 +110,15 @@
                         <!-- Delivery Day (709) -->
                         <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                             <h4 class="font-medium text-gray-900 dark:text-gray-100 mb-2">Delivery Day Sheets</h4>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Contact and delivery info per family. Replaces 709.docx mail merge.</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Contact and delivery info per family</p>
                             <form method="GET" action="{{ route('coordinator.deliveryDay') }}" target="_blank" class="space-y-3">
                                 <div>
                                     <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Delivery Date</label>
                                     <select name="delivery_date" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                         <option value="">All Dates</option>
-                                        <option value="December 18th">December 18th</option>
-                                        <option value="December 19th">December 19th</option>
+                                        @foreach(array_filter(array_map('trim', explode(',', \App\Models\Setting::get('delivery_dates', 'December 18th,December 19th')))) as $date)
+                                            <option value="{{ $date }}">{{ $date }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div>
@@ -130,10 +131,6 @@
                             </form>
                         </div>
                     </div>
-
-                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-4">
-                        Note: PDFs require the <code>barryvdh/laravel-dompdf</code> package. Run <code>composer require barryvdh/laravel-dompdf</code> to install.
-                    </p>
                 </div>
             </div>
         </div>

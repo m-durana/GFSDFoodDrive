@@ -213,6 +213,10 @@ class SantaController extends Controller
             'adoptATagEnabled' => Setting::get('adopt_a_tag_enabled', '0') === '1',
             'adoptATagDeadline' => Setting::get('adopt_a_tag_deadline', ''),
             'adoptATagMessage' => Setting::get('adopt_a_tag_message', ''),
+            'notificationsEnabled' => Setting::get('notifications_enabled', '0') === '1',
+            'familyStatusEnabled' => Setting::get('family_status_enabled', '0') === '1',
+            'deliveryDates' => Setting::get('delivery_dates', 'December 18th,December 19th'),
+            'coordinatorPositions' => Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'),
         ]);
     }
 
@@ -226,6 +230,39 @@ class SantaController extends Controller
         Setting::set('adopt_a_tag_enabled', $request->boolean('adopt_a_tag_enabled') ? '1' : '0');
         Setting::set('adopt_a_tag_deadline', $request->input('adopt_a_tag_deadline', ''));
         Setting::set('adopt_a_tag_message', $request->input('adopt_a_tag_message', ''));
+
+        // Family Status Pages
+        Setting::set('family_status_enabled', $request->boolean('family_status_enabled') ? '1' : '0');
+
+        // Delivery dates
+        Setting::set('delivery_dates', $request->input('delivery_dates', ''));
+
+        // Notifications
+        Setting::set('notifications_enabled', $request->boolean('notifications_enabled') ? '1' : '0');
+
+        // SMS / Twilio settings
+        Setting::set('sms_enabled', $request->boolean('sms_enabled') ? '1' : '0');
+        Setting::set('sms_on_registration', $request->boolean('sms_on_registration') ? '1' : '0');
+        Setting::set('sms_on_gift_adopted', $request->boolean('sms_on_gift_adopted') ? '1' : '0');
+        Setting::set('sms_on_in_transit', $request->boolean('sms_on_in_transit') ? '1' : '0');
+        Setting::set('sms_on_delivered', $request->boolean('sms_on_delivered') ? '1' : '0');
+        if ($request->filled('twilio_sid')) {
+            Setting::set('twilio_sid', $request->input('twilio_sid'));
+        }
+        if ($request->filled('twilio_token')) {
+            Setting::set('twilio_token', $request->input('twilio_token'));
+        }
+        if ($request->filled('twilio_from')) {
+            Setting::set('twilio_from', $request->input('twilio_from'));
+        }
+
+        // Coordinator positions
+        Setting::set('coordinator_positions', $request->input('coordinator_positions', ''));
+
+        // OpenRouteService API key
+        if ($request->filled('openrouteservice_key')) {
+            Setting::set('openrouteservice_key', $request->input('openrouteservice_key'));
+        }
 
         // Google OAuth settings
         if ($request->filled('google_client_id')) {
@@ -1040,8 +1077,12 @@ class SantaController extends Controller
 
     public function users(): View
     {
+        $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'))));
+
         return view('santa.users', [
             'users' => User::orderBy('first_name')->get(),
+            'schools' => SchoolRange::orderBy('sort_order')->pluck('school_name')->toArray(),
+            'positions' => $positions,
         ]);
     }
 
@@ -1063,6 +1104,8 @@ class SantaController extends Controller
             'last_name' => $request->last_name,
             'password' => $request->password,
             'permission' => $roleToPermission[$request->role],
+            'school_source' => $request->role !== 'santa' ? $request->school_source : null,
+            'position' => $request->role === 'coordinator' || $request->role === 'santa' ? $request->position : null,
         ]);
 
         // Assign Spatie role if package is installed
@@ -1092,6 +1135,8 @@ class SantaController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'permission' => $roleToPermission[$request->role],
+            'school_source' => $request->role !== 'santa' ? $request->school_source : null,
+            'position' => in_array($request->role, ['coordinator', 'santa']) ? $request->position : null,
         ];
 
         // Only update password if one was provided
@@ -1128,5 +1173,140 @@ class SantaController extends Controller
 
         return redirect()->route('santa.users')
             ->with('success', "Password reset for '{$user->username}'.");
+    }
+
+    public function backups(): View
+    {
+        $backupDir = storage_path('backups');
+        $backups = [];
+
+        if (is_dir($backupDir)) {
+            foreach (glob("{$backupDir}/backup_*") as $file) {
+                $backups[] = [
+                    'filename' => basename($file),
+                    'size' => filesize($file),
+                    'created_at' => \Carbon\Carbon::createFromTimestamp(filemtime($file)),
+                ];
+            }
+            usort($backups, fn($a, $b) => $b['created_at']->timestamp - $a['created_at']->timestamp);
+        }
+
+        // Group by date and assign "Backup #N" labels (numbered per day, newest first)
+        $grouped = [];
+        foreach ($backups as $backup) {
+            $date = $backup['created_at']->format('Y-m-d');
+            $grouped[$date][] = $backup;
+        }
+
+        $labeled = [];
+        foreach ($grouped as $date => $dayBackups) {
+            // Within a day, sort oldest first to assign ascending numbers
+            usort($dayBackups, fn($a, $b) => $a['created_at']->timestamp - $b['created_at']->timestamp);
+            foreach ($dayBackups as $i => $backup) {
+                $backup['label'] = 'Backup #' . ($i + 1);
+                $backup['date'] = $date;
+                $labeled[] = $backup;
+            }
+        }
+
+        // Sort all backups newest first for display
+        usort($labeled, fn($a, $b) => $b['created_at']->timestamp - $a['created_at']->timestamp);
+
+        return view('santa.backups', ['backups' => $labeled]);
+    }
+
+    public function createBackup(): RedirectResponse
+    {
+        \Artisan::call('backup:database', ['--force' => true]);
+        $output = \Artisan::output();
+
+        return redirect()->route('santa.backups')
+            ->with('success', 'Backup created successfully.');
+    }
+
+    public function downloadBackup(string $filename)
+    {
+        $path = storage_path("backups/{$filename}");
+
+        if (! file_exists($path) || ! str_starts_with($filename, 'backup_')) {
+            abort(404);
+        }
+
+        return response()->download($path);
+    }
+
+    public function rollbackBackup(Request $request): RedirectResponse
+    {
+        $filename = $request->input('filename');
+        $path = storage_path("backups/{$filename}");
+
+        if (! file_exists($path) || ! str_starts_with($filename, 'backup_')) {
+            return redirect()->route('santa.backups')
+                ->with('error', 'Backup not found.');
+        }
+
+        $driver = config('database.default');
+
+        if ($driver === 'sqlite') {
+            $dbPath = config('database.connections.sqlite.database');
+
+            // First, create a snapshot of the current database before rollback
+            \Artisan::call('backup:database', ['--force' => true]);
+
+            // Close any open SQLite connections
+            \DB::disconnect('sqlite');
+
+            // Copy the backup over the current database
+            $dataOnly = $request->boolean('data_only');
+            if ($dataOnly) {
+                // Data-only rollback: copy just the data tables, not users/settings
+                $this->rollbackDataOnly($path, $dbPath);
+            } else {
+                // Full rollback: replace entire database
+                copy($path, $dbPath);
+            }
+
+            return redirect()->route('santa.backups')
+                ->with('success', 'Rollback complete. A snapshot of the previous state was saved first.');
+        }
+
+        return redirect()->route('santa.backups')
+            ->with('error', 'Rollback is only supported for SQLite databases.');
+    }
+
+    private function rollbackDataOnly(string $backupPath, string $dbPath): void
+    {
+        // Tables that hold user/system data we want to preserve
+        $preserveTables = ['users', 'settings', 'sessions', 'cache', 'cache_locks', 'jobs', 'failed_jobs', 'migrations', 'model_has_permissions', 'model_has_roles', 'permissions', 'roles', 'role_has_permissions'];
+
+        // Get the list of data tables from the backup
+        $backupDb = new \SQLite3($backupPath);
+        $result = $backupDb->query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'");
+        $allTables = [];
+        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+            $allTables[] = $row['name'];
+        }
+        $backupDb->close();
+
+        $dataTables = array_diff($allTables, $preserveTables);
+
+        // Use SQLite ATTACH to copy data tables from backup
+        \DB::disconnect('sqlite');
+        $db = new \SQLite3($dbPath);
+        $db->exec("ATTACH DATABASE '{$backupPath}' AS backup_db");
+
+        foreach ($dataTables as $table) {
+            // Check if table exists in both databases
+            $exists = $db->querySingle("SELECT name FROM sqlite_master WHERE type='table' AND name='{$table}'");
+            $existsInBackup = $db->querySingle("SELECT name FROM backup_db.sqlite_master WHERE type='table' AND name='{$table}'");
+
+            if ($exists && $existsInBackup) {
+                $db->exec("DELETE FROM main.{$table}");
+                $db->exec("INSERT INTO main.{$table} SELECT * FROM backup_db.{$table}");
+            }
+        }
+
+        $db->exec("DETACH DATABASE backup_db");
+        $db->close();
     }
 }

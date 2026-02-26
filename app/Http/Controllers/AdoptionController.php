@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Enums\GiftLevel;
 use App\Models\Child;
 use App\Models\Setting;
+use App\Notifications\Adopter;
+use App\Notifications\AdoptionConfirmation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -63,8 +65,16 @@ class AdoptionController extends Controller
 
         $request->validate([
             'adopter_name' => ['required', 'string', 'max:255'],
-            'adopter_contact_info' => ['required', 'string', 'max:255'],
+            'adopter_email' => ['nullable', 'email', 'max:255'],
+            'adopter_phone' => ['nullable', 'string', 'max:255'],
         ]);
+
+        // At least one contact method required
+        if (!$request->filled('adopter_email') && !$request->filled('adopter_phone')) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['contact' => 'Please provide at least an email or phone number.']);
+        }
 
         // Race condition guard: re-check availability
         if ($child->adoption_token !== null || !$child->family || !$child->family->family_number) {
@@ -77,12 +87,23 @@ class AdoptionController extends Controller
 
         $child->update([
             'adopter_name' => $request->adopter_name,
-            'adopter_contact_info' => $request->adopter_contact_info,
+            'adopter_email' => $request->adopter_email,
+            'adopter_phone' => $request->adopter_phone,
             'adopted_at' => now(),
             'adoption_token' => $token,
             'gift_level' => GiftLevel::Partial,
             'adoption_deadline' => $deadline ?: now()->addDays(14)->toDateString(),
         ]);
+
+        // Send confirmation notification if enabled
+        if (Setting::get('notifications_enabled', '0') === '1') {
+            $adopter = new Adopter(
+                $request->adopter_email ?? '',
+                $request->adopter_phone ?? '',
+                $request->adopter_name,
+            );
+            $adopter->notify(new AdoptionConfirmation($child, $token));
+        }
 
         return redirect()->route('adopt.confirmation', $token);
     }
@@ -157,10 +178,13 @@ class AdoptionController extends Controller
         $child->update([
             'adopter_name' => null,
             'adopter_contact_info' => null,
+            'adopter_email' => null,
+            'adopter_phone' => null,
             'adopted_at' => null,
             'adoption_token' => null,
             'adoption_deadline' => null,
             'gift_dropped_off' => false,
+            'adoption_reminder_sent' => false,
             'gift_level' => GiftLevel::None,
         ]);
 

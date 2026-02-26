@@ -75,6 +75,14 @@
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Live Map</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Real-time driver & family map</p>
                     </a>
+                    <a href="<?php echo e(route('santa.deliveryRoutes.index')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Delivery Routes</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Optimize and manage driver routes</p>
+                    </a>
+                    <a href="<?php echo e(route('santa.commandCenter')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10">
+                        <h4 class="font-medium text-red-700 dark:text-red-300">Command Center</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Full-screen ops dashboard for TV</p>
+                    </a>
                     <a href="<?php echo e(route('coordinator.index')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Print Documents</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Gift tags, family summaries, delivery sheets</p>
@@ -94,6 +102,10 @@
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Filter & Export</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Smart filters and CSV export</p>
                     </a>
+                    <a href="<?php echo e(route('santa.seasons.index')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Season History</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Archive seasons, import data, view trends</p>
+                    </a>
                 </div>
             </div>
 
@@ -112,6 +124,10 @@
                     <a href="<?php echo e(route('santa.settings')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Settings</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Registration, paper size, OAuth, geocoding</p>
+                    </a>
+                    <a href="<?php echo e(route('santa.backups')); ?>" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Backups</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Database backups every 4 hours</p>
                     </a>
                 </div>
             </div>

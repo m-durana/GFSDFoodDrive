@@ -419,7 +419,8 @@ class TestDataSeeder extends Seeder
                 // Ages weighted toward 3-12 range
                 $agePool = [0, 1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 12, 13, 14, 15, 16, 17];
                 $age = $agePool[($fIdx * 7 + $c * 13) % count($agePool)];
-                $gender = ($fIdx + $c) % 2 === 0 ? 'M' : 'F';
+                $genderPool = ['Male', 'Female', 'Male', 'Female', 'Male', 'Female', 'Male', 'Female', 'Male', 'Other'];
+                $gender = $genderPool[($fIdx + $c) % count($genderPool)];
                 $school = $schoolByAge($age);
 
                 if ($age <= 1) { $infants++; $hasBaby = true; }
@@ -500,6 +501,8 @@ class TestDataSeeder extends Seeder
                     'gift_level'           => $giftLevel,
                     'where_is_tag'         => $hasTag ? $this->pickIndex($this->whereIsTagValues, $childCounter) : null,
                     'adopter_name'         => $isAdopted ? $this->pickIndex($this->adopterNames, $childCounter) : null,
+                    'adopter_email'        => $isAdopted ? strtolower(str_replace(' ', '', $this->pickIndex($this->adopterNames, $childCounter))) . '@example.com' : null,
+                    'adopter_phone'        => $isAdopted && $childCounter % 3 === 0 ? '425-555-' . str_pad((string)(1000 + $childCounter), 4, '0', STR_PAD_LEFT) : null,
                     'adopter_contact_info' => $isAdopted ? '425-555-' . str_pad((string)(1000 + $childCounter), 4, '0', STR_PAD_LEFT) : null,
                 ]);
 

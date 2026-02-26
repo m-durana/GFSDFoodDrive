@@ -20,6 +20,7 @@ class UpdateUserRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['nullable', Password::min(8)],
             'role' => ['required', 'string', 'in:family,coordinator,santa,inactive'],
+            'school_source' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

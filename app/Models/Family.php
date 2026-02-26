@@ -3,18 +3,38 @@
 namespace App\Models;
 
 use App\Enums\DeliveryStatus;
+use App\Models\Scopes\SeasonScope;
+use App\Observers\FamilyObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
+#[ObservedBy(FamilyObserver::class)]
 class Family extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new SeasonScope);
+
+        static::creating(function (Family $family) {
+            if (empty($family->status_token)) {
+                $family->status_token = Str::random(32);
+            }
+            if (empty($family->season_year)) {
+                $family->season_year = Setting::get('season_year', date('Y'));
+            }
+        });
+    }
+
     protected $fillable = [
         'user_id',
         'volunteer_id',
+        'season_year',
         'family_number',
         'family_name',
         'address',
@@ -24,6 +44,7 @@ class Family extends Model
         'preferred_language',
         'female_adults',
         'male_adults',
+        'other_adults',
         'number_of_adults',
         'infants',
         'young_children',
@@ -32,6 +53,7 @@ class Family extends Model
         'teenagers',
         'number_of_children',
         'number_of_family_members',
+        'number_of_boxes',
         'has_crhs_children',
         'has_gfhs_children',
         'needs_baby_supplies',
@@ -48,6 +70,9 @@ class Family extends Model
         'severe_need',
         'other_questions',
         'family_done',
+        'status_token',
+        'delivery_route_id',
+        'route_order',
     ];
 
     protected function casts(): array
@@ -60,6 +85,7 @@ class Family extends Model
             'family_number' => 'integer',
             'female_adults' => 'integer',
             'male_adults' => 'integer',
+            'other_adults' => 'integer',
             'number_of_adults' => 'integer',
             'infants' => 'integer',
             'young_children' => 'integer',
@@ -68,9 +94,11 @@ class Family extends Model
             'teenagers' => 'integer',
             'number_of_children' => 'integer',
             'number_of_family_members' => 'integer',
+            'number_of_boxes' => 'integer',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'delivery_status' => DeliveryStatus::class,
+            'route_order' => 'integer',
         ];
     }
 
@@ -92,5 +120,10 @@ class Family extends Model
     public function deliveryLogs(): HasMany
     {
         return $this->hasMany(DeliveryLog::class);
+    }
+
+    public function deliveryRoute(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryRoute::class);
     }
 }

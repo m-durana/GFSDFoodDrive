@@ -81,6 +81,11 @@
                                 <input type="number" name="male_adults" id="male_adults" value="{{ old('male_adults', 0) }}" min="0" required
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
                             </div>
+                            <div>
+                                <label for="other_adults" class="block text-sm text-gray-600 dark:text-gray-400">Other Adults</label>
+                                <input type="number" name="other_adults" id="other_adults" value="{{ old('other_adults', 0) }}" min="0" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                            </div>
                         </div>
 
                         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Children (by age group)</h4>
@@ -172,8 +177,9 @@
                                 <select name="delivery_date" id="delivery_date"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                     <option value="">-- Select --</option>
-                                    <option value="December 18th" {{ old('delivery_date') === 'December 18th' ? 'selected' : '' }}>December 18th</option>
-                                    <option value="December 19th" {{ old('delivery_date') === 'December 19th' ? 'selected' : '' }}>December 19th</option>
+                                    @foreach(array_filter(array_map('trim', explode(',', \App\Models\Setting::get('delivery_dates', 'December 18th,December 19th')))) as $date)
+                                        <option value="{{ $date }}" {{ old('delivery_date') === $date ? 'selected' : '' }}>{{ $date }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                             <div>
@@ -233,13 +239,14 @@
         function updateTotals() {
             const femaleAdults = parseInt(document.getElementById('female_adults').value) || 0;
             const maleAdults = parseInt(document.getElementById('male_adults').value) || 0;
+            const otherAdults = parseInt(document.getElementById('other_adults').value) || 0;
             const infants = parseInt(document.getElementById('infants').value) || 0;
             const youngChildren = parseInt(document.getElementById('young_children').value) || 0;
             const children = parseInt(document.getElementById('children_count').value) || 0;
             const tweens = parseInt(document.getElementById('tweens').value) || 0;
             const teenagers = parseInt(document.getElementById('teenagers').value) || 0;
 
-            const totalAdults = femaleAdults + maleAdults;
+            const totalAdults = femaleAdults + maleAdults + otherAdults;
             const totalChildren = infants + youngChildren + children + tweens + teenagers;
             const totalMembers = totalAdults + totalChildren;
 

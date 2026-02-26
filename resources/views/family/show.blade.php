@@ -48,13 +48,38 @@
                         @if($family->email)<div><dt class="text-gray-500 dark:text-gray-400 inline">Email:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->email }}</dd></div>@endif
                         @if($family->preferred_language)<div><dt class="text-gray-500 dark:text-gray-400 inline">Language:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->preferred_language }}</dd></div>@endif
                     </dl>
+
+                    @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
+                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Status Link</dt>
+                            @if($family->status_token)
+                                <div class="flex items-center space-x-2">
+                                    <input type="text" readonly value="{{ route('family.status', $family->status_token) }}" id="status-link-{{ $family->id }}"
+                                        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-xs bg-gray-50 dark:bg-gray-800">
+                                    <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('status-link-{{ $family->id }}').value).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000); })"
+                                        class="px-2 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium transition whitespace-nowrap">
+                                        Copy
+                                    </button>
+                                </div>
+                                <div class="mt-2 flex items-center space-x-2">
+                                    <form method="POST" action="{{ route('family.regenerateStatus', $family) }}" class="inline" onsubmit="return confirm('Regenerate status link? The old link will stop working.')">
+                                        @csrf
+                                        <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline">Regenerate Link</button>
+                                    </form>
+                                    <span class="text-xs text-gray-400 dark:text-gray-500">Share this link with the family so they can check their status.</span>
+                                </div>
+                            @else
+                                <p class="text-xs text-gray-400 dark:text-gray-500">No status token generated. Save the family to generate one.</p>
+                            @endif
+                        </div>
+                    @endif
                 </div>
 
                 <!-- Demographics -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Demographics</h3>
                     <dl class="space-y-2 text-sm">
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Adults:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->number_of_adults }} ({{ $family->female_adults }}F, {{ $family->male_adults }}M)</dd></div>
+                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Adults:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->number_of_adults }} ({{ $family->female_adults }}F, {{ $family->male_adults }}M{{ $family->other_adults ? ', ' . $family->other_adults . ' Other' : '' }})</dd></div>
                         <div><dt class="text-gray-500 dark:text-gray-400 inline">Children:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->number_of_children }}</dd></div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 ml-4">
                             Infants: {{ $family->infants }} | Young (3-7): {{ $family->young_children }} | Children (8-12): {{ $family->children_count }} | Tweens: {{ $family->tweens }} | Teens: {{ $family->teenagers }}
@@ -157,6 +182,7 @@
                                                         <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                                             <option value="Male" {{ $child->gender === 'Male' ? 'selected' : '' }}>Male</option>
                                                             <option value="Female" {{ $child->gender === 'Female' ? 'selected' : '' }}>Female</option>
+                                                            <option value="Other" {{ $child->gender === 'Other' ? 'selected' : '' }}>Other</option>
                                                         </select>
                                                     </div>
                                                     <div>
@@ -200,8 +226,12 @@
                                                         <input type="text" name="adopter_name" value="{{ $child->adopter_name }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Contact</label>
-                                                        <input type="text" name="adopter_contact_info" value="{{ $child->adopter_contact_info }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Email</label>
+                                                        <input type="email" name="adopter_email" value="{{ $child->adopter_email }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Phone</label>
+                                                        <input type="tel" name="adopter_phone" value="{{ $child->adopter_phone }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                                     </div>
                                                     <div>
                                                         <label class="block text-xs text-gray-500 dark:text-gray-400">Where is Tag?</label>
@@ -232,6 +262,7 @@
                                 <select name="gender" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
                                 </select>
                             </div>
                             <div>

@@ -3,17 +3,34 @@
 namespace App\Models;
 
 use App\Enums\GiftLevel;
+use App\Models\Scopes\SeasonScope;
+use App\Observers\ChildObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(ChildObserver::class)]
 class Child extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope(new SeasonScope);
+
+        static::creating(function (Child $child) {
+            if (empty($child->season_year)) {
+                $family = Family::withoutGlobalScopes()->find($child->family_id);
+                $child->season_year = $family?->season_year ?? Setting::get('season_year', date('Y'));
+            }
+        });
+    }
+
     protected $fillable = [
         'family_id',
+        'season_year',
         'gender',
         'age',
         'school',
@@ -29,10 +46,13 @@ class Child extends Model
         'where_is_tag',
         'adopter_name',
         'adopter_contact_info',
+        'adopter_email',
+        'adopter_phone',
         'adopted_at',
         'adoption_token',
         'adoption_deadline',
         'gift_dropped_off',
+        'adoption_reminder_sent',
     ];
 
     protected function casts(): array
@@ -43,6 +63,7 @@ class Child extends Model
             'adopted_at' => 'datetime',
             'adoption_deadline' => 'date',
             'gift_dropped_off' => 'boolean',
+            'adoption_reminder_sent' => 'boolean',
         ];
     }
 
