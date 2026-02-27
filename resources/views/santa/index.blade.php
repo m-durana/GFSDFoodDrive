@@ -52,6 +52,10 @@
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Day</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">NINJA assignments & live checklists</p>
                     </a>
+                    <a href="{{ route('warehouse.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10">
+                        <h4 class="font-medium text-green-700 dark:text-green-300">Warehouse</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Inventory, barcode scanning & gift drop-off</p>
+                    </a>
                 </div>
             </div>
 

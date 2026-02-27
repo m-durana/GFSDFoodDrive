@@ -16,6 +16,7 @@ use App\Http\Controllers\DeliveryRouteController;
 use App\Http\Controllers\DeliveryTeamController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
+use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
 // Root route: show public homepage for everyone
@@ -182,6 +183,19 @@ Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'rou
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
 Route::post('/register-family', [SelfServiceController::class, 'store'])->name('self-service.store');
 Route::get('/register-family/success', [SelfServiceController::class, 'success'])->name('self-service.success');
+
+// Warehouse routes: accessible by Coordinator and Santa roles
+Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')->name('warehouse.')->group(function () {
+    Route::get('/', [WarehouseController::class, 'index'])->name('index');
+    Route::get('/receive', [WarehouseController::class, 'receive'])->name('receive');
+    Route::post('/receive', [WarehouseController::class, 'store'])->name('store');
+    Route::get('/inventory', [WarehouseController::class, 'inventory'])->name('inventory');
+    Route::get('/transactions', [WarehouseController::class, 'transactions'])->name('transactions');
+    Route::get('/barcode/{barcode}', [WarehouseController::class, 'lookupBarcode'])->name('barcode.lookup');
+    Route::get('/gift-dropoff/{child}', [WarehouseController::class, 'giftDropoff'])->name('gift.dropoff');
+    Route::post('/gift-dropoff/{child}', [WarehouseController::class, 'confirmGiftDropoff'])->name('gift.dropoff.confirm');
+    Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
+});
 
 // Help/Wiki routes (accessible by all authenticated users)
 Route::middleware('auth')->group(function () {
