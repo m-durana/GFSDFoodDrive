@@ -27,6 +27,22 @@
         </header>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Deadline banner -->
+            @if(isset($adoptionDeadline))
+                @php $daysLeft = (int) now()->startOfDay()->diffInDays($adoptionDeadline, false); @endphp
+                <div class="rounded-lg shadow-sm p-4 mb-6 text-center border {{ $daysLeft <= 3 ? 'bg-red-50 dark:bg-red-900/30 border-red-300 dark:border-red-700' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700' }}">
+                    <p class="text-sm font-medium {{ $daysLeft <= 3 ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300' }}">
+                        @if($daysLeft <= 0)
+                            Adoption deadline is <strong>today</strong>! Last chance to adopt a tag!
+                        @elseif($daysLeft === 1)
+                            Only <strong>1 day</strong> left to adopt a tag! Deadline: {{ $adoptionDeadline->format('F j, Y') }}
+                        @else
+                            <strong>{{ $daysLeft }} days</strong> left to adopt a tag. Deadline: {{ $adoptionDeadline->format('F j, Y') }}
+                        @endif
+                    </p>
+                </div>
+            @endif
+
             <!-- Stats bar -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 mb-6 text-center border border-gray-200 dark:border-gray-700">
                 <p class="text-lg font-medium">

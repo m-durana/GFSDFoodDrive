@@ -2,6 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Family Entry Dashboard
+            <x-hint key="family-dashboard" text="Add families and their children here. Mark a family 'Done' when all info is complete. Santa users can see all families across coordinators." />
         </h2>
     </x-slot>
 

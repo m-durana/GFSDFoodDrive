@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +32,18 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = $request->user();
+
+        // When Google OAuth is configured, only Santa can use password login
+        $googleConfigured = Setting::get('google_client_id') && Setting::get('google_client_secret');
+        if ($googleConfigured && !$user->isSanta()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'username' => 'Password login is reserved for administrators. Please use "Sign in with Google" instead.',
+            ]);
+        }
 
         if ($user->isSanta()) {
             return redirect()->intended(route('santa.index'));

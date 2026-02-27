@@ -14,9 +14,18 @@ use Illuminate\View\View;
 
 class AdoptionController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
         abort_unless(Setting::get('adopt_a_tag_enabled', '0') === '1', 404);
+
+        // Auto-close portal after deadline
+        $deadline = Setting::get('adopt_a_tag_deadline');
+        if ($deadline && now()->startOfDay()->gt(\Carbon\Carbon::parse($deadline))) {
+            return view('adopt.closed', [
+                'deadline' => \Carbon\Carbon::parse($deadline),
+                'deliveryDates' => Setting::get('delivery_dates', ''),
+            ]);
+        }
 
         $query = Child::availableForAdoption()->with('family:id,family_number');
 
@@ -38,6 +47,7 @@ class AdoptionController extends Controller
         $totalAvailable = Child::availableForAdoption()->count();
         $totalChildren = Child::whereHas('family', fn ($q) => $q->whereNotNull('family_number'))->count();
         $customMessage = Setting::get('adopt_a_tag_message', '');
+        $adoptionDeadline = $deadline ? \Carbon\Carbon::parse($deadline) : null;
         $schools = Child::availableForAdoption()
             ->select('school')
             ->distinct()
@@ -46,12 +56,19 @@ class AdoptionController extends Controller
             ->orderBy('school')
             ->pluck('school');
 
-        return view('adopt.index', compact('children', 'totalAvailable', 'totalChildren', 'customMessage', 'schools'));
+        return view('adopt.index', compact('children', 'totalAvailable', 'totalChildren', 'customMessage', 'schools', 'adoptionDeadline'));
     }
 
     public function show(Child $child): View
     {
         abort_unless(Setting::get('adopt_a_tag_enabled', '0') === '1', 404);
+
+        // Block after deadline
+        $deadline = Setting::get('adopt_a_tag_deadline');
+        if ($deadline && now()->startOfDay()->gt(\Carbon\Carbon::parse($deadline))) {
+            abort(404);
+        }
+
         abort_unless(!$child->isAdopted() && $child->family && $child->family->family_number, 404);
 
         $child->load('family:id,family_number');

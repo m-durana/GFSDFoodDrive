@@ -29,6 +29,90 @@
                 </div>
             @endif
 
+            <!-- Pending Access Requests -->
+            @if($accessRequests->count() > 0)
+                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-amber-800 dark:text-amber-200">
+                                <svg class="inline h-5 w-5 mr-1 -mt-0.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>
+                                Pending Access Requests ({{ $accessRequests->count() }})
+                            </h3>
+                        </div>
+
+                        <div class="space-y-3">
+                            @foreach($accessRequests as $req)
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 gap-3">
+                                    <div class="flex items-center gap-3">
+                                        @if($req->avatar)
+                                            <img src="{{ $req->avatar }}" alt="" class="w-10 h-10 rounded-full">
+                                        @else
+                                            <div class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-500 dark:text-gray-400 text-sm font-bold">
+                                                {{ strtoupper(substr($req->name, 0, 1)) }}
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <p class="font-medium text-gray-900 dark:text-gray-100">{{ $req->name }}</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $req->email }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500">
+                                                Requested: <span class="font-medium">{{ $req->roleLabel() }}</span>
+                                                @if($req->school_source) &middot; {{ $req->school_source }} @endif
+                                                @if($req->position) &middot; {{ $req->position }} @endif
+                                                &middot; {{ $req->created_at->diffForHumans() }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                        <!-- Approve -->
+                                        <form method="POST" action="{{ route('santa.approveAccessRequest', $req) }}" class="inline">
+                                            @csrf
+                                            <input type="hidden" name="role" value="{{ $req->requested_role }}">
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-500 text-xs font-medium transition"
+                                                    onclick="return confirm('Approve {{ $req->name }} as {{ $req->roleLabel() }}?')">
+                                                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                                Approve
+                                            </button>
+                                        </form>
+
+                                        <!-- Approve as different role -->
+                                        <form method="POST" action="{{ route('santa.approveAccessRequest', $req) }}" class="inline" x-data="{ open: false }">
+                                            @csrf
+                                            <div class="relative">
+                                                <button type="button" @click="open = !open" class="inline-flex items-center px-2 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-500 text-xs font-medium transition">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>
+                                                </button>
+                                                <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-10">
+                                                    @foreach(['family' => 'Family', 'coordinator' => 'Coordinator'] as $roleKey => $roleLabel)
+                                                        @if($roleKey !== $req->requested_role)
+                                                            <button type="submit" name="role" value="{{ $roleKey }}" class="block w-full text-left px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                                                                    onclick="return confirm('Approve as {{ $roleLabel }}?')">
+                                                                Approve as {{ $roleLabel }}
+                                                            </button>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                        <!-- Deny -->
+                                        <form method="POST" action="{{ route('santa.denyAccessRequest', $req) }}" class="inline"
+                                              onsubmit="var reason = prompt('Reason for denial (optional):'); if (reason !== null) { this.querySelector('[name=deny_reason]').value = reason; return true; } return false;">
+                                            @csrf
+                                            <input type="hidden" name="deny_reason" value="">
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-md hover:bg-red-500 text-xs font-medium transition">
+                                                <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                                Deny
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <!-- Add New User Form -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">

@@ -63,6 +63,7 @@ class Family extends Model
         'delivery_time',
         'delivery_reason',
         'delivery_team',
+        'delivery_team_id',
         'latitude',
         'longitude',
         'delivery_status',
@@ -97,6 +98,7 @@ class Family extends Model
             'number_of_boxes' => 'integer',
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
+            'delivery_date' => 'date',
             'delivery_status' => DeliveryStatus::class,
             'route_order' => 'integer',
         ];
@@ -125,5 +127,61 @@ class Family extends Model
     public function deliveryRoute(): BelongsTo
     {
         return $this->belongsTo(DeliveryRoute::class);
+    }
+
+    public function deliveryTeam(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryTeam::class);
+    }
+
+    // Query Scopes
+
+    public function scopeUnassigned($query)
+    {
+        return $query->whereNull('family_number');
+    }
+
+    public function scopeAssigned($query)
+    {
+        return $query->whereNotNull('family_number');
+    }
+
+    public function scopeSevereNeed($query)
+    {
+        return $query->where('severe_need', true)->orWhere('severe_need', 'Yes');
+    }
+
+    public function scopeNeedsBabySupplies($query)
+    {
+        return $query->where('needs_baby_supplies', true);
+    }
+
+    public function scopeNeedsDelivery($query)
+    {
+        return $query->where('delivery_preference', 'Delivery');
+    }
+
+    public function scopePickup($query)
+    {
+        return $query->where('delivery_preference', 'Pickup');
+    }
+
+    public function scopeDone($query)
+    {
+        return $query->where('family_done', true);
+    }
+
+    public function scopeNotDone($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('family_done', false)->orWhereNull('family_done');
+        });
+    }
+
+    public function scopeGeocodeable($query)
+    {
+        return $query->whereNull('latitude')
+            ->whereNotNull('address')
+            ->where('address', '!=', '');
     }
 }

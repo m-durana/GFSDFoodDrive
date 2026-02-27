@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\AssignFamilyNumber;
+use App\Actions\MergeFamilies;
 use App\Enums\GiftLevel;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\AccessRequest;
+use App\Services\GeocodingService;
 use App\Models\Child;
 use App\Models\DismissedDuplicate;
 use App\Models\Family;
@@ -15,7 +19,6 @@ use App\Models\ShoppingAssignment;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -101,52 +104,14 @@ class SantaController extends Controller
             ->with('success', "Family '{$family->family_name}' assigned number {$request->family_number}.");
     }
 
-    public function autoAssign(): RedirectResponse
+    public function autoAssign(AssignFamilyNumber $action): RedirectResponse
     {
-        $unassigned = Family::whereNull('family_number')->with('children')->get();
-        $schoolRanges = SchoolRange::orderBy('sort_order')->get();
-        $assigned = 0;
-        $errors = [];
+        $result = $action->autoAssignAll();
 
-        foreach ($unassigned as $family) {
-            $oldestChild = $family->children->sortByDesc(fn($c) => (int) $c->age)->first();
-            $school = $oldestChild?->school;
-
-            if (!$school) {
-                $errors[] = "{$family->family_name}: no children or no school set";
-                continue;
-            }
-
-            // Find matching range
-            $range = $schoolRanges->first(function ($r) use ($school) {
-                return stripos($school, $r->school_name) !== false
-                    || stripos($r->school_name, $school) !== false;
-            });
-
-            if (!$range) {
-                // Fall back to Special Case range
-                $range = $schoolRanges->firstWhere('school_name', 'Special Case');
-            }
-
-            if (!$range) {
-                $errors[] = "{$family->family_name}: no matching school range for '{$school}'";
-                continue;
-            }
-
-            $nextNumber = $range->nextAvailableNumber();
-            if ($nextNumber === null) {
-                $errors[] = "{$family->family_name}: range for '{$range->school_name}' is full";
-                continue;
-            }
-
-            $family->update(['family_number' => $nextNumber]);
-            $assigned++;
-        }
-
-        $message = "Auto-assigned {$assigned} families.";
-        if (count($errors) > 0) {
-            $message .= ' Skipped ' . count($errors) . ': ' . implode('; ', array_slice($errors, 0, 3));
-            if (count($errors) > 3) {
+        $message = "Auto-assigned {$result['assigned']} families.";
+        if (count($result['errors']) > 0) {
+            $message .= ' Skipped ' . count($result['errors']) . ': ' . implode('; ', array_slice($result['errors'], 0, 3));
+            if (count($result['errors']) > 3) {
                 $message .= '...';
             }
         }
@@ -264,6 +229,9 @@ class SantaController extends Controller
             Setting::set('twilio_from', $request->input('twilio_from'));
         }
 
+        // Hints
+        Setting::set('hints_enabled', $request->boolean('hints_enabled') ? '1' : '0');
+
         // Coordinator positions
         Setting::set('coordinator_positions', $request->input('coordinator_positions', ''));
 
@@ -283,6 +251,36 @@ class SantaController extends Controller
         if ($request->has('google_client_id') && !$request->filled('google_client_id')) {
             Setting::where('key', 'google_client_id')->delete();
             Setting::where('key', 'google_client_secret')->delete();
+        }
+
+        // Logo upload
+        if ($request->hasFile('site_logo')) {
+            $request->validate(['site_logo' => ['image', 'max:2048']]);
+            $path = $request->file('site_logo')->storeAs('logos', 'current-logo.png', 'public');
+            Setting::set('site_logo', $path);
+        }
+
+        // Sponsor logo uploads
+        if ($request->hasFile('sponsor_logos')) {
+            $request->validate(['sponsor_logos.*' => ['image', 'max:2048']]);
+            $existing = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: [];
+            foreach ($request->file('sponsor_logos') as $file) {
+                $name = time() . '-' . preg_replace('/[^a-z0-9.]/', '-', strtolower($file->getClientOriginalName()));
+                $file->storeAs('sponsors', $name, 'public');
+                $existing[] = ['path' => 'sponsors/' . $name, 'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)];
+            }
+            Setting::set('sponsor_logos', json_encode($existing));
+        }
+
+        // Remove sponsor logo
+        if ($request->filled('remove_sponsor')) {
+            $existing = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: [];
+            $idx = (int) $request->input('remove_sponsor');
+            if (isset($existing[$idx])) {
+                \Storage::disk('public')->delete($existing[$idx]['path']);
+                array_splice($existing, $idx, 1);
+                Setting::set('sponsor_logos', json_encode(array_values($existing)));
+            }
         }
 
         return redirect()->route('santa.settings')
@@ -899,7 +897,7 @@ class SantaController extends Controller
             ->with('success', 'Pair dismissed as not duplicates.');
     }
 
-    public function mergeFamilies(Request $request): RedirectResponse
+    public function mergeFamilies(Request $request, MergeFamilies $action): RedirectResponse
     {
         $request->validate([
             'keep_id' => ['required', 'exists:families,id'],
@@ -909,104 +907,18 @@ class SantaController extends Controller
         $keep = Family::findOrFail($request->keep_id);
         $merge = Family::findOrFail($request->merge_id);
 
-        // Move all children from merge to keep
-        Child::where('family_id', $merge->id)->update(['family_id' => $keep->id]);
-
-        // Delete dismissed duplicates for the merged family
-        DismissedDuplicate::where('family_a_id', $merge->id)
-            ->orWhere('family_b_id', $merge->id)
-            ->delete();
-
-        $mergeName = $merge->family_name;
-        $merge->delete();
+        $mergeName = $action->execute($keep, $merge);
 
         return redirect()->route('santa.duplicates')
             ->with('success', "Family '{$mergeName}' merged into '{$keep->family_name}'. Children transferred.");
     }
 
-    public function geocodeFamilies(): RedirectResponse
+    public function geocodeFamilies(GeocodingService $geocoder): RedirectResponse
     {
-        $families = Family::whereNull('latitude')
-            ->whereNotNull('address')
-            ->where('address', '!=', '')
-            ->get();
-
-        $geocoded = 0;
-        $errors = 0;
-        $orsKey = Setting::get('openrouteservice_key');
-
-        foreach ($families as $family) {
-            $coords = $this->geocodeAddress($family->address, $orsKey);
-
-            if ($coords) {
-                $family->update([
-                    'latitude' => $coords['lat'],
-                    'longitude' => $coords['lng'],
-                ]);
-                $geocoded++;
-            } else {
-                $errors++;
-            }
-
-            // Rate limit: 1 req/sec for Nominatim
-            usleep(1100000);
-        }
+        $result = $geocoder->geocodeAll();
 
         return redirect()->route('santa.settings')
-            ->with('success', "Geocoded {$geocoded} families. {$errors} could not be geocoded.");
-    }
-
-    /**
-     * Try to geocode an address using Nominatim, falling back to ORS.
-     */
-    private function geocodeAddress(string $address, ?string $orsKey = null): ?array
-    {
-        // Try Nominatim first (free, no key needed)
-        try {
-            $response = Http::withHeaders([
-                'User-Agent' => 'GFSDFoodDrive/1.0',
-            ])->timeout(10)->get('https://nominatim.openstreetmap.org/search', [
-                'q' => $address,
-                'format' => 'json',
-                'limit' => 1,
-                'countrycodes' => 'us',
-            ]);
-
-            if ($response->successful() && count($response->json()) > 0) {
-                $result = $response->json()[0];
-                return ['lat' => (float) $result['lat'], 'lng' => (float) $result['lon']];
-            }
-        } catch (\Exception $e) {
-            // Fall through to ORS
-        }
-
-        // Try OpenRouteService geocoding if key available
-        if ($orsKey) {
-            try {
-                $response = Http::withHeaders([
-                    'Authorization' => $orsKey,
-                ])->timeout(10)->get('https://api.openrouteservice.org/geocode/search', [
-                    'text' => $address,
-                    'size' => 1,
-                    'boundary.country' => 'US',
-                ]);
-
-                if ($response->successful()) {
-                    $data = $response->json();
-                    $features = $data['features'] ?? [];
-                    if (count($features) > 0) {
-                        $coords = $features[0]['geometry']['coordinates'] ?? null;
-                        if ($coords) {
-                            return ['lat' => (float) $coords[1], 'lng' => (float) $coords[0]];
-                        }
-                    }
-                }
-            } catch (\Exception $e) {
-                // Fall through
-            }
-        }
-
-        return null;
+            ->with('success', "Geocoded {$result['geocoded']} families. {$result['errors']} could not be geocoded.");
     }
 
     private function duplicateScore(Family $a, Family $b): int
@@ -1132,6 +1044,7 @@ class SantaController extends Controller
 
         return view('santa.users', [
             'users' => User::orderBy('first_name')->get(),
+            'accessRequests' => AccessRequest::pending()->latest()->get(),
             'schools' => SchoolRange::orderBy('sort_order')->pluck('school_name')->toArray(),
             'positions' => $positions,
         ]);
@@ -1224,6 +1137,74 @@ class SantaController extends Controller
 
         return redirect()->route('santa.users')
             ->with('success', "Password reset for '{$user->username}'.");
+    }
+
+    /**
+     * Approve a pending access request — creates the user account.
+     */
+    public function approveAccessRequest(Request $request, AccessRequest $accessRequest): RedirectResponse
+    {
+        if (!$accessRequest->isPending()) {
+            return redirect()->route('santa.users')
+                ->with('error', 'This request has already been processed.');
+        }
+
+        $role = $request->input('role', $accessRequest->requested_role);
+        $roleToPermission = ['family' => 7, 'coordinator' => 8, 'santa' => 9];
+
+        // Generate a username from the email (part before @)
+        $baseUsername = Str::slug(Str::before($accessRequest->email, '@'), '.');
+        $username = $baseUsername;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername . $counter;
+            $counter++;
+        }
+
+        $nameParts = explode(' ', $accessRequest->name, 2);
+
+        $user = User::create([
+            'username' => $username,
+            'first_name' => $nameParts[0] ?? '',
+            'last_name' => $nameParts[1] ?? '',
+            'email' => $accessRequest->email,
+            'password' => Str::random(64), // No password login — OAuth only
+            'permission' => $roleToPermission[$role] ?? 7,
+            'school_source' => $accessRequest->school_source,
+            'position' => $accessRequest->position,
+        ]);
+
+        if (method_exists($user, 'assignRole')) {
+            $user->assignRole($role);
+        }
+
+        $accessRequest->update([
+            'status' => 'approved',
+            'reviewed_by' => auth()->id(),
+        ]);
+
+        return redirect()->route('santa.users')
+            ->with('success', "Access approved for {$accessRequest->name} ({$accessRequest->email}) as {$role}.");
+    }
+
+    /**
+     * Deny a pending access request.
+     */
+    public function denyAccessRequest(Request $request, AccessRequest $accessRequest): RedirectResponse
+    {
+        if (!$accessRequest->isPending()) {
+            return redirect()->route('santa.users')
+                ->with('error', 'This request has already been processed.');
+        }
+
+        $accessRequest->update([
+            'status' => 'denied',
+            'reviewed_by' => auth()->id(),
+            'deny_reason' => $request->input('deny_reason'),
+        ]);
+
+        return redirect()->route('santa.users')
+            ->with('success', "Access request from {$accessRequest->name} has been denied.");
     }
 
     public function backups(): View

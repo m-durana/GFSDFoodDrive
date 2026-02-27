@@ -2,6 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Coordinator Dashboard
+            <x-hint key="coordinator-dashboard" text="Print gift tags and family summaries from here. Gift tags include QR codes for adopt-a-tag tracking." />
         </h2>
     </x-slot>
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\DeliveryDayController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\FamilyController;
 use App\Http\Controllers\FamilyStatusController;
 use App\Http\Controllers\SantaController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\ScanController;
 use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\CommandCenterController;
 use App\Http\Controllers\DeliveryRouteController;
+use App\Http\Controllers\DeliveryTeamController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
 use Illuminate\Support\Facades\Route;
@@ -94,9 +96,18 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::put('/users/{user}', [SantaController::class, 'updateUser'])->name('updateUser');
     Route::put('/users/{user}/reset-password', [SantaController::class, 'resetPassword'])->name('resetPassword');
 
+    // Access Requests (OAuth approval flow)
+    Route::post('/access-requests/{accessRequest}/approve', [SantaController::class, 'approveAccessRequest'])->name('approveAccessRequest');
+    Route::post('/access-requests/{accessRequest}/deny', [SantaController::class, 'denyAccessRequest'])->name('denyAccessRequest');
+
     // Command Center
     Route::get('/command-center', [CommandCenterController::class, 'index'])->name('commandCenter');
     Route::get('/command-center/data', [CommandCenterController::class, 'data'])->name('commandCenter.data');
+
+    // Delivery Teams
+    Route::post('/delivery-teams', [DeliveryTeamController::class, 'store'])->name('deliveryTeams.store');
+    Route::put('/delivery-teams/{team}', [DeliveryTeamController::class, 'update'])->name('deliveryTeams.update');
+    Route::delete('/delivery-teams/{team}', [DeliveryTeamController::class, 'destroy'])->name('deliveryTeams.destroy');
 
     // Delivery Routes
     Route::get('/delivery-routes', [DeliveryRouteController::class, 'index'])->name('deliveryRoutes.index');
@@ -149,6 +160,8 @@ Route::get('/shopping/{family_number}', [ShoppingController::class, 'checklist']
 // Google OAuth routes
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
+Route::get('/auth/google/request', [GoogleController::class, 'requestAccess'])->name('auth.google.request');
+Route::post('/auth/google/request', [GoogleController::class, 'submitRequest'])->name('auth.google.submitRequest');
 
 // Family Status Page (public when enabled)
 Route::get('/family-status/{token}', [FamilyStatusController::class, 'show'])->name('family.status');
@@ -170,11 +183,19 @@ Route::get('/register-family', [SelfServiceController::class, 'create'])->name('
 Route::post('/register-family', [SelfServiceController::class, 'store'])->name('self-service.store');
 Route::get('/register-family/success', [SelfServiceController::class, 'success'])->name('self-service.success');
 
+// Help/Wiki routes (accessible by all authenticated users)
+Route::middleware('auth')->group(function () {
+    Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+    Route::get('/help/{topic}', [HelpController::class, 'show'])->name('help.show');
+});
+
 // Delivery Day routes: accessible by Santa role
 Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('delivery.')->group(function () {
     Route::get('/', [DeliveryDayController::class, 'index'])->name('index');
     Route::put('/{family}/status', [DeliveryDayController::class, 'updateStatus'])->name('updateStatus');
+    Route::patch('/{family}/status-ajax', [DeliveryDayController::class, 'updateStatusAjax'])->name('updateStatusAjax');
     Route::put('/{family}/team', [DeliveryDayController::class, 'updateTeam'])->name('updateTeam');
+    Route::post('/bulk-assign-team', [DeliveryDayController::class, 'bulkAssignTeam'])->name('bulkAssignTeam');
     Route::post('/{family}/log', [DeliveryDayController::class, 'addLog'])->name('addLog');
     Route::get('/logs', [DeliveryDayController::class, 'logs'])->name('logs');
     Route::get('/map', [DeliveryDayController::class, 'map'])->name('map');

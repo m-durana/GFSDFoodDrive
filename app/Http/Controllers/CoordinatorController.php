@@ -65,16 +65,17 @@ class CoordinatorController extends Controller
             $url = $adoptEnabled
                 ? route('adopt.show', $child)
                 : QrCodeHelper::scanUrl($child->id);
-            $qrCodes[$child->id] = QrCodeHelper::generateBase64($url, 3);
+            $qrCodes[$child->id] = QrCodeHelper::generateBase64($url, 5);
         }
 
         $paperSize = Setting::get('paper_size', 'letter');
+        $adoptDeadline = Setting::get('adopt_a_tag_deadline', '');
 
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize'));
+            return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline'));
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize'));
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline'));
         $pdf->setPaper($paperSize);
 
         return $pdf->stream('gift-tags.pdf');

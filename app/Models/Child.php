@@ -95,4 +95,23 @@ class Child extends Model
     {
         return $this->adoption_token !== null;
     }
+
+    public function scopeNotMailMerged(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->where('mail_merged', false)->orWhereNull('mail_merged');
+        });
+    }
+
+    public function scopeWithGiftLevel(Builder $query, GiftLevel $level): Builder
+    {
+        return $query->where('gift_level', $level->value);
+    }
+
+    public function scopeWithoutGifts(Builder $query): Builder
+    {
+        return $query->where(function ($q) {
+            $q->where('gift_level', GiftLevel::None->value)->orWhereNull('gift_level');
+        });
+    }
 }

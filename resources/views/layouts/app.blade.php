@@ -7,6 +7,8 @@
 
     <title>{{ config('app.name', 'GFSD Food Drive') }}</title>
 
+    @include('partials.favicon')
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -47,7 +49,15 @@
         <main>
             {{ $slot }}
         </main>
+
+        <!-- Footer -->
+        <footer class="py-4 text-center text-xs text-gray-400 dark:text-gray-600">
+            <span>GFSD Food Drive &copy; {{ date('Y') }}</span>
+            <span class="mx-1">&middot;</span>
+            <span>Made in 🇨🇭</span>
+        </footer>
     </div>
     @include('partials.grinch-overscroll')
+    @include('partials.hints')
 </body>
 </html>

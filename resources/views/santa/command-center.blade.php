@@ -338,7 +338,7 @@
 
             if (giftChart) {
                 giftChart.data = chartData;
-                giftChart.update();
+                giftChart.update('none');
             } else {
                 giftChart = new Chart(ctx, {
                     type: 'doughnut',
@@ -370,7 +370,7 @@
 
             if (deliveryChart) {
                 deliveryChart.data = chartData;
-                deliveryChart.update();
+                deliveryChart.update('none');
             } else {
                 deliveryChart = new Chart(ctx, {
                     type: 'doughnut',

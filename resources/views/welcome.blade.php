@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GFSD Food &amp; Gift Drive &mdash; Love in Action</title>
+    @include('partials.favicon')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased">
@@ -11,8 +12,9 @@
     {{-- Navigation --}}
     <nav class="fixed top-0 inset-x-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+            @php $siteLogo = \App\Models\Setting::get('site_logo', 'logos/current-logo.png'); @endphp
             <div class="flex items-center gap-3">
-                <span class="text-2xl">&#10052;</span>
+                <img src="{{ asset('storage/' . $siteLogo) }}" alt="GFSD Food Drive" class="h-10 w-auto" onerror="this.style.display='none'">
                 <span class="font-bold text-lg text-red-700 dark:text-red-500">GFSD Food &amp; Gift Drive</span>
             </div>
             <div class="flex items-center gap-4 text-sm">
@@ -43,6 +45,7 @@
             <div class="absolute bottom-20 right-10 text-9xl">&#127873;</div>
         </div>
         <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <img src="{{ asset('storage/' . $siteLogo) }}" alt="GFSD Food Drive Logo" class="mx-auto h-28 sm:h-36 w-auto mb-6 drop-shadow-lg" onerror="this.style.display='none'">
             <p class="text-sm uppercase tracking-widest text-red-200 mb-4">Granite Falls School District</p>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
                 Food &amp; Gift Drive
@@ -289,8 +292,40 @@
         </div>
     </section>
 
-    {{-- Embed / Integration Info (for external website builders) --}}
-    {{-- This section provides a direct login URL and embed snippet for Wix/Jimdo/etc --}}
+    {{-- Sponsors Section --}}
+    @php
+        $sponsorLogos = json_decode(\App\Models\Setting::get('sponsor_logos', '[]'), true) ?: [];
+        // Also include default sponsor images from public/images/sponsors if no uploaded ones
+        if (empty($sponsorLogos)) {
+            $defaultSponsors = glob(public_path('images/sponsors/*.{jpg,png,gif,webp}'), GLOB_BRACE);
+            foreach ($defaultSponsors as $file) {
+                $sponsorLogos[] = ['path' => null, 'name' => pathinfo($file, PATHINFO_FILENAME), 'url' => asset('images/sponsors/' . basename($file))];
+            }
+        }
+    @endphp
+    @if(count($sponsorLogos) > 0)
+        <section class="py-12 sm:py-16 bg-gray-50 dark:bg-gray-900">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">Our Sponsors</h2>
+                    <div class="mt-2 h-1 w-12 bg-red-600 mx-auto rounded"></div>
+                    <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">Thank you to our generous sponsors for supporting the Food &amp; Gift Drive.</p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-8">
+                    @foreach($sponsorLogos as $sponsor)
+                        <div class="flex flex-col items-center gap-2">
+                            <img src="{{ $sponsor['url'] ?? asset('storage/' . $sponsor['path']) }}"
+                                 alt="{{ $sponsor['name'] ?? 'Sponsor' }}"
+                                 class="h-16 sm:h-20 w-auto max-w-[160px] object-contain grayscale hover:grayscale-0 transition">
+                            @if(!empty($sponsor['name']))
+                                <span class="text-xs text-gray-400">{{ ucwords(str_replace('-', ' ', $sponsor['name'])) }}</span>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
 
     {{-- Footer --}}
     <footer class="bg-gray-900 text-gray-400 py-12">
@@ -298,7 +333,7 @@
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="text-center sm:text-left">
                     <div class="flex items-center gap-2 justify-center sm:justify-start">
-                        <span class="text-xl">&#10052;</span>
+                        <img src="{{ asset('storage/' . $siteLogo) }}" alt="" class="h-8 w-auto" onerror="this.outerHTML='<span class=\'text-xl\'>&#10052;</span>'">
                         <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
                     </div>
                     <p class="text-sm mt-1">Granite Falls School District &mdash; Love in Action</p>
@@ -313,6 +348,8 @@
             </div>
             <div class="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
                 &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive. All rights reserved.
+                <span class="mx-1">&middot;</span>
+                <span>Made in 🇨🇭</span>
             </div>
         </div>
     </footer>

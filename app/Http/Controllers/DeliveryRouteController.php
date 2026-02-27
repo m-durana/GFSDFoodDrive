@@ -20,31 +20,9 @@ class DeliveryRouteController extends Controller
     /**
      * Route management page for Santa.
      */
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $routes = DeliveryRoute::with(['driver', 'families' => fn($q) => $q->orderBy('route_order')])
-            ->get();
-
-        // Families eligible for routing (have coordinates, need delivery)
-        $unroutedFamilies = Family::whereNotNull('family_number')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->whereNull('delivery_route_id')
-            ->where(function ($q) {
-                $q->where('delivery_preference', 'like', '%deliver%')
-                    ->orWhereNull('delivery_preference');
-            })
-            ->orderBy('family_number')
-            ->get();
-
-        // Drivers = users with coordinator or santa role
-        $drivers = User::where(function ($q) {
-            $q->where('permission', 8)->orWhere('permission', 9);
-        })->orderBy('first_name')->get();
-
-        $orsKey = Setting::get('openrouteservice_key', '');
-
-        return view('santa.delivery-routes.index', compact('routes', 'unroutedFamilies', 'drivers', 'orsKey'));
+        return redirect()->route('delivery.index', ['tab' => 'routes']);
     }
 
     /**
@@ -76,7 +54,7 @@ class DeliveryRouteController extends Controller
             $route->update(['stop_count' => count($request->family_ids)]);
         }
 
-        return redirect()->route('santa.deliveryRoutes.index')
+        return redirect()->route('delivery.index', ['tab' => 'routes'])
             ->with('success', "Route '{$route->name}' created.");
     }
 
@@ -93,7 +71,7 @@ class DeliveryRouteController extends Controller
         $name = $deliveryRoute->name;
         $deliveryRoute->delete();
 
-        return redirect()->route('santa.deliveryRoutes.index')
+        return redirect()->route('delivery.index', ['tab' => 'routes'])
             ->with('success', "Route '{$name}' deleted.");
     }
 
@@ -111,7 +89,7 @@ class DeliveryRouteController extends Controller
 
         $orsKey = Setting::get('openrouteservice_key', '');
         if (empty($orsKey)) {
-            return redirect()->route('santa.deliveryRoutes.index')
+            return redirect()->route('delivery.index', ['tab' => 'routes'])
                 ->with('error', 'OpenRouteService API key not configured. Set it in Settings.');
         }
 
@@ -149,7 +127,7 @@ class DeliveryRouteController extends Controller
         }
 
         if (empty($jobs)) {
-            return redirect()->route('santa.deliveryRoutes.index')
+            return redirect()->route('delivery.index', ['tab' => 'routes'])
                 ->with('error', 'No geocoded families in selected routes.');
         }
 
@@ -165,13 +143,13 @@ class DeliveryRouteController extends Controller
             if (! $response->successful()) {
                 $body = $response->json();
                 $msg = $body['error']['message'] ?? $response->body();
-                return redirect()->route('santa.deliveryRoutes.index')
+                return redirect()->route('delivery.index', ['tab' => 'routes'])
                     ->with('error', "ORS API error: {$msg}");
             }
 
             $result = $response->json();
         } catch (\Exception $e) {
-            return redirect()->route('santa.deliveryRoutes.index')
+            return redirect()->route('delivery.index', ['tab' => 'routes'])
                 ->with('error', 'ORS API request failed: ' . $e->getMessage());
         }
 
@@ -207,7 +185,7 @@ class DeliveryRouteController extends Controller
             $msg = 'Routes optimized successfully!';
         }
 
-        return redirect()->route('santa.deliveryRoutes.index')
+        return redirect()->route('delivery.index', ['tab' => 'routes'])
             ->with('success', $msg);
     }
 
@@ -237,7 +215,7 @@ class DeliveryRouteController extends Controller
 
         $deliveryRoute->update(['stop_count' => count($request->family_ids)]);
 
-        return redirect()->route('santa.deliveryRoutes.index')
+        return redirect()->route('delivery.index', ['tab' => 'routes'])
             ->with('success', "Route '{$deliveryRoute->name}' updated.");
     }
 

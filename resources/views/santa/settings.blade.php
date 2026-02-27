@@ -1,7 +1,9 @@
+@use('App\Models\Setting')
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Admin Settings
+            <x-hint key="admin-settings" text="Changes are saved when you click 'Save Settings' at the bottom. Logo and sponsor uploads save immediately on submit." />
         </h2>
     </x-slot>
 
@@ -31,6 +33,13 @@
                         <a href="#paper-size" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Paper Size</a>
                         <a href="#geocoding" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Geocoding</a>
 
+                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">UI</p>
+                        <a href="#hints" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Hints & Tips</a>
+
+                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Branding</p>
+                        <a href="#site-logo" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Logo</a>
+                        <a href="#sponsors" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Sponsors</a>
+
                         <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Notifications</p>
                         <a href="#notifications" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Email</a>
                         <a href="#sms" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">SMS (Twilio)</a>
@@ -44,7 +53,7 @@
 
                 {{-- Main Content --}}
                 <div class="flex-1 min-w-0 space-y-6">
-                    <form method="POST" action="{{ route('santa.updateSettings') }}" id="settings-form">
+                    <form method="POST" action="{{ route('santa.updateSettings') }}" id="settings-form" enctype="multipart/form-data">
                         @csrf
 
                         {{-- ═══ PUBLIC FEATURES ═══ --}}
@@ -241,6 +250,57 @@
                             </div>
                         </div>
 
+                        {{-- ═══ BRANDING ═══ --}}
+
+                        <!-- Site Logo -->
+                        <div id="site-logo" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg scroll-mt-20 mt-6">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Site Logo</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Upload this year's logo. It will appear on the homepage, nav bar, and as the favicon for all pages.
+                                </p>
+                                @php $currentLogo = Setting::get('site_logo', 'logos/current-logo.png'); @endphp
+                                <div class="flex items-center gap-6">
+                                    <img src="{{ asset('storage/' . $currentLogo) }}" alt="Current Logo" class="h-20 w-auto rounded border border-gray-200 dark:border-gray-700 bg-white p-2" onerror="this.style.display='none'">
+                                    <div>
+                                        <input type="file" name="site_logo" accept="image/*"
+                                            class="block text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900/30 dark:file:text-red-400">
+                                        <p class="mt-1 text-xs text-gray-400">PNG, JPG, or SVG. Max 2MB. The logo changes color every year.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sponsor Logos -->
+                        <div id="sponsors" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg scroll-mt-20 mt-6">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Sponsor Logos</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Upload sponsor logos that appear in the "Our Sponsors" section on the homepage.
+                                </p>
+
+                                @php $sponsors = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: []; @endphp
+                                @if(count($sponsors) > 0)
+                                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                                        @foreach($sponsors as $idx => $sponsor)
+                                            <div class="relative group">
+                                                <img src="{{ asset('storage/' . $sponsor['path']) }}" alt="{{ $sponsor['name'] ?? '' }}" class="h-14 w-auto rounded border border-gray-200 dark:border-gray-700 bg-white p-1">
+                                                <button type="submit" name="remove_sponsor" value="{{ $idx }}"
+                                                    class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                                                    onclick="return confirm('Remove this sponsor logo?')"
+                                                    title="Remove">&#10005;</button>
+                                                <span class="block text-[10px] text-gray-400 text-center mt-1 max-w-[80px] truncate">{{ $sponsor['name'] ?? '' }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <input type="file" name="sponsor_logos[]" accept="image/*" multiple
+                                    class="block text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900/30 dark:file:text-red-400">
+                                <p class="mt-1 text-xs text-gray-400">Select one or more sponsor logo images. Max 2MB each.</p>
+                            </div>
+                        </div>
+
                         {{-- ═══ NOTIFICATIONS ═══ --}}
 
                         <!-- Email Notifications -->
@@ -314,6 +374,27 @@
                                                 <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">Delivery status changes to "delivered"</span>
                                             </label>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- ═══ UI ═══ --}}
+
+                        <!-- Hints & Tips -->
+                        <div id="hints" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Hints & Tips</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="hints_enabled" value="1" {{ \App\Models\Setting::get('hints_enabled', '1') === '1' ? 'checked' : '' }}
+                                                class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Show contextual help hints</span>
+                                        </label>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Small <strong>?</strong> icons appear next to features with helpful tooltips. Users can individually dismiss hints they've seen.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
