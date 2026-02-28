@@ -75,6 +75,8 @@
                                 <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Source</th>
                                 <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Donor</th>
                                 <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Scanned By</th>
+                                <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Volunteer</th>
+                                <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">IP</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -97,10 +99,12 @@
                                     <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $txn->source ?? '—' }}</td>
                                     <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $txn->donor_name ?? '—' }}</td>
                                     <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $txn->scanner?->first_name ?? '—' }}</td>
+                                    <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $txn->volunteer_name ?? '—' }}</td>
+                                    <td class="py-2 px-4 text-gray-500 dark:text-gray-500 text-xs font-mono">{{ $txn->ip_address ?? '—' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="py-8 text-center text-gray-500 dark:text-gray-400">No transactions found.</td>
+                                    <td colspan="10" class="py-8 text-center text-gray-500 dark:text-gray-400">No transactions found.</td>
                                 </tr>
                             @endforelse
                         </tbody>

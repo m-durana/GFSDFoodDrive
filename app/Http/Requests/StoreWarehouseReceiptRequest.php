@@ -21,6 +21,7 @@ class StoreWarehouseReceiptRequest extends FormRequest
             'barcode_scanned' => 'nullable|string|max:50',
             'notes' => 'nullable|string|max:1000',
             'item_id' => 'nullable|exists:warehouse_items,id',
+            'volunteer_name' => 'nullable|string|max:200',
         ];
     }
 }

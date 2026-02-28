@@ -258,6 +258,30 @@ class DeliveryRouteController extends Controller
     }
 
     /**
+     * Update driver location from the public driver view (token-authenticated).
+     */
+    public function updateDriverLocation(Request $request, string $token): JsonResponse
+    {
+        $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+
+        $request->validate([
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+
+        // Update the route's driver user if there is one
+        if ($route->driver_user_id) {
+            User::where('id', $route->driver_user_id)->update([
+                'last_lat' => $request->latitude,
+                'last_lng' => $request->longitude,
+                'last_location_at' => now(),
+            ]);
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    /**
      * Get route data as JSON (for map display).
      */
     public function routeData(string $token): JsonResponse

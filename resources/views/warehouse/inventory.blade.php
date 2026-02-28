@@ -2,6 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Inventory
+            <x-hint key="warehouse-inventory" text="Filter by type using the tabs. Click a category row to expand and see individual items. Green = surplus, Red = deficit compared to what families need." />
         </h2>
     </x-slot>
 
@@ -57,13 +58,15 @@
                                 </tr>
                                 @foreach($row['category']->items as $item)
                                     <tr x-show="(activeTab === 'all' || activeTab === '{{ $row['category']->type }}') && expanded[{{ $i }}]" x-cloak
-                                        class="bg-gray-50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700/50">
+                                        class="bg-gray-50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600/30 cursor-pointer"
+                                        onclick="window.location='{{ route('warehouse.transactions', ['search' => $item->name]) }}'">
                                         <td class="py-2 px-4 pl-10 text-gray-600 dark:text-gray-400 text-xs">
                                             {{ $item->name }}
                                             @if($item->barcode) <span class="text-gray-400 dark:text-gray-500 ml-1">[{{ $item->barcode }}]</span> @endif
                                         </td>
                                         <td colspan="4" class="py-2 px-4 text-xs text-gray-500 dark:text-gray-400">
                                             {{ $item->description ?? '' }}
+                                            <span class="text-blue-500 dark:text-blue-400 ml-2">View log &rarr;</span>
                                         </td>
                                     </tr>
                                 @endforeach

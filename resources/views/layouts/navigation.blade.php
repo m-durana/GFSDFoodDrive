@@ -4,7 +4,7 @@
             <div class="flex">
                 <!-- Logo - links to role-appropriate dashboard -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('home') }}" class="text-xl font-bold text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition">
+                    <a href="{{ route('home') }}" data-tour="nav-home" class="text-xl font-bold text-red-700 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition">
                         North Pole
                     </a>
                 </div>
@@ -12,25 +12,31 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     @if(auth()->user()->isFamily() || auth()->user()->isSanta())
-                        <a href="{{ route('family.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('family.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                        <a href="{{ route('family.index') }}" data-tour="nav-families" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('family.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Families
                         </a>
                     @endif
 
                     @if(auth()->user()->isSanta())
-                        <a href="{{ route('santa.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                        <a href="{{ route('santa.index') }}" data-tour="nav-santa" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Santa
                         </a>
-                        <a href="{{ route('delivery.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('delivery.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
-                            Delivery Day
-                        </a>
+                        @if(\App\Models\Setting::get('use_classic_delivery', '0') === '1')
+                            <a href="{{ route('coordinator.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('coordinator.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                                Delivery Sheets
+                            </a>
+                        @else
+                            <a href="{{ route('delivery.index') }}" data-tour="nav-delivery" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('delivery.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                                Delivery Day
+                            </a>
+                        @endif
                     @endif
 
                     @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
-                        <a href="{{ route('coordinator.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('coordinator.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                        <a href="{{ route('coordinator.index') }}" data-tour="nav-coordinator" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('coordinator.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Coordinator
                         </a>
-                        <a href="{{ route('warehouse.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                        <a href="{{ route('warehouse.index') }}" data-tour="nav-warehouse" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Warehouse
                         </a>
                     @endif
@@ -51,7 +57,7 @@
                     </svg>
                 </button>
 
-                <a href="{{ route('help.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="Help">
+                <a href="{{ route('help.index') }}" data-tour="nav-help" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="Help">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
                 </a>
                 <span class="text-sm text-gray-500 dark:text-gray-400">Hello, {{ auth()->user()->first_name }}</span>
@@ -85,7 +91,11 @@
             <a href="{{ route('family.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Families</a>
             @if(auth()->user()->isSanta())
                 <a href="{{ route('santa.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Santa</a>
-                <a href="{{ route('delivery.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Day</a>
+                @if(\App\Models\Setting::get('use_classic_delivery', '0') === '1')
+                    <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Sheets</a>
+                @else
+                    <a href="{{ route('delivery.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Day</a>
+                @endif
             @endif
             @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
                 <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Coordinator</a>

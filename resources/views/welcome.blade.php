@@ -313,10 +313,25 @@
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-8">
                     @foreach($sponsorLogos as $sponsor)
+                        @php
+                            $imgSrc = !empty($sponsor['path']) ? asset('storage/' . $sponsor['path']) : ($sponsor['img_url'] ?? $sponsor['url'] ?? '');
+                            $linkUrl = $sponsor['url'] ?? '';
+                            // For default sponsors loaded from disk, 'url' is the img src, not a link
+                            if (empty($sponsor['path']) && !empty($sponsor['url']) && str_contains($sponsor['url'], '/images/sponsors/')) {
+                                $imgSrc = $sponsor['url'];
+                                $linkUrl = '';
+                            }
+                        @endphp
                         <div class="flex flex-col items-center gap-2">
-                            <img src="{{ $sponsor['url'] ?? asset('storage/' . $sponsor['path']) }}"
+                            @if($linkUrl)
+                                <a href="{{ $linkUrl }}" target="_blank" rel="noopener noreferrer">
+                            @endif
+                            <img src="{{ $imgSrc }}"
                                  alt="{{ $sponsor['name'] ?? 'Sponsor' }}"
                                  class="h-16 sm:h-20 w-auto max-w-[160px] object-contain grayscale hover:grayscale-0 transition">
+                            @if($linkUrl)
+                                </a>
+                            @endif
                             @if(!empty($sponsor['name']))
                                 <span class="text-xs text-gray-400">{{ ucwords(str_replace('-', ' ', $sponsor['name'])) }}</span>
                             @endif
@@ -353,7 +368,5 @@
             </div>
         </div>
     </footer>
-
-    @include('partials.grinch-overscroll')
 </body>
 </html>

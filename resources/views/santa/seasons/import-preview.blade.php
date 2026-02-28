@@ -48,9 +48,9 @@
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($preview['preview'] as $row)
                                 <tr>
-                                    @foreach($row as $key => $cell)
-                                        @if(isset($preview['headers'][$key]) && $preview['headers'][$key])
-                                            <td class="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ $cell }}</td>
+                                    @foreach(array_values($row) as $i => $cell)
+                                        @if(isset($preview['headers'][$i]) && $preview['headers'][$i])
+                                            <td class="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{{ \Illuminate\Support\Str::limit($cell, 60) }}</td>
                                         @endif
                                     @endforeach
                                 </tr>

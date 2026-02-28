@@ -1,9 +1,9 @@
-{{-- Grinch peeking overscroll effect --}}
+
 <div id="grinch-top" style="position:fixed;top:-200px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;transition:none;">
-    <img src="{{ asset('images/grinch_peeking.png') }}" alt="" style="height:200px;transform:scaleY(-1);" draggable="false">
+    <img src="<?php echo e(asset('images/grinch_peeking.png')); ?>" alt="" style="height:200px;transform:scaleY(-1);" draggable="false">
 </div>
 <div id="grinch-bottom" style="position:fixed;bottom:-200px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;transition:none;">
-    <img src="{{ asset('images/grinch_peeking.png') }}" alt="" style="height:200px;" draggable="false">
+    <img src="<?php echo e(asset('images/grinch_peeking.png')); ?>" alt="" style="height:200px;" draggable="false">
 </div>
 <script>
 (function(){
@@ -54,3 +54,4 @@
     },{passive:true});
 })();
 </script>
+<?php /**PATH C:\Users\mirod\Documents\Code\JetBrains\GFSDFoodDrive\resources\views/partials/grinch-overscroll.blade.php ENDPATH**/ ?>

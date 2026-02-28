@@ -37,16 +37,16 @@ class WarehouseController extends Controller
         return view('warehouse.index', compact('deficits', 'giftProgress', 'sourceBreakdown', 'recentTransactions'));
     }
 
-    public function receive(): View
+    public function receive()
     {
-        $categories = WarehouseCategory::active()->orderBy('sort_order')->get();
-
-        return view('warehouse.receive', compact('categories'));
+        return redirect()->route('warehouse.kiosk');
     }
 
     public function store(StoreWarehouseReceiptRequest $request): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $transaction = $this->warehouse->recordReceipt($request->validated(), $request->user());
+        $data = $request->validated();
+        $data['ip_address'] = $request->ip();
+        $transaction = $this->warehouse->recordReceipt($data, $request->user());
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -75,6 +75,15 @@ class WarehouseController extends Controller
             return response()->json([
                 'found' => true,
                 'item' => $item->load('category'),
+            ]);
+        }
+
+        // Try external UPC database
+        $external = $this->warehouse->lookupBarcodeExternal($barcode);
+        if ($external) {
+            return response()->json([
+                'found' => false,
+                'external' => $external,
             ]);
         }
 

@@ -50,6 +50,23 @@
                         <code>*Survey*</code> = Survey entry form (may contain registration data).
                     </div>
 
+                    @php
+                        $importableYears = collect($legacyFiles)->filter(function ($files, $year) use ($existingSeasons) {
+                            return !in_array($year, $existingSeasons) && collect($files)->contains('is_main', true);
+                        });
+                    @endphp
+                    @if($importableYears->count() > 1)
+                        <div class="flex justify-end mb-3">
+                            <form method="POST" action="{{ route('santa.seasons.importAllLegacy') }}" onsubmit="this.querySelector('button').textContent='Importing all...'; this.querySelector('button').disabled=true;">
+                                @csrf
+                                <button type="submit" @if(!$accessDriver) disabled @endif
+                                    class="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-600 text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    Import All {{ $importableYears->count() }} Remaining Years
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
                     <div class="space-y-3">
                         @foreach($legacyFiles as $year => $files)
                             <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">

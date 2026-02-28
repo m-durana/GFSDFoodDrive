@@ -27,6 +27,7 @@ class WarehouseTransaction extends Model
         'season_year', 'item_id', 'category_id', 'family_id', 'child_id',
         'transaction_type', 'quantity', 'source', 'donor_name',
         'barcode_scanned', 'notes', 'scanned_by', 'scanned_at',
+        'volunteer_name', 'ip_address',
     ];
 
     protected function casts(): array

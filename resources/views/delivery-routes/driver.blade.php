@@ -219,8 +219,11 @@
                 pos => {
                     document.getElementById('location-status').textContent =
                         `Sharing: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
-                    // Post location (this is a public page so we use a simple approach)
-                    // Location posting requires auth — skip if not authed
+                    fetch(`/delivery/route/${routeToken}/location`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                    }).catch(() => {});
                 },
                 err => {
                     document.getElementById('location-status').textContent = 'Location error: ' + err.message;
@@ -314,6 +317,5 @@
 
         buildMap(stopsData);
     </script>
-    @include('partials.grinch-overscroll')
 </body>
 </html>

@@ -23,7 +23,7 @@
     .hint-bubble .hint-popup {
         display: none;
         position: absolute;
-        bottom: calc(100% + 8px);
+        top: calc(100% + 8px);
         left: 50%;
         transform: translateX(-50%);
         background: #1f2937;
@@ -32,18 +32,19 @@
         border-radius: 8px;
         font-size: 12px;
         line-height: 1.4;
-        width: 240px;
+        max-width: 280px;
+        white-space: normal;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 50;
     }
     .hint-bubble .hint-popup::after {
         content: '';
         position: absolute;
-        top: 100%;
+        bottom: 100%;
         left: 50%;
         transform: translateX(-50%);
         border: 6px solid transparent;
-        border-top-color: #1f2937;
+        border-bottom-color: #1f2937;
     }
     .hint-bubble:hover .hint-popup,
     .hint-bubble .hint-icon:focus + .hint-popup {

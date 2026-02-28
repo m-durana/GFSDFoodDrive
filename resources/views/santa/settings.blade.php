@@ -20,31 +20,31 @@
                 {{-- Sidebar Navigation --}}
                 <nav class="hidden lg:block w-56 flex-shrink-0">
                     <div class="sticky top-20 space-y-1 text-sm">
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2 px-3">Public Features</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Public Features</p>
                         <a href="#self-registration" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Self-Registration</a>
                         <a href="#adopt-a-tag" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Adopt-a-Tag</a>
                         <a href="#family-status" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Family Status Pages</a>
 
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Operations</p>
-                        <a href="#delivery-dates" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Delivery Dates</a>
-                        <a href="#delivery-time-range" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Delivery Time Range</a>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Operations</p>
+                        <a href="#delivery-dates" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Delivery Schedule</a>
                         <a href="#season" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Season</a>
                         <a href="#coordinator-positions" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Coordinator Positions</a>
                         <a href="#paper-size" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Paper Size</a>
                         <a href="#geocoding" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Geocoding</a>
 
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">UI</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">UI</p>
                         <a href="#hints" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Hints & Tips</a>
+                        <a href="#feature-modes" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Feature Modes</a>
 
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Branding</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Branding</p>
                         <a href="#site-logo" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Logo</a>
                         <a href="#sponsors" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Sponsors</a>
 
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Notifications</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Notifications</p>
                         <a href="#notifications" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Email</a>
                         <a href="#sms" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">SMS (Twilio)</a>
 
-                        <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4 mb-2 px-3">Integrations</p>
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Integrations</p>
                         <a href="#google-oauth" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Google OAuth</a>
                         <a href="#openrouteservice" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">OpenRouteService</a>
                         <a href="#website-embed" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Website Embed</a>
@@ -153,51 +153,43 @@
 
                         {{-- ═══ OPERATIONS ═══ --}}
 
-                        <!-- Delivery Dates -->
+                        <!-- Delivery Dates & Time Ranges -->
                         <div id="delivery-dates" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
                             <div class="p-6">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Dates</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Dates shown as options on family registration and edit forms.</p>
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Dates & Time Ranges</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Each delivery date has its own time window. Shown on forms, driver pages, and delivery sheets.</p>
+                                <input type="hidden" name="delivery_schedule" id="delivery_schedule_hidden" value="{{ Setting::get('delivery_schedule', '') }}">
+                                {{-- Legacy hidden field for backward compat --}}
                                 <input type="hidden" name="delivery_dates" id="delivery_dates_hidden" value="{{ $deliveryDates }}">
-                                <div id="delivery-dates-container" class="space-y-2"></div>
+                                <div id="delivery-dates-container" class="space-y-3"></div>
                                 <button type="button" onclick="addDeliveryDate()" class="mt-3 inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 text-sm font-medium transition">
                                     <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                                     Add Date
                                 </button>
-                            </div>
-                        </div>
-
-                        <!-- Delivery Time Range -->
-                        <div id="delivery-time-range" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
-                            <div class="p-6">
-                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Time Range</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Allowed time window for deliveries (shown on driver pages and delivery sheets).</p>
-                                <div class="flex items-center gap-3">
-                                    <div>
-                                        <label for="delivery_time_start" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Start</label>
-                                        <input type="time" name="delivery_time_start" id="delivery_time_start"
-                                            value="{{ Setting::get('delivery_time_start', '08:00') }}"
-                                            class="block w-36 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
-                                    </div>
-                                    <span class="text-gray-400 mt-5">to</span>
-                                    <div>
-                                        <label for="delivery_time_end" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">End</label>
-                                        <input type="time" name="delivery_time_end" id="delivery_time_end"
-                                            value="{{ Setting::get('delivery_time_end', '21:00') }}"
-                                            class="block w-36 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
-                                    </div>
-                                </div>
 
                                 <!-- Delivery sheet footer settings -->
-                                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                                     <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Delivery Sheet Footer</h4>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
-                                            <label for="delivery_return_to" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Return form to</label>
+                                            <label for="delivery_return_to" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Return form to (role)</label>
+                                            <select name="delivery_return_to_role" id="delivery_return_to_role"
+                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                                <option value="">Custom text</option>
+                                                @php
+                                                    $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager'))));
+                                                    $selectedRole = Setting::get('delivery_return_to_role', '');
+                                                @endphp
+                                                @foreach($positions as $pos)
+                                                    <option value="{{ $pos }}" {{ $selectedRole === $pos ? 'selected' : '' }}>{{ $pos }}</option>
+                                                @endforeach
+                                            </select>
+                                            <p class="mt-1 text-xs text-gray-400">Select a role to show actual names (max 2) on delivery sheets.</p>
                                             <input type="text" name="delivery_return_to" id="delivery_return_to"
                                                 value="{{ Setting::get('delivery_return_to', 'System Engineers') }}"
                                                 placeholder="System Engineers"
-                                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                                class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ $selectedRole ? 'hidden' : '' }}"
+                                                id="delivery_return_to_text">
                                         </div>
                                         <div>
                                             <label for="hs_phone_number" class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">HS Phone Number</label>
@@ -250,6 +242,20 @@
                             </div>
                         </div>
 
+                        <!-- Geocoding -->
+                        <div id="geocoding" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Address Geocoding</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Geocode family addresses for the live delivery map. Uses free OpenStreetMap Nominatim (rate limited 1 req/sec).
+                                </p>
+                                <button type="button" id="geocode-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition"
+                                        onclick="this.textContent='Geocoding...'; this.disabled=true; document.getElementById('geocode-form').submit();">
+                                    Geocode Missing Addresses
+                                </button>
+                            </div>
+                        </div>
+
                         {{-- ═══ BRANDING ═══ --}}
 
                         <!-- Site Logo -->
@@ -281,15 +287,22 @@
 
                                 @php $sponsors = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: []; @endphp
                                 @if(count($sponsors) > 0)
-                                    <div class="flex flex-wrap items-center gap-4 mb-4">
+                                    <div class="space-y-3 mb-4">
                                         @foreach($sponsors as $idx => $sponsor)
-                                            <div class="relative group">
-                                                <img src="{{ asset('storage/' . $sponsor['path']) }}" alt="{{ $sponsor['name'] ?? '' }}" class="h-14 w-auto rounded border border-gray-200 dark:border-gray-700 bg-white p-1">
+                                            <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+                                                <img src="{{ asset('storage/' . $sponsor['path']) }}" alt="{{ $sponsor['name'] ?? '' }}" class="h-12 w-auto rounded border border-gray-200 dark:border-gray-700 bg-white p-1">
+                                                <div class="flex-1 min-w-0">
+                                                    <span class="block text-xs text-gray-500 dark:text-gray-400 truncate">{{ $sponsor['name'] ?? 'Sponsor ' . ($idx + 1) }}</span>
+                                                    <input type="url" name="sponsor_urls[{{ $idx }}]" value="{{ $sponsor['url'] ?? '' }}"
+                                                        placeholder="https://sponsor-website.com"
+                                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 text-xs">
+                                                </div>
                                                 <button type="submit" name="remove_sponsor" value="{{ $idx }}"
-                                                    class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                                                    class="p-1.5 text-gray-400 hover:text-red-500 transition"
                                                     onclick="return confirm('Remove this sponsor logo?')"
-                                                    title="Remove">&#10005;</button>
-                                                <span class="block text-[10px] text-gray-400 text-center mt-1 max-w-[80px] truncate">{{ $sponsor['name'] ?? '' }}</span>
+                                                    title="Remove">
+                                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                                                </button>
                                             </div>
                                         @endforeach
                                     </div>
@@ -297,7 +310,7 @@
 
                                 <input type="file" name="sponsor_logos[]" accept="image/*" multiple
                                     class="block text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-red-50 file:text-red-700 hover:file:bg-red-100 dark:file:bg-red-900/30 dark:file:text-red-400">
-                                <p class="mt-1 text-xs text-gray-400">Select one or more sponsor logo images. Max 2MB each.</p>
+                                <p class="mt-1 text-xs text-gray-400">Select one or more sponsor logo images. Max 2MB each. Add links after uploading.</p>
                             </div>
                         </div>
 
@@ -400,6 +413,38 @@
                             </div>
                         </div>
 
+                        <!-- Feature Modes (Classic vs New) -->
+                        <div id="feature-modes" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Feature Modes</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Some features replace the old Access-based workflows. Toggle between classic and new modes while your team adjusts.
+                                </p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="use_classic_delivery" value="1" {{ \App\Models\Setting::get('use_classic_delivery', '0') === '1' ? 'checked' : '' }}
+                                                class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Classic delivery mode</span>
+                                        </label>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Use the traditional coordinator printout and manual assignment workflow instead of the digital Delivery Day system.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="use_classic_adoption" value="1" {{ \App\Models\Setting::get('use_classic_adoption', '0') === '1' ? 'checked' : '' }}
+                                                class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Classic gift tag adoption</span>
+                                        </label>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Disable the online Adopt-a-Tag portal and use the traditional print-and-distribute method for gift tags.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- ═══ INTEGRATIONS ═══ --}}
 
                         <!-- Google OAuth -->
@@ -485,24 +530,10 @@
                         </div>
                     </form>
 
-                    {{-- ═══ SEPARATE FORMS (outside main form) ═══ --}}
-
-                    <!-- Geocoding -->
-                    <div id="geocoding" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Address Geocoding</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                Geocode family addresses for the live delivery map. Uses free OpenStreetMap Nominatim (rate limited 1 req/sec).
-                            </p>
-                            <form method="POST" action="{{ route('santa.geocodeFamilies') }}">
-                                @csrf
-                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition"
-                                        onclick="this.textContent='Geocoding...'; this.disabled=true; this.form.submit();">
-                                    Geocode Missing Addresses
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    <!-- Hidden geocoding form (separate from main settings form) -->
+                    <form id="geocode-form" method="POST" action="{{ route('santa.geocodeFamilies') }}" style="display:none;">
+                        @csrf
+                    </form>
 
                 </div>
             </div>
@@ -535,41 +566,68 @@
             sections.forEach(s => observer.observe(s));
         }
 
-        // Delivery dates
+        // Delivery schedule (dates + per-date time ranges)
         const deliveryContainer = document.getElementById('delivery-dates-container');
         const deliveryHidden = document.getElementById('delivery_dates_hidden');
-        const existingDates = deliveryHidden.value ? deliveryHidden.value.split(',').map(d => d.trim()).filter(Boolean) : [];
+        const scheduleHidden = document.getElementById('delivery_schedule_hidden');
 
-        function renderDeliveryDate(value = '') {
+        // Try parsing new JSON schedule format first, fall back to legacy comma-separated dates
+        let existingSchedule = [];
+        try {
+            const parsed = JSON.parse(scheduleHidden.value);
+            if (Array.isArray(parsed)) existingSchedule = parsed;
+        } catch(e) {}
+
+        if (existingSchedule.length === 0 && deliveryHidden.value) {
+            const legacyDates = deliveryHidden.value.split(',').map(d => d.trim()).filter(Boolean);
+            existingSchedule = legacyDates.map(d => ({
+                date: d,
+                start: '{{ \App\Models\Setting::get("delivery_time_start", "08:00") }}',
+                end: '{{ \App\Models\Setting::get("delivery_time_end", "21:00") }}'
+            }));
+        }
+
+        function renderDeliveryDate(dateVal = '', startVal = '08:00', endVal = '21:00') {
             const row = document.createElement('div');
-            row.className = 'flex items-center gap-2';
+            row.className = 'flex items-center gap-2 flex-wrap';
             row.innerHTML = `
-                <input type="date" value="${value}" class="delivery-date-input block w-48 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                <input type="date" value="${dateVal}" class="delivery-date-input block w-44 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                <span class="text-xs text-gray-400">from</span>
+                <input type="time" value="${startVal}" class="delivery-start-input block w-28 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                <span class="text-xs text-gray-400">to</span>
+                <input type="time" value="${endVal}" class="delivery-end-input block w-28 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                 <button type="button" onclick="this.parentElement.remove(); syncDeliveryDates();"
                     class="p-1.5 text-gray-400 hover:text-red-500 transition" title="Remove">
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             `;
-            row.querySelector('input').addEventListener('change', syncDeliveryDates);
+            row.querySelectorAll('input').forEach(i => i.addEventListener('change', syncDeliveryDates));
             deliveryContainer.appendChild(row);
         }
 
-        function addDeliveryDate() { renderDeliveryDate(''); }
+        function addDeliveryDate() { renderDeliveryDate('', '08:00', '21:00'); }
 
         function syncDeliveryDates() {
-            const dates = [];
-            deliveryContainer.querySelectorAll('.delivery-date-input').forEach(input => {
-                if (input.value) {
-                    const d = new Date(input.value + 'T12:00:00');
+            const schedule = [];
+            const dateNames = [];
+            deliveryContainer.querySelectorAll('.delivery-date-input').forEach((dateInput, i) => {
+                const row = dateInput.parentElement;
+                const start = row.querySelector('.delivery-start-input')?.value || '08:00';
+                const end = row.querySelector('.delivery-end-input')?.value || '21:00';
+                if (dateInput.value) {
+                    const d = new Date(dateInput.value + 'T12:00:00');
                     if (!isNaN(d)) {
                         const month = d.toLocaleString('en-US', { month: 'long' });
                         const day = d.getDate();
                         const suffix = day === 1 || day === 21 || day === 31 ? 'st' : day === 2 || day === 22 ? 'nd' : day === 3 || day === 23 ? 'rd' : 'th';
-                        dates.push(`${month} ${day}${suffix}`);
+                        const dateName = `${month} ${day}${suffix}`;
+                        dateNames.push(dateName);
+                        schedule.push({ date: dateName, start: start, end: end });
                     }
                 }
             });
-            deliveryHidden.value = dates.join(',');
+            deliveryHidden.value = dateNames.join(',');
+            scheduleHidden.value = JSON.stringify(schedule);
         }
 
         function parseDateToISO(dateStr) {
@@ -586,7 +644,17 @@
             return '';
         }
 
-        existingDates.forEach(d => renderDeliveryDate(parseDateToISO(d)));
-        if (existingDates.length === 0) renderDeliveryDate('');
+        existingSchedule.forEach(s => renderDeliveryDate(parseDateToISO(s.date), s.start || '08:00', s.end || '21:00'));
+        if (existingSchedule.length === 0) renderDeliveryDate('');
+
+        // Delivery sheet footer: toggle text input based on role selection
+        document.getElementById('delivery_return_to_role')?.addEventListener('change', function() {
+            const textInput = document.getElementById('delivery_return_to');
+            if (this.value) {
+                textInput.classList.add('hidden');
+            } else {
+                textInput.classList.remove('hidden');
+            }
+        });
     </script>
 </x-app-layout>

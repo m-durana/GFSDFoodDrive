@@ -467,4 +467,103 @@ class SeasonController extends Controller
 
         return view('santa.seasons.import-preview', compact('preview', 'type', 'seasonYear', 'path'));
     }
+
+    /**
+     * Bulk-import all legacy database files that haven't been imported yet.
+     */
+    public function importAllLegacy()
+    {
+        set_time_limit(0);
+
+        $legacyFiles = $this->scanLegacyDatabases();
+        $existingSeasons = Season::pluck('year')->toArray();
+        $accessService = new AccessImportService();
+        $excelService = new ExcelImportService();
+
+        $totalFamilies = 0;
+        $totalChildren = 0;
+        $yearsImported = 0;
+        $allErrors = [];
+
+        foreach ($legacyFiles as $year => $files) {
+            if (in_array($year, $existingSeasons)) {
+                continue;
+            }
+
+            // Find the main _be database file
+            $mainFile = collect($files)->firstWhere('is_main', true);
+            if (!$mainFile) {
+                continue;
+            }
+
+            $ext = $mainFile['ext'];
+            $filePath = $mainFile['path'];
+
+            if (!in_array($ext, ['accdb', 'mdb'])) {
+                continue;
+            }
+
+            try {
+                $tables = $accessService->listTables($filePath);
+
+                // Import families
+                $familyTable = collect($tables)->first(fn($t) => stripos($t, 'family') !== false && stripos($t, 'child') === false);
+                if ($familyTable) {
+                    $rows = $accessService->readTable($filePath, $familyTable);
+                    $result = $excelService->importFamiliesFromRows($rows, $year);
+                    $totalFamilies += $result['imported'];
+                    $allErrors = array_merge($allErrors, array_map(fn($e) => "[{$year}] {$e}", $result['errors']));
+                }
+
+                // Import children
+                $childTable = collect($tables)->first(fn($t) => stripos($t, 'child') !== false);
+                if ($childTable) {
+                    $childRows = $accessService->readTable($filePath, $childTable);
+
+                    $familyIdMap = null;
+                    if ($familyTable) {
+                        try {
+                            $familyRows = $accessService->readTable($filePath, $familyTable);
+                            $ourFamilies = Family::withoutGlobalScopes()
+                                ->where('season_year', $year)
+                                ->whereNotNull('family_number')
+                                ->pluck('id', 'family_number')
+                                ->toArray();
+
+                            $familyIdMap = [];
+                            foreach ($familyRows as $fRow) {
+                                $accessId = $fRow['Family ID'] ?? $fRow['ID'] ?? null;
+                                $famNum = $fRow['Family Number'] ?? $fRow['FamilyNumber'] ?? null;
+                                if ($accessId && $famNum && isset($ourFamilies[(int) $famNum])) {
+                                    $familyIdMap[$accessId] = $ourFamilies[(int) $famNum];
+                                }
+                            }
+                        } catch (\Exception $e) {
+                            // Fall through
+                        }
+                    }
+
+                    $result = $excelService->importChildrenFromRows($childRows, $year, $familyIdMap);
+                    $totalChildren += $result['imported'];
+                    $allErrors = array_merge($allErrors, array_map(fn($e) => "[{$year}] {$e}", $result['errors']));
+                }
+
+                // Create season record
+                $stats = Season::computeStats($year);
+                Season::updateOrCreate(['year' => $year], $stats);
+                $yearsImported++;
+            } catch (\Exception $e) {
+                $allErrors[] = "[{$year}] Failed: " . $e->getMessage();
+            }
+        }
+
+        if ($yearsImported === 0) {
+            return redirect()->route('santa.seasons.import')
+                ->with('error', 'No new years to import (all already exist or no main _be files found).');
+        }
+
+        return redirect()->route('santa.seasons.import')
+            ->with('success', "Imported {$yearsImported} years: {$totalFamilies} families, {$totalChildren} children.")
+            ->with('import_errors', array_slice($allErrors, 0, 50));
+    }
 }

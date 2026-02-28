@@ -73,8 +73,8 @@
         }
 
         .card-qr img {
-            width: 0.75in;
-            height: 0.75in;
+            width: 1in;
+            height: 1in;
         }
 
         /* --- DYNAMIC FONT SIZES --- */

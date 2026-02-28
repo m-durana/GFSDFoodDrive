@@ -41,10 +41,9 @@
             </div>
 
             <p class="mt-8 text-xs text-gray-400 dark:text-gray-600">
-                GFSD Food Drive &copy; {{ date('Y') }} &middot; Made in 🇨🇭
+                GFSD Food Drive &copy; {{ date('Y') }} &middot; Made with love in 🇨🇭
             </p>
         </div>
     </div>
-    @include('partials.grinch-overscroll')
 </body>
 </html>

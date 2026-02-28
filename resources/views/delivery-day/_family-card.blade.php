@@ -24,11 +24,8 @@
                 <span class="status-badge inline-flex px-2 py-0.5 text-xs font-medium rounded-full {{ $statusColors[$status] ?? '' }}">
                     {{ $family->delivery_status?->label() ?? 'Pending' }}
                 </span>
-                @if($family->deliveryTeam)
-                    <span class="inline-flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span class="w-2 h-2 rounded-full" style="background: {{ $family->deliveryTeam->color ?? '#6b7280' }}"></span>
-                        {{ $family->deliveryTeam->name }}
-                    </span>
+                @if($family->deliveryRoute)
+                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ $family->deliveryRoute->name }}</span>
                 @endif
             </div>
             <div class="mt-1 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
@@ -58,8 +55,8 @@
             @endif
         </div>
 
-        <!-- Inline actions -->
-        <div class="flex items-center gap-2 shrink-0">
+        <!-- Status action -->
+        <div class="shrink-0">
             <select onchange="updateStatusAjax({{ $family->id }}, this)"
                 class="rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-xs pl-2 pr-6 py-1">
                 <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending</option>

@@ -28,12 +28,12 @@
         <div class="flex items-center space-x-4">
             <!-- Mode Toggle -->
             <div class="flex bg-gray-800 rounded-lg p-0.5 text-xs">
-                <button onclick="setMode('shopping')" id="btn-shopping"
-                    class="px-3 py-1.5 rounded-md font-medium transition">Shopping</button>
                 <button onclick="setMode('delivery')" id="btn-delivery"
                     class="px-3 py-1.5 rounded-md font-medium transition">Delivery</button>
                 <button onclick="setMode('overview')" id="btn-overview"
                     class="px-3 py-1.5 rounded-md font-medium transition">Overview</button>
+                <button onclick="setMode('shopping')" id="btn-shopping"
+                    class="px-3 py-1.5 rounded-md font-medium transition">Shopping</button>
             </div>
             <span id="clock" class="text-sm text-gray-400 font-mono"></span>
             <span id="last-update" class="text-xs text-gray-600"></span>
@@ -118,50 +118,52 @@
         </div>
 
         <!-- DELIVERY MODE -->
-        <div id="mode-delivery" class="hidden h-full grid grid-cols-4 grid-rows-3 gap-4">
-            <!-- Top stats -->
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
+        <div id="mode-delivery" class="hidden h-full grid grid-cols-4 grid-rows-[auto_1fr_1fr] gap-4">
+            <!-- Top stats row -->
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
                 <div class="relative">
-                    <svg class="w-28 h-28 transform -rotate-90">
-                        <circle cx="56" cy="56" r="48" stroke="#374151" stroke-width="8" fill="none"/>
-                        <circle id="delivery-ring" cx="56" cy="56" r="48" stroke="#3b82f6" stroke-width="8" fill="none"
-                            stroke-dasharray="301.59" stroke-dashoffset="301.59" class="progress-ring" stroke-linecap="round"/>
+                    <svg class="w-24 h-24 transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" stroke="#374151" stroke-width="7" fill="none"/>
+                        <circle id="delivery-ring" cx="48" cy="48" r="40" stroke="#3b82f6" stroke-width="7" fill="none"
+                            stroke-dasharray="251.33" stroke-dashoffset="251.33" class="progress-ring" stroke-linecap="round"/>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <span id="delivery-pct" class="text-2xl font-bold">0%</span>
+                        <span id="delivery-pct" class="text-xl font-bold">0%</span>
                     </div>
                 </div>
-                <div class="text-sm text-gray-400 mt-2">Delivered</div>
+                <div class="text-xs text-gray-400 mt-1">Delivered</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
                 <div class="text-3xl font-bold text-blue-400 pulse" id="delivery-in-transit">0</div>
                 <div class="text-sm text-gray-400 mt-1">In Transit</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
                 <div class="text-3xl font-bold text-gray-400" id="delivery-pending">0</div>
                 <div class="text-sm text-gray-400 mt-1">Pending</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
                 <div class="text-3xl font-bold text-green-400" id="delivery-done">0</div>
                 <div class="text-sm text-gray-400 mt-1">Complete</div>
             </div>
 
-            <!-- Map -->
-            <div class="bg-gray-800 rounded-lg overflow-hidden col-span-2 row-span-2">
+            <!-- Map (large — 3 columns) -->
+            <div class="bg-gray-800 rounded-lg overflow-hidden col-span-3 row-span-2">
                 <div id="map"></div>
             </div>
 
-            <!-- Route progress + Activity feed -->
-            <div class="bg-gray-800 rounded-lg p-4 col-span-1 row-span-2 overflow-y-auto">
-                <h3 class="text-sm font-medium text-gray-400 mb-3">Routes</h3>
-                <div id="route-bars" class="space-y-3">
-                    <div class="text-gray-500 text-sm">Loading...</div>
+            <!-- Route progress + Activity feed (stacked in 1 column) -->
+            <div class="col-span-1 row-span-2 flex flex-col gap-4 min-h-0">
+                <div class="bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3">Routes</h3>
+                    <div id="route-bars" class="space-y-3">
+                        <div class="text-gray-500 text-sm">Loading...</div>
+                    </div>
                 </div>
-            </div>
-            <div class="bg-gray-800 rounded-lg p-4 col-span-1 row-span-2 overflow-y-auto">
-                <h3 class="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
-                <div id="activity-feed" class="space-y-2">
-                    <div class="text-gray-500 text-sm">Loading...</div>
+                <div class="bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
+                    <div id="activity-feed" class="space-y-2">
+                        <div class="text-gray-500 text-sm">Loading...</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,7 +171,7 @@
 
     <script>
         const DATA_URL = @json(route('santa.commandCenter.data'));
-        let currentMode = '{{ $mode === "auto" ? "overview" : $mode }}';
+        let currentMode = '{{ $mode === "auto" ? "delivery" : $mode }}';
         let map = null;
         let mapMarkers = [];
         let giftChart = null;
@@ -229,7 +231,8 @@
         function setRing(id, pct) {
             const ring = document.getElementById(id);
             if (!ring) return;
-            const circumference = 2 * Math.PI * 48;
+            const r = parseFloat(ring.getAttribute('r')) || 48;
+            const circumference = 2 * Math.PI * r;
             ring.style.strokeDashoffset = circumference - (pct / 100) * circumference;
         }
 

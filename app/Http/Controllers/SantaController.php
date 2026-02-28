@@ -199,14 +199,19 @@ class SantaController extends Controller
         // Family Status Pages
         Setting::set('family_status_enabled', $request->boolean('family_status_enabled') ? '1' : '0');
 
-        // Delivery dates
+        // Delivery dates & schedule
         Setting::set('delivery_dates', $request->input('delivery_dates', ''));
+        Setting::set('delivery_schedule', $request->input('delivery_schedule', ''));
 
-        // Delivery time range
-        Setting::set('delivery_time_start', $request->input('delivery_time_start', '08:00'));
-        Setting::set('delivery_time_end', $request->input('delivery_time_end', '21:00'));
+        // Legacy time range (kept for backward compat, extracted from schedule)
+        $schedule = json_decode($request->input('delivery_schedule', '[]'), true);
+        if (!empty($schedule) && is_array($schedule)) {
+            Setting::set('delivery_time_start', $schedule[0]['start'] ?? '08:00');
+            Setting::set('delivery_time_end', $schedule[0]['end'] ?? '21:00');
+        }
 
         // Delivery sheet footer
+        Setting::set('delivery_return_to_role', $request->input('delivery_return_to_role', ''));
         Setting::set('delivery_return_to', $request->input('delivery_return_to', 'System Engineers'));
         Setting::set('hs_phone_number', $request->input('hs_phone_number', ''));
 
@@ -231,6 +236,10 @@ class SantaController extends Controller
 
         // Hints
         Setting::set('hints_enabled', $request->boolean('hints_enabled') ? '1' : '0');
+
+        // Feature modes (classic vs new)
+        Setting::set('use_classic_delivery', $request->boolean('use_classic_delivery') ? '1' : '0');
+        Setting::set('use_classic_adoption', $request->boolean('use_classic_adoption') ? '1' : '0');
 
         // Coordinator positions
         Setting::set('coordinator_positions', $request->input('coordinator_positions', ''));
@@ -268,6 +277,17 @@ class SantaController extends Controller
                 $name = time() . '-' . preg_replace('/[^a-z0-9.]/', '-', strtolower($file->getClientOriginalName()));
                 $file->storeAs('sponsors', $name, 'public');
                 $existing[] = ['path' => 'sponsors/' . $name, 'name' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)];
+            }
+            Setting::set('sponsor_logos', json_encode($existing));
+        }
+
+        // Update sponsor URLs
+        if ($request->has('sponsor_urls')) {
+            $existing = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: [];
+            foreach ($request->input('sponsor_urls', []) as $idx => $url) {
+                if (isset($existing[$idx])) {
+                    $existing[$idx]['url'] = $url ?: '';
+                }
             }
             Setting::set('sponsor_logos', json_encode($existing));
         }
@@ -915,10 +935,15 @@ class SantaController extends Controller
 
     public function geocodeFamilies(GeocodingService $geocoder): RedirectResponse
     {
-        $result = $geocoder->geocodeAll();
+        $result = $geocoder->geocodeAll(50);
+
+        $msg = "Geocoded {$result['geocoded']} families. {$result['errors']} could not be geocoded.";
+        if ($result['remaining'] > 0) {
+            $msg .= " {$result['remaining']} addresses still need geocoding — click the button again to continue.";
+        }
 
         return redirect()->route('santa.settings')
-            ->with('success', "Geocoded {$result['geocoded']} families. {$result['errors']} could not be geocoded.");
+            ->with('success', $msg);
     }
 
     private function duplicateScore(Family $a, Family $b): int

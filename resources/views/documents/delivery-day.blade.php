@@ -268,7 +268,16 @@
 
             <!-- Return instructions -->
             <div style="margin-top: 10pt; padding-top: 6pt; border-top: 1pt solid #999; font-size: 12pt; color: #444; text-align: center;">
-                Return this form to {{ \App\Models\Setting::get('delivery_return_to', 'System Engineers') }}.
+                @php
+                    $returnRole = \App\Models\Setting::get('delivery_return_to_role', '');
+                    if ($returnRole) {
+                        $returnNames = \App\Models\User::where('position', $returnRole)->limit(2)->pluck('name')->implode(' & ');
+                        $returnTo = $returnNames ?: $returnRole;
+                    } else {
+                        $returnTo = \App\Models\Setting::get('delivery_return_to', 'System Engineers');
+                    }
+                @endphp
+                Return this form to {{ $returnTo }}.
                 @if(\App\Models\Setting::get('hs_phone_number'))
                     Problems? HS Phone: <strong>{{ \App\Models\Setting::get('hs_phone_number') }}</strong>
                 @endif

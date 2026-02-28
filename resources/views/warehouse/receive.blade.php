@@ -2,6 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Receive Items
+            <x-hint key="warehouse-receive" text="Scan barcodes with the USB scanner or type them manually. Unknown barcodes can be registered on the fly. The input re-focuses after each scan for continuous intake." />
         </h2>
     </x-slot>
 
@@ -130,10 +131,19 @@
                         document.getElementById('item-info').classList.remove('hidden');
                         document.getElementById('unknown-info').classList.add('hidden');
                         document.getElementById('category_id').value = data.item.category_id;
+                    } else if (data.external) {
+                        document.getElementById('item-id').value = '';
+                        const extName = data.external.name + (data.external.brand ? ' (' + data.external.brand + ')' : '');
+                        document.getElementById('item-info').classList.add('hidden');
+                        document.getElementById('unknown-info').classList.remove('hidden');
+                        document.getElementById('unknown-info').querySelector('p').textContent =
+                            'Found in UPC database: ' + extName + '. Select a category below to log it.';
                     } else {
                         document.getElementById('item-id').value = '';
                         document.getElementById('item-info').classList.add('hidden');
                         document.getElementById('unknown-info').classList.remove('hidden');
+                        document.getElementById('unknown-info').querySelector('p').textContent =
+                            'Unknown barcode. Select a category below.';
                     }
                 })
                 .catch(() => {

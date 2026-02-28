@@ -12,6 +12,7 @@ use App\Models\WarehouseCategory;
 use App\Models\WarehouseItem;
 use App\Models\WarehouseTransaction;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
 
 class WarehouseService
 {
@@ -88,7 +89,7 @@ class WarehouseService
     /**
      * Record a receipt (incoming item).
      */
-    public function recordReceipt(array $data, User $user): WarehouseTransaction
+    public function recordReceipt(array $data, ?User $user = null): WarehouseTransaction
     {
         return WarehouseTransaction::create([
             'category_id' => $data['category_id'],
@@ -99,7 +100,9 @@ class WarehouseService
             'donor_name' => $data['donor_name'] ?? null,
             'barcode_scanned' => $data['barcode_scanned'] ?? null,
             'notes' => $data['notes'] ?? null,
-            'scanned_by' => $user->id,
+            'scanned_by' => $user?->id,
+            'volunteer_name' => $data['volunteer_name'] ?? null,
+            'ip_address' => $data['ip_address'] ?? null,
         ]);
     }
 
@@ -109,6 +112,34 @@ class WarehouseService
     public function lookupBarcode(string $barcode): ?WarehouseItem
     {
         return WarehouseItem::where('barcode', $barcode)->first();
+    }
+
+    /**
+     * Look up a barcode via the Open Food Facts API.
+     * Returns product name if found, null otherwise.
+     */
+    public function lookupBarcodeExternal(string $barcode): ?array
+    {
+        try {
+            $response = Http::withHeaders([
+                'User-Agent' => 'GFSDFoodDrive/1.0',
+            ])->timeout(5)->get("https://world.openfoodfacts.org/api/v0/product/{$barcode}.json");
+
+            if ($response->successful()) {
+                $data = $response->json();
+                if (($data['status'] ?? 0) === 1 && !empty($data['product']['product_name'])) {
+                    return [
+                        'name' => $data['product']['product_name'],
+                        'brand' => $data['product']['brands'] ?? null,
+                        'image' => $data['product']['image_small_url'] ?? null,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            // Fall through
+        }
+
+        return null;
     }
 
     /**

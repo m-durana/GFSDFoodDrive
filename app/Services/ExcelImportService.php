@@ -158,9 +158,11 @@ class ExcelImportService
             return ['headers' => [], 'mapped' => [], 'preview' => []];
         }
 
+        // Access rows are associative (key = column name). Convert to indexed arrays
+        // so the preview table renders correctly (headers[i] matches row[i]).
         $headers = array_keys($rows[0]);
         $mapped = $this->mapHeaders($headers, $type);
-        $preview = array_slice($rows, 0, 5);
+        $preview = array_map(fn($row) => array_values($row), array_slice($rows, 0, 5));
 
         return [
             'headers' => $headers,
@@ -266,7 +268,33 @@ class ExcelImportService
                     continue;
                 }
 
+                // Skip rows with family_number = 0 (invalid data)
+                if (isset($data['family_number']) && (int) $data['family_number'] === 0 && empty($data['family_name'])) {
+                    $skipped++;
+                    continue;
+                }
+
                 $data['season_year'] = $seasonYear;
+
+                // Validate delivery_date — non-date strings like "Other", "UNKNOWN" crash the date cast
+                if (isset($data['delivery_date'])) {
+                    try {
+                        \Carbon\Carbon::parse($data['delivery_date']);
+                    } catch (\Exception $e) {
+                        // Move invalid date value to delivery_preference
+                        $data['delivery_preference'] = $data['delivery_preference'] ?? $data['delivery_date'];
+                        $data['delivery_date'] = null;
+                    }
+                }
+
+                // Validate delivery_time — "Other", "Either", "UNKNOWN", "will pick up" are preferences, not times
+                if (isset($data['delivery_time'])) {
+                    $timeVal = strtolower(trim($data['delivery_time']));
+                    if (in_array($timeVal, ['other', 'either', 'unknown', 'will pick up', 'n/a', 'na', 'none', 'tbd'])) {
+                        $data['delivery_preference'] = $data['delivery_preference'] ?? $data['delivery_time'];
+                        unset($data['delivery_time']);
+                    }
+                }
 
                 // Cast numeric fields
                 foreach (['family_number', 'female_adults', 'male_adults', 'other_adults', 'number_of_adults', 'infants', 'young_children', 'children_count', 'tweens', 'teenagers', 'number_of_children', 'number_of_family_members', 'number_of_boxes'] as $field) {
@@ -287,7 +315,15 @@ class ExcelImportService
                     $data['delivery_status'] = $this->normalizeDeliveryStatus($data['delivery_status']);
                 }
 
-                Family::withoutGlobalScopes()->create($data);
+                // Use updateOrCreate to handle duplicate family_number + season_year gracefully
+                if (!empty($data['family_number'])) {
+                    Family::withoutGlobalScopes()->updateOrCreate(
+                        ['family_number' => $data['family_number'], 'season_year' => $data['season_year']],
+                        $data
+                    );
+                } else {
+                    Family::withoutGlobalScopes()->create($data);
+                }
                 $imported++;
             } catch (\Exception $e) {
                 $errors[] = "Row " . ($rowNum + 2) . ": " . $e->getMessage();
@@ -346,6 +382,14 @@ class ExcelImportService
 
                 $data['family_id'] = $ourFamilyId;
                 $data['season_year'] = $seasonYear;
+
+                // Default gender and age when missing (avoid NULL constraint errors)
+                if (empty($data['gender'])) {
+                    $data['gender'] = 'Unknown';
+                }
+                if (!isset($data['age']) || $data['age'] === '' || $data['age'] === null) {
+                    $data['age'] = 0;
+                }
 
                 if (isset($data['age'])) {
                     $data['age'] = (int) $data['age'];

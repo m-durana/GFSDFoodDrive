@@ -57,7 +57,7 @@
             <span>Made in 🇨🇭</span>
         </footer>
     </div>
-    @include('partials.grinch-overscroll')
     @include('partials.hints')
+    @include('partials.guided-tour')
 </body>
 </html>

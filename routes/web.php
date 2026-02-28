@@ -132,6 +132,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::post('/seasons/import/access-preview', [SeasonController::class, 'previewAccessTable'])->name('seasons.previewAccessTable');
     Route::post('/seasons/import/legacy', [SeasonController::class, 'importLegacy'])->name('seasons.importLegacy');
     Route::post('/seasons/import/all-access', [SeasonController::class, 'importAllAccess'])->name('seasons.importAllAccess');
+    Route::post('/seasons/import/all-legacy', [SeasonController::class, 'importAllLegacy'])->name('seasons.importAllLegacy');
     Route::post('/seasons/archive', [SeasonController::class, 'archive'])->name('seasons.archive');
     Route::get('/seasons/{season}', [SeasonController::class, 'show'])->name('seasons.show');
     Route::get('/seasons/{season}/families', [SeasonController::class, 'families'])->name('seasons.families');
@@ -178,6 +179,7 @@ Route::post('/adopt/{child}/claim', [AdoptionController::class, 'claim'])->name(
 Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverView'])->name('delivery.driverView');
 Route::post('/delivery/route/{token}/complete/{family}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
 Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
+Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
@@ -216,6 +218,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::get('/map-data', [DeliveryDayController::class, 'mapData'])->name('mapData');
     Route::post('/location', [DeliveryDayController::class, 'updateLocation'])->name('updateLocation');
     Route::get('/track', [DeliveryDayController::class, 'track'])->name('track');
+    Route::post('/quick-assign', [DeliveryDayController::class, 'quickAssign'])->name('quickAssign');
 });
 
 // Santa duplicate detection routes

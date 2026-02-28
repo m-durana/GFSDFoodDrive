@@ -16,6 +16,22 @@
         <a href="{{ route('warehouse.index') }}" class="text-sm text-gray-400 hover:text-gray-200 transition">Exit Kiosk</a>
     </div>
 
+    @guest
+    <!-- Volunteer Name Prompt (shown once per session, only for non-logged-in users) -->
+    <div id="volunteer-prompt" class="fixed inset-0 bg-gray-900/95 z-50 flex items-center justify-center" style="display:none;">
+        <div class="bg-gray-800 rounded-xl p-8 max-w-md w-full border border-gray-700 text-center">
+            <h2 class="text-xl font-bold text-gray-100 mb-2">Welcome, Volunteer!</h2>
+            <p class="text-sm text-gray-400 mb-6">Enter your name so we can track who scanned what.</p>
+            <input type="text" id="volunteer-name-input" autofocus
+                class="w-full text-center text-lg py-3 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 placeholder-gray-500 focus:border-green-500 focus:ring-green-500"
+                placeholder="Your name">
+            <button onclick="saveVolunteerName()" class="mt-4 w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 transition">
+                Start Scanning
+            </button>
+        </div>
+    </div>
+    @endguest
+
     <!-- Main Content -->
     <div class="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
 
@@ -47,6 +63,43 @@
             </div>
         </div>
 
+        <!-- Optional Details (collapsible) -->
+        <div class="w-full max-w-lg">
+            <button type="button" id="details-toggle" onclick="document.getElementById('details-panel').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');"
+                class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition mb-2">
+                <svg class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                Additional Details (optional)
+            </button>
+            <div id="details-panel" class="hidden space-y-3 bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Quantity</label>
+                    <input type="number" id="detail-quantity" value="1" min="1" max="9999"
+                        class="w-24 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Source</label>
+                    <select id="detail-source" class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+                        <option value="">Not specified</option>
+                        <option value="School Drive">School Drive</option>
+                        <option value="Adopt-a-Tag">Adopt-a-Tag</option>
+                        <option value="Community Donation">Community Donation</option>
+                        <option value="Store Purchase">Store Purchase</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Donor Name</label>
+                    <input type="text" id="detail-donor" maxlength="200"
+                        class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500"
+                        placeholder="e.g. Smith Family">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">Notes</label>
+                    <input type="text" id="detail-notes" maxlength="1000"
+                        class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+                </div>
+            </div>
+        </div>
+
         <!-- Last 5 Scans -->
         <div class="w-full max-w-lg">
             <h3 class="text-sm text-gray-500 mb-2">Recent Scans</h3>
@@ -71,6 +124,30 @@
         const totals = {};
         const recentScans = [];
         let selectedCategoryId = null;
+        @auth
+        let volunteerName = @json(Auth::user()->name);
+        @else
+        let volunteerName = sessionStorage.getItem('kiosk_volunteer_name') || '';
+
+        // Show volunteer name prompt if not set
+        if (!volunteerName) {
+            document.getElementById('volunteer-prompt').style.display = '';
+            document.getElementById('volunteer-name-input').focus();
+        }
+
+        function saveVolunteerName() {
+            const name = document.getElementById('volunteer-name-input').value.trim();
+            if (!name) return;
+            volunteerName = name;
+            sessionStorage.setItem('kiosk_volunteer_name', name);
+            document.getElementById('volunteer-prompt').style.display = 'none';
+            input.focus();
+        }
+
+        document.getElementById('volunteer-name-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); saveVolunteerName(); }
+        });
+        @endauth
 
         // Category button click
         document.querySelectorAll('.kiosk-cat-btn').forEach(btn => {
@@ -102,6 +179,9 @@
             .then(data => {
                 if (data.found) {
                     submitReceipt(data.item.category_id, data.item.category.name, barcode, data.item.id);
+                } else if (data.external) {
+                    const extName = data.external.name + (data.external.brand ? ' (' + data.external.brand + ')' : '');
+                    showFeedback('Found: ' + extName + '. Select a category to log it.', 'yellow');
                 } else if (selectedCategoryId) {
                     submitReceipt(selectedCategoryId, null, barcode);
                 } else {
@@ -114,11 +194,20 @@
         });
 
         function submitReceipt(categoryId, catName, barcode, itemId) {
+            const qty = document.getElementById('detail-quantity')?.value || '1';
+            const source = document.getElementById('detail-source')?.value || '';
+            const donor = document.getElementById('detail-donor')?.value || '';
+            const notes = document.getElementById('detail-notes')?.value || '';
+
             const body = new FormData();
             body.append('category_id', categoryId);
-            body.append('quantity', '1');
+            body.append('quantity', qty);
             if (barcode) body.append('barcode_scanned', barcode);
             if (itemId) body.append('item_id', itemId);
+            if (volunteerName) body.append('volunteer_name', volunteerName);
+            if (source) body.append('source', source);
+            if (donor) body.append('donor_name', donor);
+            if (notes) body.append('notes', notes);
 
             fetch('{{ route("warehouse.store") }}', {
                 method: 'POST',
@@ -171,12 +260,7 @@
             }
         }
 
-        // Keep focus on input
-        document.addEventListener('click', function(e) {
-            if (!e.target.classList.contains('kiosk-cat-btn')) {
-                input.focus();
-            }
-        });
+        // Focus barcode input on page load (not on every click - that steals focus from other inputs)
         input.focus();
     </script>
 </body>

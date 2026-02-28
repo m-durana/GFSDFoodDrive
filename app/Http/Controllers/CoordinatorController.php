@@ -71,6 +71,18 @@ class CoordinatorController extends Controller
         $paperSize = Setting::get('paper_size', 'letter');
         $adoptDeadline = Setting::get('adopt_a_tag_deadline', '');
 
+        // Default deadline: first delivery date minus 9 days
+        if (empty($adoptDeadline)) {
+            $deliveryDate = Setting::get('delivery_date', '');
+            if ($deliveryDate) {
+                try {
+                    $adoptDeadline = \Carbon\Carbon::parse($deliveryDate)->subDays(9)->format('F j, Y');
+                } catch (\Exception $e) {
+                    // Ignore invalid dates
+                }
+            }
+        }
+
         if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
             return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline'));
         }

@@ -22,32 +22,12 @@ class DeliveryDayController extends Controller
         $routes = DeliveryRoute::with(['driver', 'families' => fn($q) => $q->orderBy('route_order')])
             ->get();
 
-        // Teams with family counts
-        $teams = DeliveryTeam::with('driver')->withCount('families')->get();
-
-        // Unrouted families (geocoded, no route)
-        $unroutedFamilies = Family::whereNotNull('family_number')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->whereNull('delivery_route_id')
-            ->where(function ($q) {
-                $q->where('delivery_preference', 'like', '%deliver%')
-                    ->orWhereNull('delivery_preference');
-            })
-            ->orderBy('family_number')
-            ->get();
-
         // All delivery families for dispatch board
         $query = Family::whereNotNull('family_number')
-            ->with(['children', 'volunteer', 'deliveryTeam', 'deliveryRoute',
+            ->with(['children', 'volunteer', 'deliveryRoute',
                 'deliveryLogs' => fn($q) => $q->latest()->limit(5),
                 'deliveryLogs.user',
             ]);
-
-        // Filter by team
-        if ($request->filled('team')) {
-            $query->where('delivery_team_id', $request->team);
-        }
 
         // Filter by status
         if ($request->filled('status')) {
@@ -62,7 +42,7 @@ class DeliveryDayController extends Controller
             }
         }
 
-        $families = $query->orderBy('delivery_team_id')->orderBy('family_number')->get();
+        $families = $query->orderBy('family_number')->get();
 
         // Stats
         $allDeliveryFamilies = Family::whereNotNull('family_number');
@@ -82,16 +62,8 @@ class DeliveryDayController extends Controller
             'picked_up' => (clone $allDeliveryFamilies)->where('delivery_status', DeliveryStatus::PickedUp)->count(),
         ];
 
-        // Drivers for route builder
-        $drivers = User::where(function ($q) {
-            $q->where('permission', 8)->orWhere('permission', 9);
-        })->orderBy('first_name')->get();
-
-        $orsKey = Setting::get('openrouteservice_key', '');
-
         return view('delivery-day.index', compact(
-            'routes', 'teams', 'unroutedFamilies', 'families',
-            'stats', 'drivers', 'orsKey'
+            'routes', 'families', 'stats'
         ));
     }
 
@@ -299,6 +271,93 @@ class DeliveryDayController extends Controller
     public function track(): View
     {
         return view('delivery-day.track');
+    }
+
+    /**
+     * Auto-assign a batch of nearby undelivered families to a new driver route.
+     */
+    public function quickAssign(Request $request): JsonResponse
+    {
+        $request->validate([
+            'driver_name' => ['required', 'string', 'max:255'],
+            'batch_size' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'start_lat' => ['nullable', 'numeric'],
+            'start_lng' => ['nullable', 'numeric'],
+        ]);
+
+        $batchSize = $request->input('batch_size', 5);
+
+        // Find undelivered families with coordinates, not already on a route
+        $query = Family::whereNotNull('family_number')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereNull('delivery_route_id')
+            ->where(function ($q) {
+                $q->where('delivery_status', DeliveryStatus::Pending)
+                    ->orWhereNull('delivery_status');
+            })
+            ->where(function ($q) {
+                $q->where('delivery_preference', 'like', '%deliver%')
+                    ->orWhereNull('delivery_preference');
+            });
+
+        // If we have a starting point, sort by distance to it
+        if ($request->filled('start_lat') && $request->filled('start_lng')) {
+            $lat = $request->start_lat;
+            $lng = $request->start_lng;
+            $query->orderByRaw("(latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?) ASC", [$lat, $lat, $lng, $lng]);
+        } else {
+            $query->orderBy('family_number');
+        }
+
+        $families = $query->limit($batchSize)->get();
+
+        if ($families->isEmpty()) {
+            return response()->json(['ok' => false, 'message' => 'No undelivered families available.'], 422);
+        }
+
+        // Create route
+        $route = DeliveryRoute::create([
+            'name' => $request->driver_name . ' - ' . now()->format('g:ia'),
+            'driver_name' => $request->driver_name,
+            'start_lat' => $request->start_lat,
+            'start_lng' => $request->start_lng,
+            'stop_count' => $families->count(),
+            'access_token' => \Illuminate\Support\Str::random(32),
+            'season_year' => (int) Setting::get('season_year', date('Y')),
+        ]);
+
+        // Assign families to route
+        foreach ($families as $i => $family) {
+            $family->update([
+                'delivery_route_id' => $route->id,
+                'route_order' => $i + 1,
+                'delivery_status' => DeliveryStatus::Pending,
+            ]);
+        }
+
+        // Try to optimize via ORS if key available
+        $orsKey = Setting::get('openrouteservice_key', '');
+        if ($orsKey && $families->count() >= 2) {
+            try {
+                app(\App\Http\Controllers\DeliveryRouteController::class)->optimizeRoute($route, $orsKey);
+            } catch (\Exception $e) {
+                // Non-fatal - route just won't be optimized
+            }
+        }
+
+        $driverUrl = route('delivery.driverView', $route->access_token);
+
+        return response()->json([
+            'ok' => true,
+            'route' => [
+                'id' => $route->id,
+                'name' => $route->name,
+                'stop_count' => $families->count(),
+                'driver_url' => $driverUrl,
+                'access_token' => $route->access_token,
+            ],
+        ]);
     }
 
     public function logs(Request $request): View
