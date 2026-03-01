@@ -28,11 +28,13 @@
         transform: translateX(-50%);
         background: #1f2937;
         color: #e5e7eb;
-        padding: 8px 12px;
+        padding: 12px 16px;
         border-radius: 8px;
-        font-size: 12px;
-        line-height: 1.4;
-        max-width: 280px;
+        font-size: 13px;
+        line-height: 1.5;
+        width: max-content;
+        min-width: 280px;
+        max-width: 450px;
         white-space: normal;
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 50;
@@ -74,6 +76,24 @@
             if (dismissed.includes(el.dataset.hintKey)) {
                 el.style.display = 'none';
             }
+            // Reposition tooltip if it overflows viewport
+            el.addEventListener('mouseenter', function() {
+                const popup = el.querySelector('.hint-popup');
+                if (!popup) return;
+                popup.style.left = '50%';
+                popup.style.transform = 'translateX(-50%)';
+                requestAnimationFrame(() => {
+                    const rect = popup.getBoundingClientRect();
+                    if (rect.right > window.innerWidth - 8) {
+                        popup.style.left = 'auto';
+                        popup.style.right = '0';
+                        popup.style.transform = 'none';
+                    } else if (rect.left < 8) {
+                        popup.style.left = '0';
+                        popup.style.transform = 'none';
+                    }
+                });
+            });
         });
     });
 </script>

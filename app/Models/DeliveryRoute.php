@@ -33,6 +33,11 @@ class DeliveryRoute extends Model
         'driver_name',
         'start_lat',
         'start_lng',
+        'driver_lat',
+        'driver_lng',
+        'driver_location_at',
+        'route_geometry',
+        'geometry_updated_at',
         'total_distance_meters',
         'total_duration_seconds',
         'stop_count',
@@ -45,6 +50,11 @@ class DeliveryRoute extends Model
         return [
             'start_lat' => 'decimal:7',
             'start_lng' => 'decimal:7',
+            'driver_lat' => 'decimal:7',
+            'driver_lng' => 'decimal:7',
+            'driver_location_at' => 'datetime',
+            'route_geometry' => 'array',
+            'geometry_updated_at' => 'datetime',
             'total_distance_meters' => 'integer',
             'total_duration_seconds' => 'integer',
             'stop_count' => 'integer',
@@ -61,6 +71,11 @@ class DeliveryRoute extends Model
         return $this->hasMany(Family::class)->orderBy('route_order');
     }
 
+    public function getDisplayNameAttribute(): string
+    {
+        return preg_replace('/^\s*seeded\s*/i', '', $this->name);
+    }
+
     public function formattedDistance(): string
     {
         if (! $this->total_distance_meters) return '—';
@@ -74,5 +89,14 @@ class DeliveryRoute extends Model
         $minutes = round($this->total_duration_seconds / 60);
         if ($minutes < 60) return $minutes . ' min';
         return floor($minutes / 60) . 'h ' . ($minutes % 60) . 'm';
+    }
+
+    public function formattedMeta(): string
+    {
+        $parts = [];
+        $parts[] = $this->stop_count . ' stops';
+        if ($this->formattedDistance() !== '—') $parts[] = $this->formattedDistance();
+        if ($this->formattedDuration() !== '—') $parts[] = $this->formattedDuration();
+        return implode(' · ', $parts);
     }
 }

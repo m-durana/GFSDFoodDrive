@@ -30,8 +30,11 @@ class GoogleAuthTest extends TestCase
 
     public function test_google_redirect_fails_gracefully_when_not_configured(): void
     {
+        // Clear static cache from prior tests
+        Setting::clearCache();
+
         $response = $this->get('/auth/google');
-        $response->assertRedirect('/login');
+        $response->assertRedirect(route('login'));
     }
 
     public function test_settings_page_shows_google_oauth_fields(): void
@@ -46,8 +49,8 @@ class GoogleAuthTest extends TestCase
 
         $response = $this->actingAs($santa)->get('/santa/settings');
         $response->assertStatus(200);
-        $response->assertSee('Google Client ID');
-        $response->assertSee('Google Client Secret');
+        $response->assertSee('Client ID');
+        $response->assertSee('Client Secret');
     }
 
     public function test_settings_saves_google_oauth_config(): void

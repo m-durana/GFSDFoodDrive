@@ -21,15 +21,15 @@
 
             @php
                 $iconMap = [
-                    'rocket' => '🚀', 'users' => '👨‍👩‍👧‍👦', 'tag' => '🏷️', 'truck' => '🚚',
-                    'cart' => '🛒', 'monitor' => '📺', 'cog' => '⚙️', 'database' => '🗄️', 'archive' => '📦',
+                    'rocket' => '&#x1F680;', 'users' => '&#x1F468;&#x200D;&#x1F469;&#x200D;&#x1F467;&#x200D;&#x1F466;', 'tag' => '&#x1F3F7;&#xFE0F;', 'truck' => '&#x1F69A;',
+                    'cart' => '&#x1F6D2;', 'monitor' => '&#x1F4FA;', 'cog' => '&#x2699;&#xFE0F;', 'database' => '&#x1F5C4;&#xFE0F;', 'archive' => '&#x1F4E6;',
                 ];
                 $descMap = [
                     'getting-started' => 'Log in, navigate the dashboard, and understand your role.',
                     'family-management' => 'Add families, assign numbers, manage children and self-registration.',
                     'gift-tags' => 'Print gift tags, set up Adopt-a-Tag, and manage tag distribution.',
                     'delivery-day' => 'Dispatch board, live map, driver views, and location sharing.',
-                    'shopping' => 'Grocery formulas, shopping assignments, and NINJA progress tracking.',
+                    'shopping' => 'Grocery formulas, shopping assignments, and shopper progress tracking.',
                     'command-center' => 'Full-screen dashboard for TVs — overview, shopping, and delivery modes.',
                     'settings' => 'Configure registration, notifications, branding, and integrations.',
                     'legacy-import' => 'Import historical data from Access databases (_be vs _fe files).',
@@ -41,7 +41,7 @@
                     <a href="{{ route('help.show', $topic['slug']) }}"
                        class="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-5 hover:shadow-md hover:border-red-300 dark:hover:border-red-700 transition group">
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xl">{{ $iconMap[$topic['icon']] ?? '📄' }}</span>
+                            <span class="text-xl">{!! $iconMap[$topic['icon']] ?? '&#x1F4C4;' !!}</span>
                             <h3 class="font-semibold text-gray-900 dark:text-gray-100 group-hover:text-red-700 dark:group-hover:text-red-400 transition">
                                 {{ $topic['title'] }}
                             </h3>
@@ -55,6 +55,30 @@
                     </a>
                 @endforeach
             </div>
+
+            {{-- FAQ Accordion --}}
+            @if(!empty($faqs))
+                <div class="mt-12">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Frequently Asked Questions</h2>
+                    <div class="space-y-2">
+                        @foreach($faqs as $i => $faq)
+                            <div x-data="{ open: false }" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
+                                    <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $faq['q'] }}</span>
+                                    <svg :class="open && 'rotate-180'" class="w-5 h-5 text-gray-400 shrink-0 ml-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </button>
+                                <div x-show="open" x-collapse>
+                                    <div class="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-3">
+                                        {{ $faq['a'] }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

@@ -20,6 +20,7 @@ class SelfServiceTest extends TestCase
             'phone1' => '360-555-5678',
             'female_adults' => 1,
             'male_adults' => 0,
+            'other_adults' => 0,
             'infants' => 0,
             'young_children' => 1,
             'children_count' => 0,
@@ -35,7 +36,8 @@ class SelfServiceTest extends TestCase
         Setting::set('self_registration_enabled', '0');
 
         $response = $this->get('/register-family');
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertSee('Family Registration is Currently Closed');
     }
 
     public function test_self_service_form_loads_when_enabled(): void
@@ -82,7 +84,8 @@ class SelfServiceTest extends TestCase
         Setting::set('self_registration_enabled', '0');
 
         $response = $this->get('/register-family/success');
-        $response->assertStatus(403);
+        $response->assertStatus(200);
+        $response->assertSee('Family Registration is Currently Closed');
     }
 
     public function test_self_service_validation_enforced(): void

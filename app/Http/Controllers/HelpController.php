@@ -8,7 +8,32 @@ class HelpController extends Controller
 {
     public function index(): View
     {
-        return view('help.index');
+        $faqs = self::faqs();
+        return view('help.index', compact('faqs'));
+    }
+
+    public static function faqs(): array
+    {
+        return [
+            ['q' => 'How do I register my family for the food drive?', 'a' => 'If online self-registration is open, visit the homepage and click "Register Your Family." Fill out the form with your family details and children\'s information. If registration is closed, contact your school\'s advisor or email the food drive team directly.'],
+            ['q' => 'What is Adopt-a-Tag?', 'a' => 'Adopt-a-Tag lets community members "adopt" a child\'s gift tag and purchase a gift for them. You can browse available tags online (when the portal is open) or pick up a physical tag from the Giving Tree at Granite Falls High School.'],
+            ['q' => 'How do I check my family\'s status?', 'a' => 'When your family is registered, you receive a unique status link (looks like: yoursite.com/family-status/abc123...). Use this link to check your registration status, delivery updates, and gift adoption progress.'],
+            ['q' => 'Who are NINJAs?', 'a' => 'NINJAs are our amazing general volunteers! The name stands for "Neighbors In Need of Joining the Action." Everyone — NINJAs, coordinators, and staff — participates in shopping and delivery activities.'],
+            ['q' => 'When is delivery day?', 'a' => 'Delivery dates are set by the Santa (administrator) in the system settings. Check the homepage or ask your coordinator for the specific dates. Typically deliveries happen in mid-December.'],
+            ['q' => 'How does the warehouse barcode scanner work?', 'a' => 'The kiosk page has a barcode scanner input. Scan any food item barcode — the system looks it up in its local database first, then checks OpenFoodFacts for product info and auto-categorizes it. You can also type barcodes manually.'],
+            ['q' => 'What are the different user roles?', 'a' => 'There are four roles: Family/Advisor (register families, manage their own entries), Self-Service (families who self-registered), Coordinator (manage families, warehouse, shopping, delivery operations), and Santa (full admin access including settings, user management, and system configuration).'],
+            ['q' => 'How do gift tags work?', 'a' => 'Each child in a registered family gets a gift tag with their age, gender, sizes, and gift preferences. Tags can be printed (Coordinator > Gift Tags) and placed on the Giving Tree, or made available online through the Adopt-a-Tag portal.'],
+            ['q' => 'Can I adopt more than one tag?', 'a' => 'Yes! You can adopt as many tags as you\'d like — individual children or even an entire family. Each adoption is tracked separately so you\'ll get reminders for each one.'],
+            ['q' => 'Where do I drop off donations?', 'a' => 'Food, toiletries, and gifts should be dropped off at Granite Falls High School (GFHS). Check the homepage for the current address and any special drop-off instructions.'],
+            ['q' => 'How does the shopping list work?', 'a' => 'The Santa sets up a grocery formula (e.g., 2 cans of soup per family member). The system automatically calculates quantities based on registered families. On shopping day, NINJAs and coordinators are assigned items to purchase.'],
+            ['q' => 'What is the Command Center?', 'a' => 'The Command Center is a full-screen, auto-refreshing dashboard designed for display on TVs during operations. It has three modes: Overview (stats and charts), Shopping (NINJA progress tracking), and Delivery (live map with driver locations).'],
+            ['q' => 'How do delivery routes work?', 'a' => 'Santa or coordinators can create optimized delivery routes using the Quick Assign feature, which groups nearby families and calculates efficient driving routes. Drivers get a mobile-friendly view with turn-by-turn navigation links.'],
+            ['q' => 'What happens if I can\'t deliver a gift I adopted?', 'a' => 'Contact the food drive team as soon as possible. An administrator can release your tag back to the available pool so someone else can adopt it. Don\'t worry — the important thing is that every child gets a gift.'],
+            ['q' => 'Is my family\'s information kept confidential?', 'a' => 'Yes. All family information is kept strictly confidential. Only authorized coordinators and administrators can see family details. Gift tag adopters only see the child\'s age, gender, and gift preferences — never names or addresses.'],
+            ['q' => 'How do I volunteer?', 'a' => 'Contact the food drive team via the email on the homepage, or speak to a coordinator at your school. Volunteers help with sorting donations, wrapping gifts, shopping for groceries, and delivering on delivery day.'],
+            ['q' => 'What does "severe need" mean?', 'a' => 'Some families are flagged as having severe or urgent needs by advisors or Santa. These families are silently prioritized in the Adopt-a-Tag portal to ensure they get adopted first, but no special indicator is shown to adopters.'],
+            ['q' => 'Can I use the system on my phone?', 'a' => 'Yes! The entire system is mobile-responsive. The driver view, shopping companion, and Adopt-a-Tag portal are specifically optimized for mobile use. The warehouse kiosk works well on tablets too.'],
+        ];
     }
 
     public function show(string $topic): View
@@ -40,7 +65,7 @@ Welcome to the GFSD Food & Gift Drive management system. This application manage
 
 ### Purpose
 
-The GFSD Food & Gift Drive runs every December. Families in need register through the system (or are registered by coordinators). Each child in those families gets gift tags that community members can adopt. Volunteers (called NINJAs) shop for groceries. Everything is packed into food boxes and delivered to families on delivery day. This app ties all of those moving pieces together in one place.
+The GFSD Food & Gift Drive runs every December. Families in need register through the system (or are registered by coordinators). Each child in those families gets gift tags that community members can adopt. Volunteers (NINJAs) and coordinators shop for groceries together. Everything is packed into food boxes and delivered to families on delivery day. This app ties all of those moving pieces together in one place.
 
 ---
 
@@ -714,13 +739,13 @@ MD
                 'content' => <<<'MD'
 ## Shopping Lists
 
-The Shopping List module manages the grocery items that go into each family's food box. It uses a formula system to calculate exactly how much of each item is needed based on the number of families and their household sizes. On Shopping Day, assignments are created for NINJAs (volunteer shoppers) so they can check off items in real time from their phones.
+The Shopping List module manages the grocery items that go into each family's food box. It uses a formula system to calculate exactly how much of each item is needed based on the number of families and their household sizes. On Shopping Day, assignments are created for all shoppers — both NINJAs (volunteers) and coordinators — so they can check off items in real time from their phones.
 
 ---
 
 ### Purpose
 
-Every family receives a food box containing groceries. The quantity of each item depends on the family's size — a family of 2 needs less than a family of 8. The shopping list formula calculates totals automatically so you know exactly how much to buy. On the day of the shopping trip, NINJAs get mobile-friendly checklists so everyone knows what to buy and nothing gets missed.
+Every family receives a food box containing groceries. The quantity of each item depends on the family's size — a family of 2 needs less than a family of 8. The shopping list formula calculates totals automatically so you know exactly how much to buy. On the day of the shopping trip, everyone — NINJAs and coordinators alike — gets mobile-friendly checklists so nothing gets missed.
 
 ---
 
@@ -762,12 +787,12 @@ The system calculates the grand total across all families so you know exactly ho
 
 ### Shopping Day Assignments
 
-On Shopping Day, you create assignments that pair NINJAs with specific items or sections of the shopping list.
+On Shopping Day, you create assignments that pair shoppers (NINJAs and coordinators) with specific items or sections of the shopping list.
 
 **Creating an assignment:**
 1. Go to **Santa > Shopping Day**
 2. Click **Create Assignment**
-3. Select a **NINJA** (volunteer user) or enter a name for a non-registered volunteer
+3. Select a **shopper** — either a coordinator or a NINJA (volunteer), or enter a name for a non-registered volunteer
 4. Define what they are shopping for (items, categories, or family ranges)
 5. Save the assignment
 

@@ -278,8 +278,9 @@
                     }
                 @endphp
                 Return this form to {{ $returnTo }}.
-                @if(\App\Models\Setting::get('hs_phone_number'))
-                    Problems? HS Phone: <strong>{{ \App\Models\Setting::get('hs_phone_number') }}</strong>
+                @php $footerPhone = \App\Models\Setting::get('hs_phone_number') ?: \App\Models\Setting::get('primary_contact_phone'); @endphp
+                @if($footerPhone)
+                    Problems? Phone: <strong>{{ $footerPhone }}</strong>
                 @endif
             </div>
         </div>

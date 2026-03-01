@@ -104,8 +104,8 @@
                         </div>
 
                         <div>
-                            <label for="adopter_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                            <input type="email" id="adopter_email" name="adopter_email" value="{{ old('adopter_email') }}"
+                            <label for="adopter_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email *</label>
+                            <input type="email" id="adopter_email" name="adopter_email" value="{{ old('adopter_email') }}" required
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
                                 placeholder="jane@example.com">
                             @error('adopter_email')
@@ -113,17 +113,18 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="adopter_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
-                            <input type="tel" id="adopter_phone" name="adopter_phone" value="{{ old('adopter_phone') }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
-                                placeholder="(360) 555-1234">
-                            @error('adopter_phone')
-                                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        @if(\App\Models\Setting::get('notifications_enabled', '0') === '1' && \App\Models\Setting::get('twilio_sid'))
+                            <div>
+                                <label for="adopter_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone <span class="text-gray-400 font-normal">(optional, for SMS updates)</span></label>
+                                <input type="tel" id="adopter_phone" name="adopter_phone" value="{{ old('adopter_phone') }}"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
+                                    placeholder="(360) 555-1234">
+                                @error('adopter_phone')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
 
-                        <p class="text-xs text-gray-500 dark:text-gray-400">At least one contact method is required.</p>
                         @error('contact')
                             <p class="text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
                         @enderror
@@ -137,9 +138,21 @@
         </div>
 
         <!-- Footer -->
-        <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                Organized by Granite Falls School District Food Drive
+        <footer class="bg-gray-900 text-gray-400 mt-12 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
+                    <div class="flex items-center gap-4 text-sm">
+                        <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
+                        <a href="{{ route('adopt.index') }}" class="hover:text-white transition">All Tags</a>
+                        <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
+                    &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive.
+                    <span class="mx-1">&middot;</span>
+                    <span>Made in &#x1F1E8;&#x1F1ED;</span>
+                </div>
             </div>
         </footer>
     </div>

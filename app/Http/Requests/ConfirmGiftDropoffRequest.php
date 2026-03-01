@@ -13,6 +13,8 @@ class ConfirmGiftDropoffRequest extends FormRequest
 
     public function rules(): array
     {
-        return [];
+        return [
+            'gifts_received' => ['nullable', 'string', 'max:1000'],
+        ];
     }
 }

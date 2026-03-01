@@ -63,21 +63,13 @@
             <div>
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 px-1">Delivery</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <a href="{{ route('delivery.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Delivery Day</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Manage delivery logistics & status</p>
+                    <a href="{{ route('delivery.index') }}" class="block p-4 bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm hover:bg-red-100 dark:hover:bg-red-900/20 transition border border-red-200 dark:border-red-800">
+                        <h4 class="font-medium text-red-700 dark:text-red-300">Delivery Dispatch</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Routes, statuses, picked-up batches, and driver links</p>
                     </a>
-                    <a href="{{ route('delivery.map') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Live Map</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Real-time driver & family map</p>
-                    </a>
-                    <a href="{{ route('santa.deliveryRoutes.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Delivery Routes</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Optimize and manage driver routes</p>
-                    </a>
-                    <a href="{{ route('santa.commandCenter') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10">
-                        <h4 class="font-medium text-red-700 dark:text-red-300">Command Center</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Full-screen ops dashboard for TV</p>
+                    <a href="{{ route('santa.commandCenter', ['mode' => 'delivery']) }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10">
+                        <h4 class="font-medium text-blue-700 dark:text-blue-300">Delivery Command Center</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Live route map, vehicle positions, and ops overview</p>
                     </a>
                     <a href="{{ route('coordinator.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Print Documents</h4>

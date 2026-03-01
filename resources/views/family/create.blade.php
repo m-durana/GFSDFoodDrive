@@ -8,6 +8,15 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
+            {{-- Step Indicator --}}
+            <div class="flex items-center justify-center gap-2 text-sm" id="step-indicator">
+                <button type="button" onclick="goToStep(1)" class="step-dot active px-4 py-2 rounded-full bg-red-700 text-white font-medium transition">1. Family Info</button>
+                <div class="w-8 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+                <button type="button" onclick="goToStep(2)" class="step-dot px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium transition">2. Children</button>
+                <div class="w-8 h-0.5 bg-gray-300 dark:bg-gray-600"></div>
+                <button type="button" onclick="goToStep(3)" class="step-dot px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium transition">3. Review</button>
+            </div>
+
             @if($errors->any())
                 <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded">
                     <p class="font-medium">Please fix the following errors:</p>
@@ -19,8 +28,11 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('family.store') }}" class="space-y-6">
+            <form method="POST" action="{{ route('family.store') }}" class="space-y-6" id="family-form">
                 @csrf
+
+                {{-- ══════════ STEP 1: Family Info ══════════ --}}
+                <div id="step-1" class="wizard-step space-y-6">
 
                 <!-- Basic Information -->
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
@@ -58,8 +70,12 @@
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                     <option value="English" {{ old('preferred_language', 'English') === 'English' ? 'selected' : '' }}>English</option>
                                     <option value="Spanish" {{ old('preferred_language') === 'Spanish' ? 'selected' : '' }}>Spanish</option>
-                                    <option value="Other" {{ old('preferred_language') === 'Other' ? 'selected' : '' }}>Other</option>
+                                    <option value="Other" {{ !in_array(old('preferred_language', 'English'), ['English', 'Spanish']) ? 'selected' : '' }}>Other</option>
                                 </select>
+                                <input type="text" name="preferred_language_other" id="preferred_language_other"
+                                    value="{{ old('preferred_language_other') }}" placeholder="Please specify language"
+                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ in_array(old('preferred_language', 'English'), ['English', 'Spanish']) ? 'hidden' : '' }}"
+                                    id="preferred_language_other_input">
                             </div>
                         </div>
                     </div>
@@ -212,11 +228,18 @@
                                 <textarea name="need_for_help" id="need_for_help" rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('need_for_help') }}</textarea>
                             </div>
+                            @if(auth()->user()->isSanta() || auth()->user()->permission >= 7)
                             <div>
-                                <label for="severe_need" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need Description</label>
-                                <textarea name="severe_need" id="severe_need" rows="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('severe_need') }}</textarea>
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="is_severe_need" value="1" {{ old('is_severe_need') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500"
+                                        id="is_severe_need_checkbox">
+                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need</span>
+                                </label>
+                                <textarea name="severe_need_notes" id="severe_need_notes" rows="2" placeholder="Optional: describe the severe need"
+                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ old('is_severe_need') ? '' : 'hidden' }}">{{ old('severe_need_notes') }}</textarea>
                             </div>
+                            @endif
                             <div>
                                 <label for="other_questions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Questions / Comments</label>
                                 <textarea name="other_questions" id="other_questions" rows="3"
@@ -226,20 +249,92 @@
                     </div>
                 </div>
 
-                <!-- Submit -->
+                <!-- Step 1 Navigation -->
                 <div class="flex items-center justify-between">
                     <a href="{{ route('family.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
                         &larr; Back to Dashboard
                     </a>
-                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
-                        Save Family
+                    <button type="button" onclick="goToStep(2)" class="inline-flex items-center px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                        Next: Add Children &rarr;
                     </button>
                 </div>
+
+                </div> {{-- end step-1 --}}
+
+                {{-- ══════════ STEP 2: Children ══════════ --}}
+                <div id="step-2" class="wizard-step space-y-6 hidden">
+
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Children Details</h3>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                Total children: <span id="wizard-child-count" class="font-bold">0</span>
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            Fill in details for each child. These details are used for gift tags and Adopt-a-Tag.
+                            You can also add children later from the family page.
+                        </p>
+
+                        <div id="children-container" class="space-y-4">
+                            {{-- Dynamically generated child forms appear here --}}
+                        </div>
+
+                        <p id="no-children-msg" class="text-center text-gray-400 dark:text-gray-500 py-8 text-sm">
+                            Go back to Step 1 and enter children counts to generate entry forms here.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 Navigation -->
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="goToStep(1)" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                        &larr; Back to Family Info
+                    </button>
+                    <div class="flex gap-3">
+                        <button type="submit" class="inline-flex items-center px-5 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-sm font-medium transition">
+                            Skip &amp; Save Without Children
+                        </button>
+                        <button type="button" onclick="goToStep(3)" class="inline-flex items-center px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                            Review &amp; Submit &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                </div> {{-- end step-2 --}}
+
+                {{-- ══════════ STEP 3: Review ══════════ --}}
+                <div id="step-3" class="wizard-step space-y-6 hidden">
+
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Review &amp; Submit</h3>
+                        <div id="review-summary" class="space-y-3 text-sm text-gray-700 dark:text-gray-300">
+                            {{-- Populated by JS --}}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3 Navigation -->
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="goToStep(2)" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                        &larr; Back to Children
+                    </button>
+                    <button type="submit" class="inline-flex items-center px-8 py-3 bg-green-700 text-white rounded-md hover:bg-green-600 text-sm font-bold transition">
+                        Save Family &amp; Children
+                    </button>
+                </div>
+
+                </div> {{-- end step-3 --}}
+
             </form>
         </div>
     </div>
 
     <script>
+        let currentStep = 1;
+
         function updateTotals() {
             const femaleAdults = parseInt(document.getElementById('female_adults').value) || 0;
             const maleAdults = parseInt(document.getElementById('male_adults').value) || 0;
@@ -262,8 +357,180 @@
         document.querySelectorAll('.member-count').forEach(input => {
             input.addEventListener('input', updateTotals);
         });
-
-        // Initialize totals on page load
         updateTotals();
+
+        // Language "Other" toggle
+        document.getElementById('preferred_language').addEventListener('change', function() {
+            const otherInput = document.getElementById('preferred_language_other');
+            if (this.value === 'Other') {
+                otherInput.classList.remove('hidden');
+                otherInput.focus();
+            } else {
+                otherInput.classList.add('hidden');
+                otherInput.value = '';
+            }
+        });
+
+        // Number inputs: select all on focus
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', function() { this.select(); });
+        });
+
+        // Severe need checkbox toggle
+        const severeCheckbox = document.getElementById('is_severe_need_checkbox');
+        if (severeCheckbox) {
+            severeCheckbox.addEventListener('change', function() {
+                const notes = document.getElementById('severe_need_notes');
+                notes.classList.toggle('hidden', !this.checked);
+            });
+        }
+
+        // ── Wizard Step Navigation ──
+        function goToStep(step) {
+            if (step === 2) generateChildForms();
+            if (step === 3) buildReview();
+            currentStep = step;
+            document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('hidden'));
+            document.getElementById('step-' + step).classList.remove('hidden');
+            // Update step dots
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                if (i + 1 <= step) {
+                    dot.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400');
+                    dot.classList.add('bg-red-700', 'text-white');
+                } else {
+                    dot.classList.remove('bg-red-700', 'text-white');
+                    dot.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-500', 'dark:text-gray-400');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ── Dynamic Child Form Generation ──
+        function getTotalChildren() {
+            return (parseInt(document.getElementById('infants').value) || 0)
+                + (parseInt(document.getElementById('young_children').value) || 0)
+                + (parseInt(document.getElementById('children_count').value) || 0)
+                + (parseInt(document.getElementById('tweens').value) || 0)
+                + (parseInt(document.getElementById('teenagers').value) || 0);
+        }
+
+        function generateChildForms() {
+            const count = getTotalChildren();
+            const container = document.getElementById('children-container');
+            const msg = document.getElementById('no-children-msg');
+            document.getElementById('wizard-child-count').textContent = count;
+
+            if (count === 0) {
+                container.innerHTML = '';
+                msg.classList.remove('hidden');
+                return;
+            }
+            msg.classList.add('hidden');
+
+            // Preserve existing forms if count matches
+            const existing = container.querySelectorAll('.child-form');
+            if (existing.length === count) return;
+
+            // Build age labels from counts
+            const groups = [
+                { id: 'infants', label: 'Infant (0-2)' },
+                { id: 'young_children', label: 'Young Child (3-7)' },
+                { id: 'children_count', label: 'Child (8-12)' },
+                { id: 'tweens', label: 'Tween (13-14)' },
+                { id: 'teenagers', label: 'Teen (15-17)' },
+            ];
+            let childLabels = [];
+            groups.forEach(g => {
+                const n = parseInt(document.getElementById(g.id).value) || 0;
+                for (let i = 0; i < n; i++) childLabels.push(g.label);
+            });
+
+            container.innerHTML = '';
+            childLabels.forEach((label, i) => {
+                const div = document.createElement('div');
+                div.className = 'child-form bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600';
+                const inputClass = 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm';
+                div.innerHTML = `
+                    <h4 class="font-medium text-gray-800 dark:text-gray-200 mb-3">Child ${i + 1} <span class="text-sm font-normal text-gray-500">(${label})</span></h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Gender</label>
+                            <select name="children[${i}][gender]" class="${inputClass}">
+                                <option value="">-- Select --</option>
+                                <option value="Boy">Boy</option>
+                                <option value="Girl">Girl</option>
+                                <option value="Non-binary">Non-binary</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Age</label>
+                            <input type="text" name="children[${i}][age]" placeholder="e.g. 5" class="${inputClass}">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">School</label>
+                            <input type="text" name="children[${i}][school]" placeholder="School name" class="${inputClass}">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Clothing Options</label>
+                            <input type="text" name="children[${i}][clothing_options]" placeholder="e.g. pants, shirts" class="${inputClass}">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Clothing Styles</label>
+                            <input type="text" name="children[${i}][clothing_styles]" placeholder="e.g. sporty, casual" class="${inputClass}">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Sizes</label>
+                            <input type="text" name="children[${i}][all_sizes]" placeholder="e.g. Youth M, Size 5" class="${inputClass}">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Toy Ideas</label>
+                            <input type="text" name="children[${i}][toy_ideas]" placeholder="e.g. LEGO, art supplies" class="${inputClass}">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-600 dark:text-gray-400">Gift Preferences</label>
+                            <input type="text" name="children[${i}][gift_preferences]" placeholder="e.g. books, sports" class="${inputClass}">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ── Review Summary ──
+        function buildReview() {
+            const summary = document.getElementById('review-summary');
+            const val = id => document.getElementById(id)?.value || '';
+            const totalChildren = getTotalChildren();
+            const childForms = document.querySelectorAll('.child-form');
+            let childrenHtml = '';
+            childForms.forEach((form, i) => {
+                const gender = form.querySelector(`[name="children[${i}][gender]"]`)?.value || 'Not set';
+                const age = form.querySelector(`[name="children[${i}][age]"]`)?.value || '?';
+                childrenHtml += `<li>Child ${i + 1}: ${gender}, age ${age}</li>`;
+            });
+
+            summary.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-1">Family</p>
+                        <p><strong>${val('family_name')}</strong></p>
+                        <p class="text-gray-500">${val('address')}</p>
+                        <p class="text-gray-500">${val('phone1')}${val('phone2') ? ' / ' + val('phone2') : ''}</p>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900 dark:text-gray-100 mb-1">Household</p>
+                        <p>Adults: ${document.getElementById('total-adults').textContent}</p>
+                        <p>Children: ${document.getElementById('total-children').textContent}</p>
+                        <p>Total: ${document.getElementById('total-members').textContent}</p>
+                    </div>
+                </div>
+                ${totalChildren > 0 ? `
+                <div class="mt-3">
+                    <p class="font-medium text-gray-900 dark:text-gray-100 mb-1">Children (${totalChildren})</p>
+                    <ul class="list-disc list-inside text-gray-600 dark:text-gray-400">${childrenHtml || '<li>No details entered</li>'}</ul>
+                </div>` : '<p class="mt-3 text-gray-400">No children to add.</p>'}
+                <p class="mt-3 text-xs text-gray-400">You can always edit children later from the family detail page.</p>
+            `;
+        }
     </script>
 </x-app-layout>

@@ -115,13 +115,22 @@
                            class="block bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:border-red-300 dark:hover:border-red-700 transition p-5">
                             <div class="flex items-start justify-between">
                                 <div class="flex items-center space-x-3">
-                                    <x-gender-icon :gender="$child->gender" size="sm" />
+                                    @php
+                                        $age = (int) ($child->age ?? 0);
+                                        $iconColor = $age <= 5 ? 'text-pink-400' : ($age <= 12 ? 'text-amber-400' : 'text-blue-400');
+                                    @endphp
+                                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center {{ $iconColor }}">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
+                                    </div>
                                     <div>
                                         <p class="font-semibold text-gray-900 dark:text-gray-100">
-                                            {{ strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child') }}, Age {{ $child->age ?? '?' }}
+                                            Age {{ $child->age ?? '?' }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                            {{ $child->gender ?? 'Child' }}@if($child->all_sizes), {{ $child->all_sizes }}@endif
                                         </p>
                                         @if($child->school)
-                                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $child->school }}</p>
+                                            <p class="text-xs text-gray-400 dark:text-gray-500">{{ $child->school }}</p>
                                         @endif
                                     </div>
                                 </div>
@@ -154,9 +163,20 @@
         </div>
 
         <!-- Footer -->
-        <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                Organized by Granite Falls School District Food Drive
+        <footer class="bg-gray-900 text-gray-400 mt-12 py-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
+                    <div class="flex items-center gap-4 text-sm">
+                        <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
+                        <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
+                    &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive.
+                    <span class="mx-1">&middot;</span>
+                    <span>Made in &#x1F1E8;&#x1F1ED;</span>
+                </div>
             </div>
         </footer>
     </div>

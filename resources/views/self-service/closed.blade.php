@@ -10,8 +10,12 @@
     <div class="max-w-lg mx-auto px-6 text-center">
         <div class="text-6xl mb-4">🎄</div>
         <h1 class="text-3xl font-bold text-white mb-3">Family Registration is Currently Closed</h1>
-        <p class="text-red-200 mb-8">
-            Online self-registration is not available at this time. If you need to register your family for the food &amp; gift drive, please contact one of our school advisors directly.
+        <p class="text-red-200 mb-4">
+            Online self-registration is not available at this time. To register your family for the food &amp; gift drive, please reach out to us or contact one of our school advisors directly.
+        </p>
+        @php $contactEmail = \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu'); @endphp
+        <p class="text-white mb-8">
+            <a href="mailto:{{ $contactEmail }}" class="underline hover:text-red-200">{{ $contactEmail }}</a>
         </p>
 
         @if($advisors->isNotEmpty())

@@ -187,6 +187,10 @@ class SantaController extends Controller
 
     public function updateSettings(Request $request): RedirectResponse
     {
+        // Primary contact info
+        Setting::set('primary_contact_email', $request->input('primary_contact_email', ''));
+        Setting::set('primary_contact_phone', $request->input('primary_contact_phone', ''));
+
         Setting::set('self_registration_enabled', $request->boolean('self_registration_enabled') ? '1' : '0');
         Setting::set('season_year', $request->input('season_year', (string) date('Y')));
         Setting::set('paper_size', $request->input('paper_size', 'letter'));
@@ -305,6 +309,27 @@ class SantaController extends Controller
 
         return redirect()->route('santa.settings')
             ->with('success', 'Settings updated successfully.');
+    }
+
+    public function testEmail(Request $request): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        try {
+            \Mail::raw('This is a test email from the GFSD Food Drive application.', function ($message) use ($request) {
+                $message->to($request->user()->email ?? $request->user()->username . '@gfalls.wednet.edu')
+                    ->subject('GFSD Food Drive - Test Email');
+            });
+            if ($request->expectsJson()) {
+                return response()->json(['success' => true]);
+            }
+            return redirect()->route('santa.settings')
+                ->with('success', 'Test email sent! Check your inbox (or storage/logs if using the log driver).');
+        } catch (\Exception $e) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            }
+            return redirect()->route('santa.settings')
+                ->with('success', 'Email sending failed: ' . $e->getMessage());
+        }
     }
 
     public function gifts(Request $request): View

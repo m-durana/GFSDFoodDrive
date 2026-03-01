@@ -20,7 +20,9 @@
                 {{-- Sidebar Navigation --}}
                 <nav class="hidden lg:block w-56 flex-shrink-0">
                     <div class="sticky top-20 space-y-1 text-sm">
-                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Public Features</p>
+                        <a href="#primary-contact" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition font-medium text-red-600 dark:text-red-400">Primary Contact</a>
+
+                        <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-4 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Public Features</p>
                         <a href="#self-registration" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Self-Registration</a>
                         <a href="#adopt-a-tag" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Adopt-a-Tag</a>
                         <a href="#family-status" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Family Status Pages</a>
@@ -56,10 +58,37 @@
                     <form method="POST" action="{{ route('santa.updateSettings') }}" id="settings-form" enctype="multipart/form-data">
                         @csrf
 
+                        {{-- ═══ PRIMARY CONTACT ═══ --}}
+
+                        <div id="primary-contact" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Primary Contact</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Used on the public website, gift tags, and delivery sheets as the main contact information.</p>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="primary_contact_email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Email</label>
+                                        <input type="email" name="primary_contact_email" id="primary_contact_email"
+                                            value="{{ Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}"
+                                            placeholder="fooddrive@gfalls.wednet.edu"
+                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown on the public website and gift tags.</p>
+                                    </div>
+                                    <div>
+                                        <label for="primary_contact_phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Contact Phone</label>
+                                        <input type="tel" name="primary_contact_phone" id="primary_contact_phone"
+                                            value="{{ Setting::get('primary_contact_phone', '') }}"
+                                            placeholder="(360) 555-0100"
+                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown on the public website. Delivery sheets use HS Phone if set, otherwise this number.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         {{-- ═══ PUBLIC FEATURES ═══ --}}
 
                         <!-- Self-Registration -->
-                        <div id="self-registration" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg scroll-mt-20">
+                        <div id="self-registration" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
                             <div class="p-6">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Self-Service Registration</h3>
                                 <div class="space-y-4">
@@ -328,6 +357,30 @@
                                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                     Adopters receive confirmation emails when claiming a tag and reminders before the deadline.
                                 </p>
+
+                                <div class="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-sm">
+                                    <p class="font-medium text-gray-700 dark:text-gray-300 mb-2">Email Configuration</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                                        Email sending requires <code>.env</code> configuration. Current driver: <strong>{{ config('mail.default', 'log') }}</strong>
+                                    </p>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400 space-y-0.5 font-mono">
+                                        <div>MAIL_MAILER={{ config('mail.default', 'smtp') }}</div>
+                                        <div>MAIL_HOST={{ config('mail.mailers.smtp.host', '(not set)') }}</div>
+                                        <div>MAIL_PORT={{ config('mail.mailers.smtp.port', '(not set)') }}</div>
+                                        <div>MAIL_FROM_ADDRESS={{ config('mail.from.address', '(not set)') }}</div>
+                                    </div>
+                                    @if(config('mail.default') === 'log')
+                                        <p class="mt-2 text-xs text-yellow-600 dark:text-yellow-400">
+                                            Mail driver is set to <strong>log</strong> — emails are written to <code>storage/logs</code> instead of being sent. Update <code>.env</code> to use <code>smtp</code> for production.
+                                        </p>
+                                    @endif
+                                    <div class="mt-3 inline">
+                                        <button type="button" onclick="sendTestEmail()" id="test-email-btn" class="px-3 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-500 transition">
+                                            Send Test Email
+                                        </button>
+                                        <span id="test-email-status" class="ml-2 text-xs text-gray-400">Sends to your account email</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -656,5 +709,38 @@
                 textInput.classList.remove('hidden');
             }
         });
+        // Test email via fetch (avoids nested form that breaks outer form scope)
+        function sendTestEmail() {
+            const btn = document.getElementById('test-email-btn');
+            const status = document.getElementById('test-email-status');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            status.textContent = '';
+            fetch('{{ route("santa.testEmail") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(r => {
+                btn.disabled = false;
+                btn.textContent = 'Send Test Email';
+                if (r.ok) {
+                    status.textContent = 'Test email sent!';
+                    status.className = 'ml-2 text-xs text-green-500';
+                } else {
+                    status.textContent = 'Failed to send. Check mail config.';
+                    status.className = 'ml-2 text-xs text-red-500';
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                btn.textContent = 'Send Test Email';
+                status.textContent = 'Network error.';
+                status.className = 'ml-2 text-xs text-red-500';
+            });
+        }
     </script>
 </x-app-layout>

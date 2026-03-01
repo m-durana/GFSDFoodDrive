@@ -39,6 +39,9 @@
                         <a href="{{ route('warehouse.index') }}" data-tour="nav-warehouse" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Warehouse
                         </a>
+                        <a href="{{ route('warehouse.gifts-intake') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.gifts-intake') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                            Gifts Intake
+                        </a>
                     @endif
                 </div>
             </div>
@@ -60,13 +63,27 @@
                 <a href="{{ route('help.index') }}" data-tour="nav-help" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="Help">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" /></svg>
                 </a>
-                <span class="text-sm text-gray-500 dark:text-gray-400">Hello, {{ auth()->user()->first_name }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">
-                        Log Out
+                {{-- User dropdown --}}
+                <div x-data="{ userMenu: false }" class="relative">
+                    <button @click="userMenu = !userMenu" @click.away="userMenu = false"
+                        class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition">
+                        <img src="{{ auth()->user()->avatar_url }}" alt="" class="w-7 h-7 rounded-full object-cover border border-gray-200 dark:border-gray-600">
+                        <span>{{ auth()->user()->first_name }}</span>
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                     </button>
-                </form>
+                    <div x-show="userMenu" x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            Profile Settings
+                        </a>
+                        <div class="border-t border-gray-100 dark:border-gray-700"></div>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                Log Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <!-- Mobile hamburger -->
@@ -100,6 +117,7 @@
             @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
                 <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Coordinator</a>
                 <a href="{{ route('warehouse.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Warehouse</a>
+                <a href="{{ route('warehouse.gifts-intake') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Gifts Intake</a>
             @endif
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
@@ -108,6 +126,7 @@
                 <div class="font-medium text-sm text-gray-500 dark:text-gray-400">{{ auth()->user()->username }}</div>
             </div>
             <div class="mt-3 space-y-1">
+                <a href="{{ route('profile.edit') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Profile Settings</a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-start pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Log Out</button>

@@ -36,7 +36,8 @@ class DeliveryDayTest extends TestCase
         $response = $this->actingAs($this->santa)->get(route('delivery.index'));
         $response->assertOk();
         $response->assertSee('Delivery Day');
-        $response->assertSee('Delivery Test');
+        // Page shows stats with family counts
+        $response->assertSee('Total');
     }
 
     public function test_delivery_status_can_be_updated(): void
@@ -108,27 +109,34 @@ class DeliveryDayTest extends TestCase
         $response->assertSee('Test log entry');
     }
 
-    public function test_filter_by_team(): void
+    public function test_filter_by_status(): void
     {
-        $this->family->update(['delivery_team' => 'Team A']);
+        // Create a route and assign a delivered family to it so it shows on the page
+        $route = \App\Models\DeliveryRoute::create([
+            'name' => 'Test Route',
+            'access_token' => 'test-token-abc',
+            'stop_count' => 1,
+        ]);
+
         Family::create([
             'family_name' => 'Other Family', 'family_number' => 2,
             'number_of_family_members' => 2, 'number_of_adults' => 1,
             'number_of_children' => 1, 'address' => '456 Oak St', 'phone1' => '555-5678',
-            'delivery_team' => 'Team B',
+            'delivery_status' => DeliveryStatus::Delivered,
+            'delivery_route_id' => $route->id,
+            'route_order' => 1,
         ]);
 
-        $response = $this->actingAs($this->santa)->get(route('delivery.index', ['team' => 'Team A']));
+        $response = $this->actingAs($this->santa)->get(route('delivery.index', ['status' => 'delivered']));
         $response->assertOk();
-        $response->assertSee('Delivery Test');
-        $response->assertDontSee('Other Family');
+        $response->assertSee('Other Family');
     }
 
     public function test_stats_shown_on_delivery_page(): void
     {
         $response = $this->actingAs($this->santa)->get(route('delivery.index'));
         $response->assertOk();
-        $response->assertSee('Total Families');
+        $response->assertSee('Total');
         $response->assertSee('Pending');
     }
 }

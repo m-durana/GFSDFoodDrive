@@ -81,7 +81,7 @@ class ChildCrudTest extends TestCase
     public function test_child_requires_valid_gender(): void
     {
         $response = $this->actingAs($this->user)->post("/family/{$this->family->id}/children", [
-            'gender' => 'Other',
+            'gender' => 'InvalidGender',
             'age' => '8',
         ]);
 

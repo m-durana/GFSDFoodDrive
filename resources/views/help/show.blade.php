@@ -13,18 +13,17 @@
     <div class="py-8">
         <div class="max-w-[90rem] mx-auto sm:px-6 lg:px-8">
             <div class="flex gap-8">
-                {{-- Sidebar --}}
-                <nav class="hidden lg:block w-52 shrink-0">
-                    <div class="sticky top-20 space-y-1">
-                        @foreach($topics as $topic)
-                            <a href="{{ route('help.show', $topic['slug']) }}"
-                               class="block px-3 py-1.5 rounded-md text-sm transition
-                                   {{ $topic['slug'] === $current['slug']
-                                       ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 font-medium'
-                                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-                                {{ $topic['title'] }}
-                            </a>
-                        @endforeach
+                {{-- Sidebar: Table of Contents from article headings --}}
+                <nav class="hidden lg:block w-56 shrink-0">
+                    <div class="sticky top-20">
+                        <a href="{{ route('help.index') }}" class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 mb-4 font-medium">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
+                            Back to Help
+                        </a>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">On this page</p>
+                        <div id="toc" class="space-y-0.5">
+                            {{-- Populated by JS from rendered headings --}}
+                        </div>
                     </div>
                 </nav>
 
@@ -56,8 +55,10 @@
                             .dark .wiki-content blockquote { border-left-color: #3b82f6; background: rgba(59,130,246,0.1); color: #93c5fd; }
                             .dark .wiki-content th { background: #1f2937; }
                             .dark .wiki-content th, .dark .wiki-content td { border-color: #374151; }
+                            #toc a.active { color: #b91c1c; font-weight: 500; }
+                            .dark #toc a.active { color: #f87171; }
                         </style>
-                        <div class="wiki-content max-w-none">
+                        <div class="wiki-content max-w-none" id="wiki-content">
                             {!! \Illuminate\Support\Str::markdown($current['content']) !!}
                         </div>
                     </div>
@@ -65,4 +66,46 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Build TOC from rendered headings
+        document.addEventListener('DOMContentLoaded', function() {
+            const content = document.getElementById('wiki-content');
+            const toc = document.getElementById('toc');
+            const headings = content.querySelectorAll('h2, h3');
+            const tocLinks = [];
+
+            headings.forEach((h, i) => {
+                const id = 'heading-' + i;
+                h.id = id;
+                const a = document.createElement('a');
+                a.href = '#' + id;
+                a.textContent = h.textContent;
+                a.className = h.tagName === 'H3'
+                    ? 'block pl-3 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition truncate'
+                    : 'block py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition truncate';
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+                toc.appendChild(a);
+                tocLinks.push({ el: a, target: h });
+            });
+
+            // Highlight active heading on scroll
+            if (tocLinks.length > 0) {
+                const observer = new IntersectionObserver(entries => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            tocLinks.forEach(l => l.el.classList.remove('active'));
+                            const match = tocLinks.find(l => l.target === entry.target);
+                            if (match) match.el.classList.add('active');
+                        }
+                    });
+                }, { rootMargin: '-80px 0px -70% 0px' });
+
+                tocLinks.forEach(l => observer.observe(l.target));
+            }
+        });
+    </script>
 </x-app-layout>

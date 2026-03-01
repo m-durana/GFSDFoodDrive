@@ -42,6 +42,12 @@
                             <span class="text-gray-500 dark:text-gray-400">Toy Ideas:</span>
                             <span class="ml-1 text-gray-900 dark:text-gray-100">{{ $child->toy_ideas ?? 'None specified' }}</span>
                         </div>
+                        @if($child->gifts_received)
+                            <div class="col-span-2">
+                                <span class="text-gray-500 dark:text-gray-400">Recorded Gifts:</span>
+                                <span class="ml-1 text-gray-900 dark:text-gray-100">{{ $child->gifts_received }}</span>
+                            </div>
+                        @endif
                         @if($child->adopter_name)
                             <div class="col-span-2">
                                 <span class="text-gray-500 dark:text-gray-400">Adopter:</span>
@@ -62,6 +68,17 @@
             @unless($child->gift_dropped_off)
                 <form method="POST" action="{{ route('warehouse.gift.dropoff.confirm', $child) }}" id="dropoff-form">
                     @csrf
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+                        <div class="p-6 space-y-2">
+                            <label for="gifts_received" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Gifts Received (optional)
+                            </label>
+                            <textarea name="gifts_received" id="gifts_received" rows="3"
+                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm"
+                                placeholder="e.g. Coat, shoes size 4, LEGO set">{{ old('gifts_received', $child->gifts_received) }}</textarea>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">This is saved to the child's record so you know exactly what was dropped off.</p>
+                        </div>
+                    </div>
                     <button type="submit" class="w-full inline-flex justify-center items-center px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-500 text-lg font-medium transition shadow-sm">
                         Accept Gift Drop-Off
                     </button>

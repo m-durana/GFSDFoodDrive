@@ -9,13 +9,17 @@ use App\Models\DeliveryRoute;
 use App\Models\Family;
 use App\Models\ShoppingAssignment;
 use App\Models\ShoppingCheck;
-use App\Models\User;
+use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CommandCenterController extends Controller
 {
+    public function __construct(
+        private readonly RoutePlanningService $routePlanning
+    ) {}
+
     /**
      * Full-screen command center dashboard.
      */
@@ -36,7 +40,7 @@ class CommandCenterController extends Controller
             'delivery' => $this->deliveryStats(),
             'gifts' => $this->giftStats(),
             'recent_activity' => $this->recentActivity(),
-            'drivers' => $this->driverLocations(),
+            'delivery_map' => $this->deliveryMapData(),
             'timestamp' => now()->format('g:i:s A'),
         ]);
     }
@@ -102,16 +106,47 @@ class CommandCenterController extends Controller
         $pct = $total > 0 ? round(($done / $total) * 100) : 0;
 
         // Routes summary
+        $palette = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#f97316', '#0ea5e9', '#22c55e', '#a855f7'];
         $routes = DeliveryRoute::withCount(['families as completed_count' => function ($q) {
             $q->where('delivery_status', DeliveryStatus::Delivered)
                 ->orWhere('delivery_status', DeliveryStatus::PickedUp);
-        }])->withCount('families')->get()->map(fn($r) => [
-            'name' => $r->name,
+        }])->withCount('families')
+        ->with(['families' => fn($q) => $q
+            ->where('delivery_status', DeliveryStatus::InTransit)
+            ->orderBy('route_order')
+            ->limit(1)
+        ])->get()->map(fn($r) => [
+            'id' => $r->id,
+            'name' => $r->display_name,
             'driver' => $r->driver ? $r->driver->first_name : ($r->driver_name ?? '—'),
+            'meta' => $r->formattedMeta(),
             'total' => $r->families_count,
             'completed' => $r->completed_count,
             'pct' => $r->families_count > 0 ? round(($r->completed_count / $r->families_count) * 100) : 0,
+            'color' => $palette[$r->id % count($palette)],
+            'heading_to' => $r->families->first()
+                ? "#{$r->families->first()->family_number} {$r->families->first()->family_name}"
+                : null,
         ]);
+
+        $dispatchQueue = Family::whereNotNull('family_number')
+            ->whereNull('delivery_route_id')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where(function ($q) {
+                $q->where('delivery_status', DeliveryStatus::Pending)
+                    ->orWhereNull('delivery_status');
+            })
+            ->where('delivery_preference', 'like', '%deliver%')
+            ->orderBy('family_number')
+            ->limit(8)
+            ->get()
+            ->map(fn($f) => [
+                'number' => $f->family_number,
+                'name' => $f->family_name,
+                'address' => $f->address,
+                'distance_hint' => 'Awaiting assignment',
+            ]);
 
         return [
             'needs_delivery' => $needsDelivery,
@@ -123,6 +158,7 @@ class CommandCenterController extends Controller
             'total' => $total,
             'pct' => $pct,
             'routes' => $routes,
+            'dispatch_queue' => $dispatchQueue,
         ];
     }
 
@@ -163,18 +199,86 @@ class CommandCenterController extends Controller
             ->toArray();
     }
 
-    private function driverLocations(): array
+    private function deliveryMapData(): array
     {
-        return User::whereNotNull('last_lat')
-            ->whereNotNull('last_lng')
-            ->where('last_location_at', '>=', now()->subMinutes(15))
+        $palette = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#f97316', '#0ea5e9', '#22c55e', '#a855f7'];
+
+        $routes = DeliveryRoute::with(['driver', 'families' => fn($q) => $q
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->orderBy('route_order')
+            ->select('id', 'delivery_route_id', 'latitude', 'longitude', 'route_order'),
+        ])->get();
+
+        $routeColors = [];
+        $routesData = $routes->map(function ($route, $idx) use ($palette, &$routeColors) {
+            $color = $palette[$route->id % count($palette)];
+            $routeColors[$route->id] = $color;
+
+            return [
+                'id' => $route->id,
+                'name' => $route->name,
+                'color' => $color,
+                'polyline' => $this->routePlanning->polylineForRoute($route),
+            ];
+        })->values()->all();
+
+        $families = Family::whereNotNull('family_number')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->select('id', 'family_number', 'family_name', 'address', 'latitude', 'longitude', 'delivery_status', 'delivery_route_id')
             ->get()
-            ->map(fn($v) => [
-                'name' => $v->first_name . ' ' . $v->last_name,
-                'lat' => (float) $v->last_lat,
-                'lng' => (float) $v->last_lng,
-                'updated' => $v->last_location_at->diffForHumans(),
+            ->map(fn($f) => [
+                'id' => $f->id,
+                'number' => $f->family_number,
+                'name' => $f->family_name,
+                'address' => $f->address,
+                'lat' => (float) $f->latitude,
+                'lng' => (float) $f->longitude,
+                'status' => $f->delivery_status?->value ?? 'pending',
+                'route_id' => $f->delivery_route_id,
             ])
             ->toArray();
+
+        $drivers = $routes->map(function ($route) use ($routeColors) {
+            $color = $routeColors[$route->id] ?? '#3b82f6';
+            if ($route->driver_lat && $route->driver_lng && $route->driver_location_at) {
+                return [
+                    'route_id' => $route->id,
+                    'name' => $route->driver?->first_name ?? $route->driver_name ?? 'Driver',
+                    'lat' => (float) $route->driver_lat,
+                    'lng' => (float) $route->driver_lng,
+                    'updated' => $route->driver_location_at->diffForHumans(),
+                    'color' => $color,
+                ];
+            }
+            if ($route->driver_user_id && $route->driver && $route->driver->last_lat && $route->driver->last_lng) {
+                return [
+                    'route_id' => $route->id,
+                    'name' => $route->driver->first_name . ' ' . $route->driver->last_name,
+                    'lat' => (float) $route->driver->last_lat,
+                    'lng' => (float) $route->driver->last_lng,
+                    'updated' => $route->driver->last_location_at?->diffForHumans() ?? 'just now',
+                    'color' => $color,
+                ];
+            }
+            if ($route->start_lat && $route->start_lng) {
+                return [
+                    'route_id' => $route->id,
+                    'name' => $route->driver?->first_name ?? $route->driver_name ?? 'Driver',
+                    'lat' => (float) $route->start_lat,
+                    'lng' => (float) $route->start_lng,
+                    'updated' => 'awaiting live location',
+                    'color' => $color,
+                ];
+            }
+            return null;
+        })->filter()->values()->all();
+
+        return [
+            'routes' => $routesData,
+            'families' => $families,
+            'drivers' => $drivers,
+        ];
     }
 }

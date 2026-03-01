@@ -85,8 +85,7 @@
                 <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                     Welcome to the <strong class="text-gray-900 dark:text-gray-100">Granite Falls School District Food &amp; Gift Drive</strong>!
                     Every year, students, staff, and community volunteers come together to make the holiday season
-                    brighter for families in need. Food and toiletries can be received at each GFSD school building
-                    and the District office.
+                    brighter for families in need. Food and toiletries can be dropped off at Granite Falls High School (GFHS).
                 </p>
             </div>
 
@@ -179,7 +178,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">Donate</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 Cash donations supplement non-perishable food with fresh food items.
-                                Drop off non-perishable items and toiletries at any GFSD school building or the District office.
+                                Drop off non-perishable items and toiletries at GFHS (Granite Falls High School).
                             </p>
                         </div>
                     </div>
@@ -194,7 +193,7 @@
                             <h3 class="font-semibold text-lg text-gray-900 dark:text-gray-100">Volunteer</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                 Help sort donations, wrap gifts, or join a delivery team.
-                                Contact us at <a href="mailto:fooddrive@gfalls.wednet.edu" class="text-red-600 hover:underline">fooddrive@gfalls.wednet.edu</a> to sign up.
+                                Contact us at <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="text-red-600 hover:underline">{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}</a> to sign up.
                             </p>
                         </div>
                     </div>
@@ -207,6 +206,9 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Already registered?</p>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                         Check your family's status using the link you received when you registered.
+                    </p>
+                    <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                        The link should look like: <code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-xs">{{ url('/') }}/family-status/abc123...</code>
                     </p>
                 </div>
             @endif
@@ -225,11 +227,11 @@
             </div>
 
             @php
-                $coordinators = \App\Models\User::whereNotNull('position')
-                    ->where('position', '!=', '')
-                    ->where('permission', '>=', 8)
+                $coordinators = \App\Models\User::where('permission', '>=', 8)
+                    ->where('show_on_website', true)
                     ->orderByRaw("CASE WHEN position = 'System Engineer' THEN 0 ELSE 1 END")
-                    ->orderBy('position')
+                    ->orderByDesc('permission')
+                    ->orderBy('first_name')
                     ->get();
             @endphp
 
@@ -237,11 +239,10 @@
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     @foreach($coordinators as $coord)
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-sm border border-gray-200 dark:border-gray-700">
-                            <div class="mx-auto w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-3">
-                                <span class="text-red-700 dark:text-red-400 font-bold text-lg">{{ strtoupper(substr($coord->first_name, 0, 1)) }}{{ strtoupper(substr($coord->last_name, 0, 1)) }}</span>
-                            </div>
+                            <img src="{{ $coord->avatar_url }}" alt="{{ $coord->first_name }}"
+                                class="mx-auto w-14 h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 mb-3">
                             <div class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $coord->first_name }} {{ $coord->last_name }}</div>
-                            <div class="text-xs text-red-600 dark:text-red-400 mt-0.5">{{ $coord->position }}</div>
+                            <div class="text-xs text-red-600 dark:text-red-400 mt-0.5">{{ $coord->position ?: ($coord->permission === 9 ? 'Director' : 'Coordinator') }}</div>
                         </div>
                     @endforeach
                 </div>
@@ -266,14 +267,17 @@
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center">
                         <svg class="mx-auto h-8 w-8 text-red-600 dark:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
                         <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1">Email</h3>
-                        <a href="mailto:fooddrive@gfalls.wednet.edu" class="text-sm text-red-600 dark:text-red-400 hover:underline">fooddrive@gfalls.wednet.edu</a>
+                        <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="text-sm text-red-600 dark:text-red-400 hover:underline">{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}</a>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Questions about donations or receiving food and gifts</p>
+                        @if(\App\Models\Setting::get('primary_contact_phone'))
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ \App\Models\Setting::get('primary_contact_phone') }}</p>
+                        @endif
                     </div>
                     <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 text-center">
                         <svg class="mx-auto h-8 w-8 text-red-600 dark:text-red-400 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                        <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1">Drop-Off Locations</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Any GFSD school building<br>or the District Office</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Granite Falls, WA 98252</p>
+                        <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1">Drop-Off Location</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Granite Falls High School (GFHS)</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">1401 100th St NE, Granite Falls, WA 98252</p>
                     </div>
                 </div>
 

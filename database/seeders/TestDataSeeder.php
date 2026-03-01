@@ -2,9 +2,15 @@
 
 namespace Database\Seeders;
 
+use App\Enums\DeliveryStatus;
 use App\Models\Child;
+use App\Models\DeliveryRoute;
+use App\Models\DeliveryTeam;
 use App\Models\Family;
+use App\Models\Setting;
 use App\Models\User;
+use App\Services\RoutePlanningService;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 
@@ -254,6 +260,95 @@ class TestDataSeeder extends Seeder
         return $arr[$index % count($arr)];
     }
 
+    private function generateFamilyNumbers(int $familiesWithNumbers): array
+    {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
+        $existingNumbers = Family::withoutGlobalScopes()
+            ->where('season_year', $seasonYear)
+            ->whereNotNull('family_number')
+            ->pluck('family_number')
+            ->map(fn($n) => (int) $n)
+            ->all();
+
+        $existingLookup = array_fill_keys($existingNumbers, true);
+        $familyNumbers = [];
+
+        $rangeAssignments = [
+            ['start' => 1, 'end' => 99, 'weight' => 8],     // Crossroads
+            ['start' => 100, 'end' => 199, 'weight' => 8],   // GFHS
+            ['start' => 200, 'end' => 299, 'weight' => 9],   // GFMS
+            ['start' => 300, 'end' => 399, 'weight' => 9],   // Monte Cristo
+            ['start' => 400, 'end' => 499, 'weight' => 10],  // Mountain Way
+            ['start' => 500, 'end' => 599, 'weight' => 6],   // Special Case
+        ];
+
+        $totalWeight = array_sum(array_column($rangeAssignments, 'weight'));
+        $counts = [];
+        $countTotal = 0;
+        foreach ($rangeAssignments as $ra) {
+            $count = max(1, (int) round(($familiesWithNumbers * $ra['weight']) / $totalWeight));
+            $counts[] = $count;
+            $countTotal += $count;
+        }
+        while ($countTotal < $familiesWithNumbers) {
+            $counts[($countTotal % count($counts))] += 1;
+            $countTotal++;
+        }
+        while ($countTotal > $familiesWithNumbers) {
+            for ($i = 0; $i < count($counts) && $countTotal > $familiesWithNumbers; $i++) {
+                if ($counts[$i] > 1) {
+                    $counts[$i] -= 1;
+                    $countTotal--;
+                }
+            }
+        }
+
+        foreach ($rangeAssignments as $idx => $ra) {
+            $count = $counts[$idx];
+            $available = [];
+            for ($n = $ra['start']; $n <= $ra['end']; $n++) {
+                if (!isset($existingLookup[$n])) {
+                    $available[] = $n;
+                }
+            }
+
+            if (empty($available)) {
+                continue;
+            }
+
+            $step = max(1, intdiv(count($available), $count));
+            for ($i = 0; $i < $count && ($i * $step) < count($available); $i++) {
+                $familyNumbers[] = $available[$i * $step];
+            }
+
+            // Fill any shortfall from remaining available numbers
+            if (count($familyNumbers) < array_sum(array_slice($counts, 0, $idx + 1))) {
+                foreach ($available as $n) {
+                    if (count($familyNumbers) >= array_sum(array_slice($counts, 0, $idx + 1))) {
+                        break;
+                    }
+                    if (!in_array($n, $familyNumbers, true)) {
+                        $familyNumbers[] = $n;
+                    }
+                }
+            }
+        }
+
+        // If we still need more numbers, append unique values above the existing ranges
+        if (count($familyNumbers) < $familiesWithNumbers) {
+            $maxExisting = empty($existingNumbers) ? 599 : max($existingNumbers);
+            $next = max(1000, $maxExisting + 1);
+            while (count($familyNumbers) < $familiesWithNumbers) {
+                if (!isset($existingLookup[$next]) && !in_array($next, $familyNumbers, true)) {
+                    $familyNumbers[] = $next;
+                }
+                $next++;
+            }
+        }
+
+        return $familyNumbers;
+    }
+
     // ---------------------------------------------------------------------------
     // run()
     // ---------------------------------------------------------------------------
@@ -262,7 +357,21 @@ class TestDataSeeder extends Seeder
     {
         $this->call(SchoolRangeSeeder::class);
         $this->createTestUsers();
+        $this->createDeliveryTeams();
         $this->createFamiliesWithChildren();
+        $this->createSampleRoutes();
+    }
+
+    private function createDeliveryTeams(): void
+    {
+        $teamColors = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#f97316'];
+        foreach ($this->deliveryTeams as $i => $name) {
+            DeliveryTeam::firstOrCreate(
+                ['name' => $name],
+                ['color' => $teamColors[$i % count($teamColors)]]
+            );
+        }
+        $this->command->info('Delivery teams created: ' . implode(', ', $this->deliveryTeams));
     }
 
     // ---------------------------------------------------------------------------
@@ -303,7 +412,53 @@ class TestDataSeeder extends Seeder
             }
         }
 
-        $this->command->info('Test users created: santa_admin / family_advisor / coord_01 (password: password)');
+        $driverNames = [
+            ['username' => 'driver_alex', 'first' => 'Alex', 'last' => 'Driver'],
+            ['username' => 'driver_jamie', 'first' => 'Jamie', 'last' => 'Driver'],
+            ['username' => 'driver_morgan', 'first' => 'Morgan', 'last' => 'Driver'],
+            ['username' => 'driver_taylor', 'first' => 'Taylor', 'last' => 'Driver'],
+            ['username' => 'driver_riley', 'first' => 'Riley', 'last' => 'Driver'],
+        ];
+
+        foreach ($driverNames as $i => $d) {
+            $driver = User::firstOrCreate(
+                ['username' => $d['username']],
+                [
+                    'first_name' => $d['first'], 'last_name' => $d['last'],
+                    'email' => strtolower($d['username']) . '@gfsd.test',
+                    'password' => 'password',
+                    'permission' => 8,
+                ]
+            );
+            if (class_exists(\Spatie\Permission\Models\Role::class) && method_exists($driver, 'syncRoles')) {
+                $driver->syncRoles(['coordinator']);
+            }
+        }
+
+        // Additional users
+        $extraUsers = [
+            ['username' => 'santa_backup', 'first_name' => 'Holly', 'last_name' => 'Jolly', 'email' => 'santa2@gfsd.test', 'permission' => 9, 'role' => 'santa'],
+            ['username' => 'coord_02', 'first_name' => 'Jordan', 'last_name' => 'Bell', 'email' => 'coord2@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
+            ['username' => 'coord_03', 'first_name' => 'Casey', 'last_name' => 'Park', 'email' => 'coord3@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
+            ['username' => 'advisor_02', 'first_name' => 'Lisa', 'last_name' => 'Nguyen', 'email' => 'advisor2@gfsd.test', 'permission' => 7, 'role' => 'family'],
+            ['username' => 'advisor_03', 'first_name' => 'Tom', 'last_name' => 'Garcia', 'email' => 'advisor3@gfsd.test', 'permission' => 7, 'role' => 'family'],
+            ['username' => 'warehouse_01', 'first_name' => 'Sam', 'last_name' => 'Warehouse', 'email' => 'warehouse@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
+        ];
+
+        foreach ($extraUsers as $eu) {
+            $user = User::firstOrCreate(
+                ['username' => $eu['username']],
+                [
+                    'first_name' => $eu['first_name'], 'last_name' => $eu['last_name'],
+                    'email' => $eu['email'], 'password' => 'password', 'permission' => $eu['permission'],
+                ]
+            );
+            if (class_exists(\Spatie\Permission\Models\Role::class) && method_exists($user, 'syncRoles')) {
+                $user->syncRoles([$eu['role']]);
+            }
+        }
+
+        $this->command->info('Test users created (password: password for all): santa_admin, santa_backup, family_advisor, advisor_02, advisor_03, coord_01-03, warehouse_01, 5 drivers');
     }
 
     // ---------------------------------------------------------------------------
@@ -334,38 +489,21 @@ class TestDataSeeder extends Seeder
             13 => 'S', 14 => 'M', 15 => 'M', 16 => 'L', 17 => 'L',
         ];
 
-        // Generate 75 family definitions
-        $totalFamilies = 75;
-        $familiesWithNumbers = 50; // first 50 get numbers, last 25 are unassigned
-
-        // Pre-assign family numbers to the first 50 families, spread across school ranges
-        // Crossroads(1-99): 8 families, GFHS(100-199): 8, GFMS(200-299): 9, Monte Cristo(300-399): 9, Mountain Way(400-499): 10, Special(500-599): 6
-        $familyNumbers = [];
-        $rangeAssignments = [
-            ['start' => 1, 'end' => 99, 'count' => 8],     // Crossroads
-            ['start' => 100, 'end' => 199, 'count' => 8],   // GFHS
-            ['start' => 200, 'end' => 299, 'count' => 9],   // GFMS
-            ['start' => 300, 'end' => 399, 'count' => 9],   // Monte Cristo
-            ['start' => 400, 'end' => 499, 'count' => 10],  // Mountain Way
-            ['start' => 500, 'end' => 599, 'count' => 6],   // Special Case
-        ];
-
-        foreach ($rangeAssignments as $ra) {
-            $step = max(1, intdiv($ra['end'] - $ra['start'], $ra['count'] + 1));
-            for ($i = 0; $i < $ra['count']; $i++) {
-                $familyNumbers[] = $ra['start'] + $step * ($i + 1);
-            }
-        }
+        // Generate 150 family definitions
+        $totalFamilies = 150;
+        $familiesWithNumbers = 120; // first 120 get numbers, last 30 are unassigned
+        $familyNumbers = $this->generateFamilyNumbers($familiesWithNumbers);
+        $familiesWithNumbers = count($familyNumbers);
 
         // Languages: ~70% English, ~25% Spanish, ~5% Other
         $languages = array_merge(
-            array_fill(0, 52, 'English'),
-            array_fill(0, 19, 'Spanish'),
-            array_fill(0, 4, 'Other')
+            array_fill(0, 105, 'English'),
+            array_fill(0, 35, 'Spanish'),
+            array_fill(0, 10, 'Other')
         );
 
         // Delivery status distribution
-        $statuses = ['pending', 'pending', 'pending', 'delivered', 'delivered', 'in_transit', 'picked_up'];
+        $statuses = ['pending', 'pending', 'pending', 'pending', 'pending', 'in_transit', 'delivered', 'picked_up'];
 
         // Gift level pattern: ~30% none(0), ~20% partial(1), ~20% moderate(2), ~30% full(3)
         $giftLevelPattern = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3];
@@ -376,7 +514,7 @@ class TestDataSeeder extends Seeder
         mt_srand(42);
 
         for ($fIdx = 0; $fIdx < $totalFamilies; $fIdx++) {
-            $lang = $languages[$fIdx];
+            $lang = $languages[$fIdx % count($languages)];
             $isSpanish = $lang === 'Spanish';
 
             $lastName = $isSpanish
@@ -384,8 +522,14 @@ class TestDataSeeder extends Seeder
                 : $this->pickIndex($this->lastNamesEnglish, $fIdx);
 
             $addr = $this->realAddresses[$fIdx % count($this->realAddresses)];
-            $houseNum = 100 + ($fIdx * 47) % 2900; // spread house numbers
+            // Generate deterministic house number so each family has a unique address
+            $houseNum = (($fIdx * 47 + 100) % 900) + 100;
             $fullAddress = "{$houseNum} {$addr['street']}, {$addr['city']}, WA {$addr['zip']}";
+            // Jitter lat/lng so families at same base address don't stack on the map
+            $latJitter = (($fIdx * 13) % 100 - 50) / 100000; // ±0.0005 degrees (~55m)
+            $lngJitter = (($fIdx * 17) % 100 - 50) / 100000;
+            $lat = $addr['lat'] + $latJitter;
+            $lng = $addr['lng'] + $lngJitter;
 
             // Number of children: 1-5, avg ~2.8
             $childPattern = [2, 3, 2, 3, 4, 2, 3, 1, 3, 2, 4, 3, 2, 5, 3, 2, 3, 2, 4, 3];
@@ -397,8 +541,11 @@ class TestDataSeeder extends Seeder
 
             // Decide delivery preference
             $hasNumber = $fIdx < $familiesWithNumbers;
-            $deliveryPref = mt_rand(0, 2) === 0 ? 'Pickup' : 'Delivery';
-            $deliveryDate = mt_rand(0, 1) ? 'December 18' : 'December 19';
+            $deliveryPref = mt_rand(0, 4) === 0 ? 'Pickup' : 'Delivery';
+            $seasonYear = (int) Setting::get('season_year', date('Y'));
+            $deliveryDate = mt_rand(0, 1)
+                ? Carbon::create($seasonYear, 12, 18)->toDateString()
+                : Carbon::create($seasonYear, 12, 19)->toDateString();
             $needsDelivery = $deliveryPref === 'Delivery';
 
             // Some families have special needs
@@ -408,7 +555,8 @@ class TestDataSeeder extends Seeder
             $hasPet = mt_rand(0, 4) === 0;
 
             $status = $hasNumber ? $this->pick($statuses) : null;
-            $team = ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTeams) : null;
+            $teamName = ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTeams) : null;
+            $teamModel = $teamName ? DeliveryTeam::where('name', $teamName)->first() : null;
             $familyDone = $hasNumber && mt_rand(0, 4) === 0;
 
             // Generate children ages
@@ -461,14 +609,16 @@ class TestDataSeeder extends Seeder
                 'delivery_date'          => $hasNumber ? $deliveryDate : null,
                 'delivery_time'          => ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTimes) : null,
                 'delivery_reason'        => $needsDelivery ? $this->pick($this->deliveryReasons) : null,
-                'delivery_team'          => $team,
+                'delivery_team'          => $teamName,
+                'delivery_team_id'       => $teamModel?->id,
                 'delivery_status'        => $status,
                 'need_for_help'          => $hasNeed ? $this->pick($this->needForHelpTexts) : null,
                 'severe_need'            => $hasSevere ? $this->pick($this->severeNeedTexts) : null,
+                'is_severe_need'         => $hasSevere,
                 'family_done'            => $familyDone,
                 'family_number'          => $hasNumber ? $familyNumbers[$fIdx] : null,
-                'latitude'               => $addr['lat'] + (($fIdx * 17 % 100) - 50) * 0.0001,
-                'longitude'              => $addr['lng'] + (($fIdx * 31 % 100) - 50) * 0.0001,
+                'latitude'               => $lat,
+                'longitude'              => $lng,
             ];
 
             $family = Family::create($familyData);
@@ -516,5 +666,68 @@ class TestDataSeeder extends Seeder
         $totalChildren = Child::count();
         $this->command->info("Created {$totalFamilies} families with {$totalChildren} children.");
         $this->command->info("{$familiesWithNumbers} families have family numbers assigned, " . ($totalFamilies - $familiesWithNumbers) . " are unnumbered (ready for assignment).");
+    }
+
+    // ---------------------------------------------------------------------------
+    // Delivery routes (seed a few to test driver view + delivery day)
+    // ---------------------------------------------------------------------------
+
+    private function createSampleRoutes(): void
+    {
+        $driverUsernames = ['driver_alex', 'driver_jamie', 'driver_morgan', 'driver_taylor', 'driver_riley'];
+        $routePlanning = app(RoutePlanningService::class);
+
+        $eligible = Family::whereNotNull('family_number')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereNull('delivery_route_id')
+            ->where(function ($q) {
+                $q->where('delivery_status', DeliveryStatus::Pending)
+                    ->orWhereNull('delivery_status');
+            })
+            ->where(function ($q) {
+                $q->where('delivery_preference', 'like', '%deliver%')
+                    ->orWhereNull('delivery_preference');
+            })
+            ->orderBy('latitude') // geographic ordering for coherent routes
+            ->get();
+
+        if ($eligible->isEmpty()) {
+            return;
+        }
+
+        $chunks = $eligible->chunk(9);
+        foreach ($chunks as $i => $chunk) {
+            $driverUsername = $driverUsernames[$i % count($driverUsernames)];
+            $driverUser = User::where('username', $driverUsername)->first();
+            $driverName = $driverUser ? "{$driverUser->first_name} {$driverUser->last_name}" : "Driver " . ($i + 1);
+            $startLat = $chunk->first()->latitude;
+            $startLng = $chunk->first()->longitude;
+
+            $route = DeliveryRoute::create([
+                'name' => $driverName,
+                'driver_name' => $driverName,
+                'driver_user_id' => $driverUser?->id,
+                'start_lat' => $startLat,
+                'start_lng' => $startLng,
+                'stop_count' => $chunk->count(),
+            ]);
+
+            foreach ($chunk as $idx => $family) {
+                $family->update([
+                    'delivery_route_id' => $route->id,
+                    'route_order' => $idx + 1,
+                    'delivery_status' => DeliveryStatus::Pending,
+                ]);
+            }
+
+            try {
+                $routePlanning->optimizeRoute($route, (float) $startLat, (float) $startLng);
+            } catch (\Exception $e) {
+                // ORS may not be configured; continue without optimization
+            }
+        }
+
+        $this->command->info('Created ' . $chunks->count() . ' delivery routes from ' . $eligible->count() . ' eligible families.');
     }
 }

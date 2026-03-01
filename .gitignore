@@ -18,3 +18,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+database/*.sqlite
+storage/framework/views/*.php
+storage/logs/*.log
+storage/app/imports/

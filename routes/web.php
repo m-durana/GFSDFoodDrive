@@ -14,6 +14,7 @@ use App\Http\Controllers\SeasonController;
 use App\Http\Controllers\CommandCenterController;
 use App\Http\Controllers\DeliveryRouteController;
 use App\Http\Controllers\DeliveryTeamController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
 use App\Http\Controllers\WarehouseController;
@@ -35,6 +36,10 @@ Route::middleware('guest')->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Dashboard redirect: sends user to their role-appropriate page
     Route::get('/dashboard', function () {
@@ -92,6 +97,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::delete('/shopping-day/assignments/{assignment}', [SantaController::class, 'deleteAssignment'])->name('deleteAssignment');
     Route::get('/settings', [SantaController::class, 'settings'])->name('settings');
     Route::post('/settings', [SantaController::class, 'updateSettings'])->name('updateSettings');
+    Route::post('/settings/test-email', [SantaController::class, 'testEmail'])->name('testEmail');
     Route::get('/users', [SantaController::class, 'users'])->name('users');
     Route::post('/users', [SantaController::class, 'storeUser'])->name('storeUser');
     Route::put('/users/{user}', [SantaController::class, 'updateUser'])->name('updateUser');
@@ -180,6 +186,7 @@ Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverVi
 Route::post('/delivery/route/{token}/complete/{family}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
 Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
 Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');
+Route::post('/delivery/route/{token}/heading/{family}', [DeliveryRouteController::class, 'markHeading'])->name('delivery.markHeading');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
@@ -197,6 +204,8 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')
     Route::get('/gift-dropoff/{child}', [WarehouseController::class, 'giftDropoff'])->name('gift.dropoff');
     Route::post('/gift-dropoff/{child}', [WarehouseController::class, 'confirmGiftDropoff'])->name('gift.dropoff.confirm');
     Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
+    Route::get('/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('mobile-scan');
+    Route::get('/gifts-intake', [WarehouseController::class, 'giftsIntake'])->name('gifts-intake');
 });
 
 // Help/Wiki routes (accessible by all authenticated users)
@@ -219,6 +228,8 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::post('/location', [DeliveryDayController::class, 'updateLocation'])->name('updateLocation');
     Route::get('/track', [DeliveryDayController::class, 'track'])->name('track');
     Route::post('/quick-assign', [DeliveryDayController::class, 'quickAssign'])->name('quickAssign');
+    Route::post('/routes/{deliveryRoute}/add-families', [DeliveryDayController::class, 'addFamiliesToRoute'])->name('addFamiliesToRoute');
+    Route::post('/routes/{deliveryRoute}/mark-picked-up', [DeliveryDayController::class, 'markRoutePickedUp'])->name('markRoutePickedUp');
 });
 
 // Santa duplicate detection routes

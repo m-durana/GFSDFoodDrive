@@ -2,7 +2,7 @@
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Warehouse Dashboard
-            <x-hint key="warehouse-dashboard" text="Track all incoming donations here. The deficit table shows what's still needed. Use Receive Items to scan in donations, or Kiosk Mode for volunteer intake stations." />
+            <x-hint key="warehouse-dashboard" text="Track all incoming donations here. The deficit table shows what's still needed. Use Kiosk Mode for fast barcode scanning, or Gift Intake to record child-specific gifts." />
         </h2>
     </x-slot>
 
@@ -13,8 +13,8 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <a href="{{ route('warehouse.kiosk') }}" class="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm hover:bg-green-100 dark:hover:bg-green-900/30 transition border border-green-200 dark:border-green-800 text-center">
                     <div class="text-2xl mb-1">📦</div>
-                    <h4 class="font-medium text-green-800 dark:text-green-300">Scanner</h4>
-                    <p class="text-xs text-green-700/70 dark:text-green-400/60 mt-1">Scan barcodes and log donations</p>
+                    <h4 class="font-medium text-green-800 dark:text-green-300">Kiosk Scanner</h4>
+                    <p class="text-xs text-green-700/70 dark:text-green-400/60 mt-1">Scan barcodes and log donations fast</p>
                 </a>
                 <a href="{{ route('warehouse.inventory') }}" class="block p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition border border-blue-200 dark:border-blue-800 text-center">
                     <div class="text-2xl mb-1">📋</div>
@@ -26,10 +26,10 @@
                     <h4 class="font-medium text-amber-800 dark:text-amber-300">Transaction Log</h4>
                     <p class="text-xs text-amber-700/70 dark:text-amber-400/60 mt-1">Full audit trail of all items</p>
                 </a>
-                <a href="{{ route('warehouse.kiosk') }}" target="_blank" class="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 transition border border-purple-200 dark:border-purple-800 text-center">
-                    <div class="text-2xl mb-1">🖥️</div>
-                    <h4 class="font-medium text-purple-800 dark:text-purple-300">Kiosk (New Tab)</h4>
-                    <p class="text-xs text-purple-700/70 dark:text-purple-400/60 mt-1">Open scanner in fullscreen for volunteers</p>
+                <a href="{{ route('warehouse.gifts-intake') }}" class="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 transition border border-purple-200 dark:border-purple-800 text-center">
+                    <div class="text-2xl mb-1">🎁</div>
+                    <h4 class="font-medium text-purple-800 dark:text-purple-300">Gift Intake</h4>
+                    <p class="text-xs text-purple-700/70 dark:text-purple-400/60 mt-1">Record child-specific gift drop-offs</p>
                 </a>
             </div>
 

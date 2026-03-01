@@ -9,6 +9,7 @@ use App\Models\DeliveryTeam;
 use App\Models\Family;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,11 +17,22 @@ use Illuminate\View\View;
 
 class DeliveryDayController extends Controller
 {
+    public function __construct(
+        private readonly RoutePlanningService $routePlanning
+    ) {}
+
     public function index(Request $request): View
     {
         // Routes with families and driver info
         $routes = DeliveryRoute::with(['driver', 'families' => fn($q) => $q->orderBy('route_order')])
             ->get();
+        $routes->each(function ($route) {
+            $sorted = $route->families->sortBy([
+                fn($f) => in_array($f->delivery_status?->value ?? 'pending', ['delivered', 'picked_up']) ? 1 : 0,
+                fn($f) => $f->route_order ?? 9999,
+            ])->values();
+            $route->setRelation('families', $sorted);
+        });
 
         // All delivery families for dispatch board
         $query = Family::whereNotNull('family_number')
@@ -62,8 +74,48 @@ class DeliveryDayController extends Controller
             'picked_up' => (clone $allDeliveryFamilies)->where('delivery_status', DeliveryStatus::PickedUp)->count(),
         ];
 
+        // Routing eligibility stats (for clearer UI messaging)
+        $allNumbered = Family::whereNotNull('family_number');
+        $eligibleForRouting = (clone $allNumbered)
+            ->whereNull('delivery_route_id')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->where(function ($q) {
+                $q->where('delivery_status', DeliveryStatus::Pending)
+                    ->orWhereNull('delivery_status');
+            })
+            ->where(function ($q) {
+                $q->where('delivery_preference', 'like', '%deliver%')
+                    ->orWhereNull('delivery_preference');
+            });
+
+        $routingStats = [
+            'eligible' => (clone $eligibleForRouting)->count(),
+            'with_numbers' => (clone $allNumbered)->count(),
+            'missing_coords' => (clone $allNumbered)
+                ->where(function ($q) {
+                    $q->whereNull('latitude')->orWhereNull('longitude');
+                })->count(),
+            'pickup_only' => (clone $allNumbered)
+                ->where('delivery_preference', 'like', '%pick%')
+                ->count(),
+            'already_routed' => (clone $allNumbered)
+                ->whereNotNull('delivery_route_id')
+                ->count(),
+            'not_pending' => (clone $allNumbered)
+                ->whereNotNull('delivery_status')
+                ->whereNotIn('delivery_status', [DeliveryStatus::Pending->value])
+                ->count(),
+        ];
+
+        $unroutedEligible = $families->filter(function ($f) {
+            $isPending = ($f->delivery_status?->value ?? 'pending') === 'pending';
+            $isDelivery = !$f->delivery_preference || str_contains(strtolower($f->delivery_preference), 'deliver');
+            return !$f->delivery_route_id && $f->latitude && $f->longitude && $isPending && $isDelivery;
+        });
+
         return view('delivery-day.index', compact(
-            'routes', 'families', 'stats'
+            'routes', 'families', 'stats', 'routingStats', 'unroutedEligible'
         ));
     }
 
@@ -212,7 +264,7 @@ class DeliveryDayController extends Controller
                 'updated' => $v->last_location_at->diffForHumans(),
             ]);
 
-        // Route polylines — ordered stops per route with team color
+        // Route polylines — real route geometry when available
         $routes = DeliveryRoute::with(['families' => fn($q) => $q
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -225,29 +277,42 @@ class DeliveryDayController extends Controller
                 ? DeliveryTeam::where('id', $teamId)->value('color') ?? '#dc2626'
                 : '#dc2626';
 
-            $polyline = [];
-            if ($route->start_lat && $route->start_lng) {
-                $polyline[] = [(float) $route->start_lat, (float) $route->start_lng];
-            }
-            foreach ($route->families as $f) {
-                $polyline[] = [(float) $f->latitude, (float) $f->longitude];
-            }
-            if ($route->start_lat && $route->start_lng) {
-                $polyline[] = [(float) $route->start_lat, (float) $route->start_lng];
-            }
-
             return [
                 'id' => $route->id,
                 'name' => $route->name,
                 'color' => $color,
                 'team_id' => $teamId,
-                'polyline' => $polyline,
+                'polyline' => $this->routePlanning->polylineForRoute($route),
             ];
         });
+
+        $drivers = DeliveryRoute::with('driver')->get()->map(function ($route) {
+            if ($route->driver_lat && $route->driver_lng) {
+                return [
+                    'route_id' => $route->id,
+                    'name' => $route->driver?->first_name ?? $route->driver_name ?? 'Driver',
+                    'lat' => (float) $route->driver_lat,
+                    'lng' => (float) $route->driver_lng,
+                    'updated' => $route->driver_location_at?->diffForHumans() ?? 'just now',
+                ];
+            }
+            if ($route->start_lat && $route->start_lng) {
+                return [
+                    'route_id' => $route->id,
+                    'name' => $route->driver?->first_name ?? $route->driver_name ?? 'Driver',
+                    'lat' => (float) $route->start_lat,
+                    'lng' => (float) $route->start_lng,
+                    'updated' => 'awaiting live location',
+                ];
+            }
+
+            return null;
+        })->filter()->values();
 
         return response()->json([
             'families' => $families,
             'volunteers' => $volunteers,
+            'drivers' => $drivers,
             'routes' => $routes,
         ]);
     }
@@ -301,19 +366,36 @@ class DeliveryDayController extends Controller
                     ->orWhereNull('delivery_preference');
             });
 
-        // If we have a starting point, sort by distance to it
-        if ($request->filled('start_lat') && $request->filled('start_lng')) {
-            $lat = $request->start_lat;
-            $lng = $request->start_lng;
-            $query->orderByRaw("(latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?) ASC", [$lat, $lat, $lng, $lng]);
-        } else {
-            $query->orderBy('family_number');
-        }
-
-        $families = $query->limit($batchSize)->get();
+        $eligible = $query->get();
+        $families = $this->selectNearbyFamilies($eligible, $batchSize, $request->start_lat, $request->start_lng);
 
         if ($families->isEmpty()) {
-            return response()->json(['ok' => false, 'message' => 'No undelivered families available.'], 422);
+            $totalWithNumber = Family::whereNotNull('family_number')->count();
+            $withCoords = Family::whereNotNull('family_number')->whereNotNull('latitude')->whereNotNull('longitude')->count();
+            $onRoutes = Family::whereNotNull('family_number')->whereNotNull('delivery_route_id')->count();
+
+            if ($totalWithNumber === 0) {
+                $reason = 'No families have been assigned numbers yet.';
+            } elseif ($withCoords === 0) {
+                $reason = 'No families have GPS coordinates. Run geocoding from Santa > Settings first.';
+            } elseif ($onRoutes >= $withCoords) {
+                $reason = 'All geocoded families are already assigned to routes.';
+            } else {
+                $pendingDelivery = Family::whereNotNull('family_number')
+                    ->where(function ($q) {
+                        $q->where('delivery_status', DeliveryStatus::Pending)
+                            ->orWhereNull('delivery_status');
+                    })
+                    ->where(function ($q) {
+                        $q->where('delivery_preference', 'like', '%deliver%')
+                            ->orWhereNull('delivery_preference');
+                    })
+                    ->count();
+                $reason = 'No eligible families found. Eligible = pending delivery, GPS coordinates, and not already routed. ' .
+                    $pendingDelivery . ' are pending delivery, ' . $withCoords . ' have coordinates, ' . $onRoutes . ' already routed.';
+            }
+
+            return response()->json(['ok' => false, 'message' => $reason], 422);
         }
 
         // Create route
@@ -327,8 +409,9 @@ class DeliveryDayController extends Controller
             'season_year' => (int) Setting::get('season_year', date('Y')),
         ]);
 
-        // Assign families to route
-        foreach ($families as $i => $family) {
+        // Assign families to route (nearest-neighbor order for coherence)
+        $ordered = $this->orderByNearestNeighbor($families, $request->start_lat, $request->start_lng);
+        foreach ($ordered as $i => $family) {
             $family->update([
                 'delivery_route_id' => $route->id,
                 'route_order' => $i + 1,
@@ -337,16 +420,14 @@ class DeliveryDayController extends Controller
         }
 
         // Try to optimize via ORS if key available
-        $orsKey = Setting::get('openrouteservice_key', '');
-        if ($orsKey && $families->count() >= 2) {
-            try {
-                app(\App\Http\Controllers\DeliveryRouteController::class)->optimizeRoute($route, $orsKey);
-            } catch (\Exception $e) {
-                // Non-fatal - route just won't be optimized
-            }
+        if ($families->count() >= 2) {
+            $this->routePlanning->optimizeRoute($route, $request->start_lat, $request->start_lng);
+        } else {
+            $this->routePlanning->refreshRouteGeometry($route);
         }
 
         $driverUrl = route('delivery.driverView', $route->access_token);
+        $suggested = $this->suggestNearbyFamilies($eligible, $families, $route);
 
         return response()->json([
             'ok' => true,
@@ -357,7 +438,170 @@ class DeliveryDayController extends Controller
                 'driver_url' => $driverUrl,
                 'access_token' => $route->access_token,
             ],
+            'suggested' => $suggested,
         ]);
+    }
+
+    public function addFamiliesToRoute(Request $request, DeliveryRoute $deliveryRoute): JsonResponse
+    {
+        $request->validate([
+            'family_ids' => ['required', 'array', 'min:1'],
+            'family_ids.*' => ['exists:families,id'],
+        ]);
+
+        $maxOrder = Family::where('delivery_route_id', $deliveryRoute->id)->max('route_order') ?? 0;
+        $added = 0;
+
+        foreach ($request->family_ids as $familyId) {
+            $family = Family::where('id', $familyId)
+                ->whereNull('delivery_route_id')
+                ->first();
+            if (! $family) {
+                continue;
+            }
+            $maxOrder++;
+            $family->update([
+                'delivery_route_id' => $deliveryRoute->id,
+                'route_order' => $maxOrder,
+                'delivery_status' => DeliveryStatus::Pending,
+            ]);
+            $added++;
+        }
+
+        $deliveryRoute->update(['stop_count' => Family::where('delivery_route_id', $deliveryRoute->id)->count()]);
+        $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+
+        return response()->json([
+            'ok' => true,
+            'added' => $added,
+            'stop_count' => $deliveryRoute->stop_count,
+        ]);
+    }
+
+    public function markRoutePickedUp(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse|\Illuminate\Http\JsonResponse
+    {
+        $families = Family::where('delivery_route_id', $deliveryRoute->id)->get();
+        foreach ($families as $family) {
+            $family->update(['delivery_status' => DeliveryStatus::PickedUp]);
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => auth()->id(),
+                'status' => 'picked_up',
+                'notes' => 'Marked picked up for entire route.',
+            ]);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'count' => $families->count()]);
+        }
+
+        return redirect()->route('delivery.index')
+            ->with('success', "All families in {$deliveryRoute->name} marked as picked up.");
+    }
+
+    private function selectNearbyFamilies($eligible, int $batchSize, ?float $startLat, ?float $startLng)
+    {
+        if ($eligible->isEmpty()) {
+            return collect();
+        }
+
+        if ($startLat !== null && $startLng !== null) {
+            return $eligible->sortBy(fn($f) => $this->distanceSq($startLat, $startLng, (float) $f->latitude, (float) $f->longitude))
+                ->take($batchSize)
+                ->values();
+        }
+
+        $seed = $eligible->first();
+        return $eligible->sortBy(fn($f) => $this->distanceSq((float) $seed->latitude, (float) $seed->longitude, (float) $f->latitude, (float) $f->longitude))
+            ->take($batchSize)
+            ->values();
+    }
+
+    private function orderByNearestNeighbor($families, ?float $startLat, ?float $startLng)
+    {
+        $remaining = $families->values();
+        if ($remaining->isEmpty()) {
+            return $remaining;
+        }
+
+        $ordered = collect();
+        if ($startLat !== null && $startLng !== null) {
+            $currentLat = $startLat;
+            $currentLng = $startLng;
+        } else {
+            $seed = $remaining->first();
+            $currentLat = (float) $seed->latitude;
+            $currentLng = (float) $seed->longitude;
+        }
+
+        while ($remaining->isNotEmpty()) {
+            $nearestIndex = 0;
+            $nearestDist = null;
+            foreach ($remaining as $idx => $f) {
+                $dist = $this->distanceSq($currentLat, $currentLng, (float) $f->latitude, (float) $f->longitude);
+                if ($nearestDist === null || $dist < $nearestDist) {
+                    $nearestDist = $dist;
+                    $nearestIndex = $idx;
+                }
+            }
+            $next = $remaining->pull($nearestIndex);
+            $ordered->push($next);
+            $currentLat = (float) $next->latitude;
+            $currentLng = (float) $next->longitude;
+        }
+
+        return $ordered;
+    }
+
+    private function suggestNearbyFamilies($eligible, $selected, DeliveryRoute $route): array
+    {
+        $selectedIds = $selected->pluck('id')->all();
+        if (empty($selectedIds)) {
+            return [];
+        }
+
+        $avgLat = $selected->avg('latitude');
+        $avgLng = $selected->avg('longitude');
+        $thresholdMiles = 1.0;
+
+        return $eligible->filter(fn($f) => !in_array($f->id, $selectedIds, true))
+            ->map(function ($f) use ($avgLat, $avgLng) {
+                $dist = $this->distanceMiles($avgLat, $avgLng, (float) $f->latitude, (float) $f->longitude);
+                return [
+                    'id' => $f->id,
+                    'number' => $f->family_number,
+                    'name' => $f->family_name,
+                    'address' => $f->address,
+                    'distance_miles' => round($dist, 2),
+                ];
+            })
+            ->filter(fn($row) => $row['distance_miles'] <= $thresholdMiles)
+            ->sortBy('distance_miles')
+            ->take(6)
+            ->values()
+            ->all();
+    }
+
+    private function distanceSq(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $dLat = $lat1 - $lat2;
+        $dLng = $lng1 - $lng2;
+        return ($dLat * $dLat) + ($dLng * $dLng);
+    }
+
+    private function distanceMiles(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 3958.8;
+        $lat1Rad = deg2rad($lat1);
+        $lat2Rad = deg2rad($lat2);
+        $deltaLat = deg2rad($lat2 - $lat1);
+        $deltaLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($deltaLat / 2) ** 2 +
+            cos($lat1Rad) * cos($lat2Rad) *
+            sin($deltaLng / 2) ** 2;
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $earthRadius * $c;
     }
 
     public function logs(Request $request): View

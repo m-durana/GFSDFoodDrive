@@ -8,15 +8,18 @@ use App\Models\DeliveryRoute;
 use App\Models\Family;
 use App\Models\Setting;
 use App\Models\User;
+use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class DeliveryRouteController extends Controller
 {
+    public function __construct(
+        private readonly RoutePlanningService $routePlanning
+    ) {}
+
     /**
      * Route management page for Santa.
      */
@@ -52,6 +55,7 @@ class DeliveryRouteController extends Controller
                 ]);
             }
             $route->update(['stop_count' => count($request->family_ids)]);
+            $this->routePlanning->refreshRouteGeometry($route->fresh());
         }
 
         return redirect()->route('delivery.index', ['tab' => 'routes'])
@@ -97,96 +101,27 @@ class DeliveryRouteController extends Controller
             ->with('families')
             ->get();
 
-        // Build VROOM problem
-        $vehicles = [];
-        $jobs = [];
-        $familyIndex = []; // job index → family_id
-
         foreach ($routes as $i => $route) {
-            $startLat = $route->start_lat ?? $request->start_lat;
-            $startLng = $route->start_lng ?? $request->start_lng;
-
-            $vehicles[] = [
-                'id' => $route->id,
-                'profile' => 'driving-car',
-                'start' => [(float) $startLng, (float) $startLat],
-                'end' => [(float) $startLng, (float) $startLat],
-            ];
-
-            foreach ($route->families as $family) {
-                if ($family->latitude && $family->longitude) {
-                    $jobId = $family->id;
-                    $jobs[] = [
-                        'id' => $jobId,
-                        'location' => [(float) $family->longitude, (float) $family->latitude],
-                        'service' => 300, // 5 min per stop
-                    ];
-                    $familyIndex[$jobId] = $route->id; // assign to this vehicle
-                }
-            }
-        }
-
-        if (empty($jobs)) {
-            return redirect()->route('delivery.index', ['tab' => 'routes'])
-                ->with('error', 'No geocoded families in selected routes.');
-        }
-
-        // Call ORS optimization API
-        try {
-            $response = Http::timeout(30)
-                ->withHeaders(['Authorization' => $orsKey])
-                ->post('https://api.openrouteservice.org/optimization', [
-                    'jobs' => $jobs,
-                    'vehicles' => $vehicles,
-                ]);
-
-            if (! $response->successful()) {
-                $body = $response->json();
-                $msg = $body['error']['message'] ?? $response->body();
+            $geocodedFamilies = $route->families->filter(fn($family) => $family->latitude && $family->longitude)->count();
+            if ($geocodedFamilies === 0) {
                 return redirect()->route('delivery.index', ['tab' => 'routes'])
-                    ->with('error', "ORS API error: {$msg}");
+                    ->with('error', "Route '{$route->name}' has no geocoded families.");
             }
 
-            $result = $response->json();
-        } catch (\Exception $e) {
-            return redirect()->route('delivery.index', ['tab' => 'routes'])
-                ->with('error', 'ORS API request failed: ' . $e->getMessage());
-        }
+            $ok = $this->routePlanning->optimizeRoute(
+                $route,
+                (float) $request->start_lat,
+                (float) $request->start_lng
+            );
 
-        // Apply optimized order to families
-        foreach ($result['routes'] ?? [] as $vRoute) {
-            $routeId = $vRoute['vehicle'];
-            $route = $routes->firstWhere('id', $routeId);
-            if (! $route) continue;
-
-            $order = 1;
-            foreach ($vRoute['steps'] as $step) {
-                if ($step['type'] !== 'job') continue;
-                Family::where('id', $step['id'])->update([
-                    'delivery_route_id' => $routeId,
-                    'route_order' => $order++,
-                ]);
+            if (! $ok && $geocodedFamilies >= 2) {
+                return redirect()->route('delivery.index', ['tab' => 'routes'])
+                    ->with('error', "Could not optimize route '{$route->name}'. Check the ORS key or route coordinates.");
             }
-
-            $route->update([
-                'total_distance_meters' => $vRoute['distance'] ?? null,
-                'total_duration_seconds' => $vRoute['duration'] ?? null,
-                'stop_count' => $order - 1,
-                'start_lat' => $request->start_lat,
-                'start_lng' => $request->start_lng,
-            ]);
-        }
-
-        // Handle any unassigned jobs
-        $unassigned = collect($result['unassigned'] ?? []);
-        if ($unassigned->isNotEmpty()) {
-            $msg = $unassigned->count() . ' families could not be routed.';
-        } else {
-            $msg = 'Routes optimized successfully!';
         }
 
         return redirect()->route('delivery.index', ['tab' => 'routes'])
-            ->with('success', $msg);
+            ->with('success', 'Routes optimized successfully!');
     }
 
     /**
@@ -214,6 +149,7 @@ class DeliveryRouteController extends Controller
         }
 
         $deliveryRoute->update(['stop_count' => count($request->family_ids)]);
+        $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
 
         return redirect()->route('delivery.index', ['tab' => 'routes'])
             ->with('success', "Route '{$deliveryRoute->name}' updated.");
@@ -227,7 +163,10 @@ class DeliveryRouteController extends Controller
     public function driverView(string $token): View
     {
         $route = DeliveryRoute::where('access_token', $token)
-            ->with(['families' => fn($q) => $q->orderBy('route_order')])
+            ->with(['families' => fn($q) => $q
+                ->orderByRaw("CASE WHEN delivery_status IN ('delivered', 'picked_up') THEN 1 ELSE 0 END")
+                ->orderBy('route_order')
+            ])
             ->firstOrFail();
 
         return view('delivery-routes.driver', compact('route'));
@@ -236,7 +175,7 @@ class DeliveryRouteController extends Controller
     /**
      * Mark a stop as delivered from the driver view.
      */
-    public function completeStop(Request $request, string $token, Family $family): RedirectResponse
+    public function completeStop(Request $request, string $token, Family $family): RedirectResponse|JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
 
@@ -252,6 +191,14 @@ class DeliveryRouteController extends Controller
             'status' => 'delivered',
             'notes' => 'Marked delivered via driver route view.',
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'ok' => true,
+                'family_id' => $family->id,
+                'status' => 'delivered',
+            ]);
+        }
 
         return redirect()->route('delivery.driverView', $token)
             ->with('success', "#{$family->family_number} marked as delivered.");
@@ -278,7 +225,39 @@ class DeliveryRouteController extends Controller
             ]);
         }
 
+        $route->update([
+            'driver_lat' => $request->latitude,
+            'driver_lng' => $request->longitude,
+            'driver_location_at' => now(),
+        ]);
+
         return response()->json(['status' => 'ok']);
+    }
+
+    /**
+     * Mark a stop as in transit when the driver clicks Navigate.
+     */
+    public function markHeading(Request $request, string $token, Family $family): JsonResponse
+    {
+        $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+        if ($family->delivery_route_id !== $route->id) {
+            abort(403);
+        }
+
+        $family->update(['delivery_status' => DeliveryStatus::InTransit]);
+
+        DeliveryLog::create([
+            'family_id' => $family->id,
+            'user_id' => $route->driver_user_id,
+            'status' => 'in_transit',
+            'notes' => 'Driver started navigation.',
+        ]);
+
+        return response()->json([
+            'ok' => true,
+            'family_id' => $family->id,
+            'status' => 'in_transit',
+        ]);
     }
 
     /**
@@ -307,8 +286,10 @@ class DeliveryRouteController extends Controller
                 'name' => $route->name,
                 'distance' => $route->formattedDistance(),
                 'duration' => $route->formattedDuration(),
+                'stop_count' => (int) $route->stop_count,
                 'start_lat' => (float) $route->start_lat,
                 'start_lng' => (float) $route->start_lng,
+                'polyline' => $this->routePlanning->polylineForRoute($route),
             ],
             'stops' => $stops,
         ]);

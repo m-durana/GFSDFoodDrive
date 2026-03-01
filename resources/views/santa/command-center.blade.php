@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Command Center - GFSD Food Drive</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -118,9 +119,9 @@
         </div>
 
         <!-- DELIVERY MODE -->
-        <div id="mode-delivery" class="hidden h-full grid grid-cols-4 grid-rows-[auto_1fr_1fr] gap-4">
+        <div id="mode-delivery" class="hidden h-full grid grid-cols-12 grid-rows-[auto_1fr] gap-4">
             <!-- Top stats row -->
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
                 <div class="relative">
                     <svg class="w-24 h-24 transform -rotate-90">
                         <circle cx="48" cy="48" r="40" stroke="#374151" stroke-width="7" fill="none"/>
@@ -133,35 +134,48 @@
                 </div>
                 <div class="text-xs text-gray-400 mt-1">Delivered</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
                 <div class="text-3xl font-bold text-blue-400 pulse" id="delivery-in-transit">0</div>
                 <div class="text-sm text-gray-400 mt-1">In Transit</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
                 <div class="text-3xl font-bold text-gray-400" id="delivery-pending">0</div>
                 <div class="text-sm text-gray-400 mt-1">Pending</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center">
+            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
                 <div class="text-3xl font-bold text-green-400" id="delivery-done">0</div>
                 <div class="text-sm text-gray-400 mt-1">Complete</div>
             </div>
 
-            <!-- Map (large — 3 columns) -->
-            <div class="bg-gray-800 rounded-lg overflow-hidden col-span-3 row-span-2">
-                <div id="map"></div>
+            <div class="col-span-8 grid grid-rows-[1fr_auto] gap-4 min-h-0">
+                <div class="bg-gray-800 rounded-lg overflow-hidden min-h-0">
+                    <div class="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-300">Delivery Map</h3>
+                            <p class="text-xs text-gray-500">Routes, families, and live vehicle positions</p>
+                        </div>
+                        <a href="{{ route('delivery.index') }}" class="text-xs text-blue-300 hover:text-blue-200">Open Dispatch</a>
+                    </div>
+                    <div id="map"></div>
+                </div>
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
+                    <div id="activity-feed" class="space-y-2">
+                        <div class="text-gray-500 text-sm">Loading...</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Route progress + Activity feed (stacked in 1 column) -->
-            <div class="col-span-1 row-span-2 flex flex-col gap-4 min-h-0">
-                <div class="bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
-                    <h3 class="text-sm font-medium text-gray-400 mb-3">Routes</h3>
+            <div class="col-span-4 flex flex-col gap-4 min-h-0">
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3">Active Routes</h3>
                     <div id="route-bars" class="space-y-3">
                         <div class="text-gray-500 text-sm">Loading...</div>
                     </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-4 flex-1 overflow-y-auto min-h-0">
-                    <h3 class="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
-                    <div id="activity-feed" class="space-y-2">
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
+                    <h3 class="text-sm font-medium text-gray-400 mb-3">Dispatch Queue</h3>
+                    <div id="dispatch-queue" class="space-y-2">
                         <div class="text-gray-500 text-sm">Loading...</div>
                     </div>
                 </div>
@@ -174,6 +188,9 @@
         let currentMode = '{{ $mode === "auto" ? "delivery" : $mode }}';
         let map = null;
         let mapMarkers = [];
+        let routePolylines = {}; // routeId → L.polyline
+        let mapBoundsSet = false;
+        let routeVisibility = {}; // routeId → bool, default true
         let giftChart = null;
         let deliveryChart = null;
 
@@ -209,22 +226,95 @@
             }).addTo(map);
         }
 
-        function updateMap(drivers) {
+        const carSvg = `<svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`;
+
+        function updateMap(mapData) {
             if (!map) return;
             mapMarkers.forEach(m => map.removeLayer(m));
             mapMarkers = [];
+            // Remove old route polylines
+            Object.values(routePolylines).forEach(l => map.removeLayer(l));
+            routePolylines = {};
+            const bounds = [];
 
-            drivers.forEach(d => {
+            const statusColors = { pending: '#6b7280', in_transit: '#f97316', delivered: '#22c55e', picked_up: '#a855f7' };
+
+            (mapData.families || []).forEach(f => {
+                const color = statusColors[f.status] || '#6b7280';
+                const marker = L.marker([f.lat, f.lng], {
+                    icon: L.divIcon({
+                        className: '',
+                        html: `<div style="background:${color};width:10px;height:10px;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>`,
+                        iconSize: [10, 10],
+                        iconAnchor: [5, 5],
+                    })
+                }).addTo(map).bindPopup(`<b>#${f.number} ${f.name}</b><br>${f.address}`);
+                mapMarkers.push(marker);
+                bounds.push([f.lat, f.lng]);
+            });
+
+            (mapData.routes || []).forEach(r => {
+                if (!r.polyline || r.polyline.length < 2) return;
+                const line = L.polyline(r.polyline, {
+                    color: r.color || '#dc2626', weight: 3, opacity: 0.7
+                });
+                routePolylines[r.id] = line;
+                // Only add if visibility is enabled (default true)
+                if (routeVisibility[r.id] !== false) {
+                    line.addTo(map);
+                }
+                r.polyline.forEach(p => bounds.push(p));
+            });
+
+            (mapData.drivers || []).forEach(d => {
+                const isRecent = d.updated && !d.updated.includes('awaiting');
+                const pulseStyle = isRecent ? 'animation:pulse 2s ease-in-out infinite;' : '';
                 const marker = L.marker([d.lat, d.lng], {
                     icon: L.divIcon({
                         className: '',
-                        html: `<div style="background:#3b82f6;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;border:2px solid #fff;box-shadow:0 0 6px rgba(59,130,246,0.5);">${d.name.charAt(0)}</div>`,
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14],
+                        html: `<div style="background:${d.color || '#3b82f6'};border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.4);${pulseStyle}">${carSvg}</div>`,
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
                     })
-                }).addTo(map).bindPopup(`${d.name}<br><small>${d.updated}</small>`);
+                }).addTo(map).bindPopup(`<b>${d.name}</b><br><small>${d.updated}</small>`);
                 mapMarkers.push(marker);
+                bounds.push([d.lat, d.lng]);
             });
+
+            if (bounds.length && !mapBoundsSet) {
+                map.fitBounds(bounds, { padding: [20, 20] });
+                mapBoundsSet = true;
+            }
+        }
+
+        function toggleRouteVisibility(routeId, visible) {
+            routeVisibility[routeId] = visible;
+            const line = routePolylines[routeId];
+            if (!line) return;
+            if (visible) line.addTo(map);
+            else map.removeLayer(line);
+        }
+
+        function highlightRoute(routeId) {
+            const line = routePolylines[routeId];
+            if (line && routeVisibility[routeId] !== false) {
+                line.setStyle({ weight: 6, opacity: 1 });
+                line.bringToFront();
+            }
+        }
+
+        function unhighlightRoute(routeId) {
+            const line = routePolylines[routeId];
+            if (line) line.setStyle({ weight: 3, opacity: 0.7 });
+        }
+
+        function markRoutePickedUp(routeId) {
+            if (!confirm('Mark all families in this route as picked up?')) return;
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            fetch(`/delivery-day/routes/${routeId}/mark-picked-up`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(r => { if (r.ok) refresh(); });
         }
 
         // Progress ring helper
@@ -239,13 +329,14 @@
         // Build a progress bar HTML
         function progressBar(label, pct, checked, total, color = 'green') {
             const colors = {green: 'bg-green-500', blue: 'bg-blue-500', red: 'bg-red-500', yellow: 'bg-yellow-500'};
+            const barStyle = color.startsWith('#') ? `style="width:${pct}%;background:${color}"` : `class="${colors[color] || 'bg-green-500'} h-2.5 rounded-full transition-all" style="width:${pct}%"`;
             return `<div>
                 <div class="flex items-center justify-between text-sm mb-1">
                     <span class="text-gray-300 truncate">${label}</span>
                     <span class="text-gray-500 text-xs ml-2">${checked}/${total} (${pct}%)</span>
                 </div>
                 <div class="w-full bg-gray-700 rounded-full h-2.5">
-                    <div class="${colors[color] || 'bg-green-500'} h-2.5 rounded-full transition-all" style="width:${pct}%"></div>
+                    <div ${barStyle}></div>
                 </div>
             </div>`;
         }
@@ -294,9 +385,46 @@
 
                 let routeBars = '';
                 data.delivery.routes.forEach(r => {
-                    routeBars += progressBar(r.name + ' (' + r.driver + ')', r.pct, r.completed, r.total, 'blue');
+                    const headingHtml = r.heading_to
+                        ? `<div class="text-xs text-blue-400 mt-1.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg> Heading to ${r.heading_to}</div>`
+                        : '';
+                    const checked = routeVisibility[r.id] !== false;
+                    routeBars += `
+                        <div class="border border-gray-700 rounded-lg p-3 route-card" data-route-id="${r.id}"
+                            onmouseenter="highlightRoute(${r.id})" onmouseleave="unhighlightRoute(${r.id})">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <input type="checkbox" ${checked ? 'checked' : ''}
+                                        onchange="toggleRouteVisibility(${r.id}, this.checked)"
+                                        class="rounded w-3.5 h-3.5 cursor-pointer" style="accent-color:${r.color}">
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-medium text-gray-200 truncate" style="border-left:3px solid ${r.color};padding-left:6px">${r.name}</div>
+                                        <div class="text-xs text-gray-500 mt-0.5">${r.driver} · ${r.meta}</div>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-400 whitespace-nowrap">${r.completed}/${r.total}</div>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2 mt-2">
+                                <div class="h-2 rounded-full transition-all" style="width:${r.pct}%;background:${r.color || '#3b82f6'}"></div>
+                            </div>
+                            ${headingHtml}
+                            <div class="flex items-center gap-2 mt-2">
+                                <button onclick="markRoutePickedUp(${r.id})"
+                                    class="text-xs text-violet-400 hover:text-violet-300 transition">All Picked Up</button>
+                            </div>
+                        </div>
+                    `;
                 });
                 document.getElementById('route-bars').innerHTML = routeBars || '<div class="text-gray-500 text-sm">No routes created.</div>';
+
+                const queue = (data.delivery.dispatch_queue || []).map(f => `
+                    <div class="border border-gray-700 rounded-lg p-3">
+                        <div class="text-sm font-medium text-gray-200">#${f.number} ${f.name}</div>
+                        <div class="text-xs text-gray-500 mt-1">${f.address}</div>
+                        <div class="text-xs text-gray-400 mt-1">${f.distance_hint}</div>
+                    </div>
+                `).join('');
+                document.getElementById('dispatch-queue').innerHTML = queue || '<div class="text-gray-500 text-sm">No unrouted delivery families.</div>';
 
                 // Activity feed
                 let activityHtml = '';
@@ -319,7 +447,7 @@
                 document.getElementById('activity-feed').innerHTML = activityHtml || '<div class="text-gray-500 text-sm">No activity yet.</div>';
 
                 // Map
-                updateMap(data.drivers);
+                updateMap(data.delivery_map || {});
 
             } catch (e) {
                 console.error('Refresh failed:', e);

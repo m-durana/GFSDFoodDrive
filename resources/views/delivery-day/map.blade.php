@@ -80,8 +80,8 @@
                             Show route lines
                         </label>
                         <label class="flex items-center gap-2 text-xs cursor-pointer mt-1.5">
-                            <input type="checkbox" id="showVolunteers" class="rounded" checked>
-                            Show volunteers
+                            <input type="checkbox" id="showDrivers" class="rounded" checked>
+                            Show drivers
                         </label>
                     </div>
 
@@ -123,7 +123,7 @@
         const statusColors = { pending: '#EAB308', in_transit: '#F97316', delivered: '#22C55E', picked_up: '#3B82F6' };
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
-        let familyMarkers = [], volunteerMarkers = [], routeLines = [];
+        let familyMarkers = [], driverMarkers = [], volunteerMarkers = [], routeLines = [];
         let boundsSet = false;
 
         function getActiveStatuses() {
@@ -150,6 +150,15 @@
                 className: '',
                 html: `<div style="background:#9333EA;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4);color:white;font-size:11px;font-weight:bold;display:flex;align-items:center;justify-content:center;">${initial}</div>`,
                 iconSize: [24, 24], iconAnchor: [12, 12],
+            });
+        }
+
+        const carSvg = `<svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`;
+        function createDriverIcon(color = '#2563eb') {
+            return L.divIcon({
+                className: '',
+                html: `<div style="background:${color};border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,0.4);animation:pulse 2s ease-in-out infinite;">${carSvg}</div>`,
+                iconSize: [32, 32], iconAnchor: [16, 16],
             });
         }
 
@@ -194,16 +203,17 @@
             const teamIds = getActiveTeams();
             const routeIds = getActiveRoutes();
             const showLines = document.getElementById('showRouteLines')?.checked ?? true;
-            const showVols = document.getElementById('showVolunteers')?.checked ?? true;
+            const showDrivers = document.getElementById('showDrivers')?.checked ?? true;
 
             fetch('{{ route("delivery.mapData") }}')
                 .then(r => r.json())
                 .then(data => {
                     // Clear
                     familyMarkers.forEach(m => map.removeLayer(m));
+                    driverMarkers.forEach(m => map.removeLayer(m));
                     volunteerMarkers.forEach(m => map.removeLayer(m));
                     routeLines.forEach(l => map.removeLayer(l));
-                    familyMarkers = []; volunteerMarkers = []; routeLines = [];
+                    familyMarkers = []; driverMarkers = []; volunteerMarkers = []; routeLines = [];
 
                     const bounds = [];
 
@@ -220,8 +230,20 @@
                         bounds.push([f.lat, f.lng]);
                     });
 
-                    // Volunteers
-                    if (showVols) {
+                    // Drivers
+                    if (showDrivers && data.drivers) {
+                        data.drivers.forEach(v => {
+                            const routeColor = data.routes?.find(r => r.id === v.route_id)?.color || '#2563eb';
+                            const marker = L.marker([v.lat, v.lng], { icon: createDriverIcon(routeColor) })
+                                .bindPopup(`<strong>${v.name}</strong><br>${v.updated}`)
+                                .addTo(map);
+                            driverMarkers.push(marker);
+                            bounds.push([v.lat, v.lng]);
+                        });
+                    }
+
+                    // Legacy volunteer markers
+                    if (showDrivers && data.volunteers) {
                         data.volunteers.forEach(v => {
                             const marker = L.marker([v.lat, v.lng], { icon: createVolunteerIcon(v.initial) })
                                 .bindPopup(`<strong>${v.name}</strong><br>Updated ${v.updated}`)
@@ -252,7 +274,7 @@
 
                     // Empty state
                     const overlay = document.getElementById('no-data-overlay');
-                    overlay.classList.toggle('hidden', data.families.length > 0 || data.volunteers.length > 0);
+                    overlay.classList.toggle('hidden', data.families.length > 0 || data.drivers.length > 0 || data.volunteers.length > 0);
 
                     document.getElementById('last-update').textContent = 'Updated ' + new Date().toLocaleTimeString();
                 })
@@ -262,7 +284,7 @@
         }
 
         // Bind filter changes
-        document.querySelectorAll('.status-filter, .team-filter, .route-filter, #showRouteLines, #showVolunteers')
+        document.querySelectorAll('.status-filter, .team-filter, .route-filter, #showRouteLines, #showDrivers')
             .forEach(el => el.addEventListener('change', () => { boundsSet = true; updateMap(); }));
 
         updateMap();

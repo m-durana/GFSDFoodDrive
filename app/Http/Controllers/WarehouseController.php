@@ -80,6 +80,12 @@ class WarehouseController extends Controller
 
         // Try external UPC database
         $external = $this->warehouse->lookupBarcodeExternal($barcode);
+        if (is_array($external) && ($external['error'] ?? false)) {
+            return response()->json([
+                'found' => false,
+                'error' => $external['message'] ?? 'External lookup failed.',
+            ]);
+        }
         if ($external) {
             return response()->json([
                 'found' => false,
@@ -99,7 +105,7 @@ class WarehouseController extends Controller
 
     public function confirmGiftDropoff(ConfirmGiftDropoffRequest $request, Child $child): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $transaction = $this->warehouse->confirmGiftDropoff($child, $request->user());
+        $transaction = $this->warehouse->confirmGiftDropoff($child, $request->user(), $request->input('gifts_received'));
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -150,5 +156,21 @@ class WarehouseController extends Controller
         $categories = WarehouseCategory::active()->orderBy('sort_order')->get();
 
         return view('warehouse.kiosk', compact('categories'));
+    }
+
+    public function mobileScan(): View
+    {
+        return view('warehouse.mobile-scan');
+    }
+
+    public function giftsIntake(): View
+    {
+        $children = Child::with('family')
+            ->whereHas('family', fn($q) => $q->whereNotNull('family_number'))
+            ->orderByRaw("CASE WHEN gift_dropped_off = 1 THEN 1 ELSE 0 END")
+            ->orderBy('family_id')
+            ->get();
+
+        return view('warehouse.gifts-intake', compact('children'));
     }
 }

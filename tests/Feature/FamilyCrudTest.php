@@ -46,6 +46,7 @@ class FamilyCrudTest extends TestCase
             'preferred_language' => 'English',
             'female_adults' => 1,
             'male_adults' => 1,
+            'other_adults' => 0,
             'infants' => 0,
             'young_children' => 1,
             'children_count' => 1,

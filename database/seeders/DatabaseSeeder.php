@@ -10,7 +10,16 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
+            WarehouseCategorySeeder::class,
+            GroceryItemSeeder::class,
+            SchoolRangeSeeder::class,
         ]);
+
+        if (app()->environment('local')) {
+            $this->call([
+                TestDataSeeder::class,
+            ]);
+        }
 
         // To import legacy data, run: php artisan db:seed --class=LegacyDataSeeder
     }

@@ -18,7 +18,7 @@ class StoreFamilyRequest extends FormRequest
             return false;
         }
 
-        return $this->user()->isFamily() || $this->user()->isSanta();
+        return $this->user()->isFamily() || $this->user()->isCoordinator() || $this->user()->isSanta();
     }
 
     public function rules(): array
@@ -48,7 +48,20 @@ class StoreFamilyRequest extends FormRequest
             'delivery_reason' => ['nullable', 'string', 'max:5000'],
             'need_for_help' => ['nullable', 'string', 'max:5000'],
             'severe_need' => ['nullable', 'string', 'max:5000'],
+            'is_severe_need' => ['boolean'],
+            'severe_need_notes' => ['nullable', 'string', 'max:5000'],
+            'preferred_language_other' => ['nullable', 'string', 'max:100'],
             'other_questions' => ['nullable', 'string', 'max:5000'],
+            // Children (wizard fields)
+            'children' => ['nullable', 'array'],
+            'children.*.gender' => ['nullable', 'string', 'max:50'],
+            'children.*.age' => ['nullable', 'string', 'max:20'],
+            'children.*.school' => ['nullable', 'string', 'max:255'],
+            'children.*.clothing_options' => ['nullable', 'string', 'max:500'],
+            'children.*.clothing_styles' => ['nullable', 'string', 'max:500'],
+            'children.*.all_sizes' => ['nullable', 'string', 'max:500'],
+            'children.*.toy_ideas' => ['nullable', 'string', 'max:1000'],
+            'children.*.gift_preferences' => ['nullable', 'string', 'max:1000'],
         ];
     }
 

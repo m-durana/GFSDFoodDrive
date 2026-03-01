@@ -58,8 +58,13 @@ class SelfServiceController extends Controller
 
     private function closedResponse(): Response
     {
-        $advisors = User::where('permission', '>=', 8)
-            ->whereNotNull('position')
+        // Show advisors (permission 7 = family role with school_source) and coordinators
+        $advisors = User::where(function ($q) {
+                $q->where('permission', 7)->whereNotNull('school_source')->where('school_source', '!=', '');
+            })
+            ->orWhere(function ($q) {
+                $q->where('permission', '>=', 8)->whereNotNull('position');
+            })
             ->orderBy('name')
             ->get(['name', 'position', 'school_source']);
 

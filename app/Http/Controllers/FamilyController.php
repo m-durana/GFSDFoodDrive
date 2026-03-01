@@ -45,8 +45,25 @@ class FamilyController extends Controller
         $data['has_crhs_children'] = $request->boolean('has_crhs_children');
         $data['has_gfhs_children'] = $request->boolean('has_gfhs_children');
         $data['needs_baby_supplies'] = $request->boolean('needs_baby_supplies');
+        $data['is_severe_need'] = $request->boolean('is_severe_need');
+
+        // Handle "Other" language
+        if (($data['preferred_language'] ?? '') === 'Other' && $request->filled('preferred_language_other')) {
+            $data['preferred_language'] = $request->input('preferred_language_other');
+        }
+
+        // Remove children array from family data (handled separately)
+        $childrenData = $data['children'] ?? [];
+        unset($data['children'], $data['preferred_language_other']);
 
         $family = Family::create($data);
+
+        // Create children from wizard if provided
+        foreach ($childrenData as $childData) {
+            if (!empty($childData['gender']) || !empty($childData['age'])) {
+                $family->children()->create($childData);
+            }
+        }
 
         return redirect()->route('family.show', $family)
             ->with('success', "Family '{$family->family_name}' created successfully.");

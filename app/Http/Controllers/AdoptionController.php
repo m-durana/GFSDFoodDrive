@@ -16,7 +16,9 @@ class AdoptionController extends Controller
 {
     public function index(Request $request): View|RedirectResponse
     {
-        abort_unless(Setting::get('adopt_a_tag_enabled', '0') === '1', 404);
+        if (Setting::get('adopt_a_tag_enabled', '0') !== '1') {
+            return view('adopt.disabled');
+        }
 
         // Auto-close portal after deadline
         $deadline = Setting::get('adopt_a_tag_deadline');
@@ -42,7 +44,12 @@ class AdoptionController extends Controller
             $query->where('school', $request->school);
         }
 
-        $children = $query->get();
+        // Silently sort severe-need families first
+        $children = $query
+            ->leftJoin('families', 'children.family_id', '=', 'families.id')
+            ->orderByDesc('families.is_severe_need')
+            ->select('children.*')
+            ->get();
 
         $totalAvailable = Child::availableForAdoption()->count();
         $totalChildren = Child::whereHas('family', fn ($q) => $q->whereNotNull('family_number'))->count();
@@ -82,16 +89,9 @@ class AdoptionController extends Controller
 
         $request->validate([
             'adopter_name' => ['required', 'string', 'max:255'],
-            'adopter_email' => ['nullable', 'email', 'max:255'],
+            'adopter_email' => ['required', 'email', 'max:255'],
             'adopter_phone' => ['nullable', 'string', 'max:255'],
         ]);
-
-        // At least one contact method required
-        if (!$request->filled('adopter_email') && !$request->filled('adopter_phone')) {
-            return redirect()->back()
-                ->withInput()
-                ->withErrors(['contact' => 'Please provide at least an email or phone number.']);
-        }
 
         // Race condition guard: re-check availability
         if ($child->adoption_token !== null || !$child->family || !$child->family->family_number) {

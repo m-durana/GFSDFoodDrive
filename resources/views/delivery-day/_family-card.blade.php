@@ -16,7 +16,7 @@
             <div class="flex items-center gap-2 flex-wrap">
                 @if($family->route_order)
                     <span class="inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold {{ $isDone ? 'bg-green-500 text-white' : 'bg-red-700 text-white' }}">
-                        {{ $isDone ? '&#10003;' : $family->route_order }}
+                        {!! $isDone ? '&#10003;' : $family->route_order !!}
                     </span>
                 @endif
                 <span class="text-sm font-bold text-gray-900 dark:text-gray-100">#{{ $family->family_number }}</span>

@@ -32,87 +32,100 @@
     </div>
     @endguest
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col items-center justify-center p-8 space-y-8">
+    <!-- Main Content — sidebar layout -->
+    <div class="flex-1 flex gap-0">
 
-        <!-- Barcode Input -->
-        <div class="w-full max-w-lg">
-            <input type="text" id="kiosk-barcode" autofocus autocomplete="off"
-                class="w-full text-center text-3xl py-6 rounded-xl bg-gray-800 border-2 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 transition"
-                placeholder="Scan barcode...">
-        </div>
+        {{-- Left: Scanner Area --}}
+        <div class="flex-1 flex flex-col items-center justify-start p-8 space-y-6 overflow-y-auto">
 
-        <!-- Feedback Area -->
-        <div id="kiosk-feedback" class="w-full max-w-lg text-center text-lg min-h-[60px]"></div>
+            <!-- Barcode Input -->
+            <div class="w-full max-w-lg">
+                <input type="text" id="kiosk-barcode" autofocus autocomplete="off"
+                    class="w-full text-center text-3xl py-6 rounded-xl bg-gray-800 border-2 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 transition"
+                    placeholder="Scan or type barcode...">
+                <p class="text-xs text-gray-600 mt-1 text-center">Press Enter to submit. Keys (1-9, Q-P) to quick-select categories.</p>
+            </div>
 
-        <!-- Category Quick-Select -->
-        <div class="w-full max-w-2xl">
-            <p class="text-sm text-gray-500 mb-3 text-center">Or select a category:</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kiosk-categories">
-                @foreach($categories as $cat)
-                    <button data-category-id="{{ $cat->id }}" data-category-name="{{ $cat->name }}"
-                        class="kiosk-cat-btn p-4 rounded-xl text-center transition font-medium text-sm
-                            {{ $cat->type === 'food' ? 'bg-amber-900/40 border border-amber-700 hover:bg-amber-900/60 text-amber-200' : '' }}
-                            {{ $cat->type === 'gift' ? 'bg-purple-900/40 border border-purple-700 hover:bg-purple-900/60 text-purple-200' : '' }}
-                            {{ $cat->type === 'baby' ? 'bg-pink-900/40 border border-pink-700 hover:bg-pink-900/60 text-pink-200' : '' }}
-                            {{ $cat->type === 'supply' ? 'bg-blue-900/40 border border-blue-700 hover:bg-blue-900/60 text-blue-200' : '' }}
-                        ">
-                        {{ $cat->name }}
-                    </button>
-                @endforeach
+            <!-- Feedback Area -->
+            <div id="kiosk-feedback" class="w-full max-w-lg text-center text-lg min-h-[60px]"></div>
+
+            <!-- Category Quick-Select -->
+            <div class="w-full max-w-2xl">
+                <p class="text-sm text-gray-500 mb-3 text-center">Select a category (or press number key):</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kiosk-categories">
+                    @php $shortcutKeys = ['1','2','3','4','5','6','7','8','9','q','w','e','r','t','y','u','i','o','p']; @endphp
+                    @foreach($categories as $i => $cat)
+                        <button data-category-id="{{ $cat->id }}" data-category-name="{{ $cat->name }}" data-shortcut="{{ $shortcutKeys[$i] ?? '' }}"
+                            class="kiosk-cat-btn p-4 rounded-xl text-center transition font-medium text-sm relative
+                                {{ $cat->type === 'food' ? 'bg-amber-900/40 border border-amber-700 hover:bg-amber-900/60 text-amber-200' : '' }}
+                                {{ $cat->type === 'gift' ? 'bg-purple-900/40 border border-purple-700 hover:bg-purple-900/60 text-purple-200' : '' }}
+                                {{ $cat->type === 'baby' ? 'bg-pink-900/40 border border-pink-700 hover:bg-pink-900/60 text-pink-200' : '' }}
+                                {{ $cat->type === 'supply' ? 'bg-blue-900/40 border border-blue-700 hover:bg-blue-900/60 text-blue-200' : '' }}
+                            ">
+                            @if(isset($shortcutKeys[$i]))
+                                <span class="absolute top-1 left-2 text-xs opacity-50">{{ $shortcutKeys[$i] }}</span>
+                            @endif
+                            {{ $cat->name }}
+                        </button>
+                    @endforeach
+                </div>
+            </div>
+
+            <!-- Recent Scans -->
+            <div class="w-full max-w-lg">
+                <h3 class="text-sm text-gray-500 mb-2">Recent Scans</h3>
+                <div id="kiosk-recent" class="space-y-2 text-sm">
+                    <p class="text-gray-600">No scans yet.</p>
+                </div>
+            </div>
+
+            <!-- Session Totals -->
+            <div class="w-full max-w-lg bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <h3 class="text-sm text-gray-500 mb-2">Session Totals</h3>
+                <div id="kiosk-totals" class="text-sm text-gray-400">0 items scanned</div>
             </div>
         </div>
 
-        <!-- Optional Details (collapsible) -->
-        <div class="w-full max-w-lg">
-            <button type="button" id="details-toggle" onclick="document.getElementById('details-panel').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180');"
-                class="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 transition mb-2">
-                <svg class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                Additional Details (optional)
+        {{-- Right: Persistent Sidebar — Additional Details --}}
+        <div id="details-sidebar" class="w-72 flex-shrink-0 bg-gray-800 border-l border-gray-700 p-4 space-y-4 overflow-y-auto sticky top-0 h-screen">
+            <div class="flex items-center justify-between">
+                <h3 class="text-sm font-medium text-gray-300">Additional Details</h3>
+                <span id="details-active-badge" class="hidden px-2 py-0.5 bg-green-600 text-white text-xs rounded-full">Active</span>
+            </div>
+            <p class="text-xs text-gray-500">These settings apply to all subsequent scans until cleared.</p>
+
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Quantity</label>
+                <input type="number" id="detail-quantity" value="1" min="1" max="9999"
+                    class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Source</label>
+                <select id="detail-source" class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+                    <option value="">Not specified</option>
+                    <option value="School Drive">School Drive</option>
+                    <option value="Adopt-a-Tag">Adopt-a-Tag</option>
+                    <option value="Community Donation">Community Donation</option>
+                    <option value="Store Purchase">Store Purchase</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Donor Name</label>
+                <input type="text" id="detail-donor" maxlength="200"
+                    class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500"
+                    placeholder="e.g. Smith Family">
+            </div>
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">Notes</label>
+                <input type="text" id="detail-notes" maxlength="1000"
+                    class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
+            </div>
+
+            <button type="button" onclick="clearDetails()" class="w-full py-2 bg-gray-700 text-gray-400 rounded-lg text-xs font-medium hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">
+                Clear All Details
             </button>
-            <div id="details-panel" class="hidden space-y-3 bg-gray-800 rounded-xl p-4 border border-gray-700">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">Quantity</label>
-                    <input type="number" id="detail-quantity" value="1" min="1" max="9999"
-                        class="w-24 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">Source</label>
-                    <select id="detail-source" class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
-                        <option value="">Not specified</option>
-                        <option value="School Drive">School Drive</option>
-                        <option value="Adopt-a-Tag">Adopt-a-Tag</option>
-                        <option value="Community Donation">Community Donation</option>
-                        <option value="Store Purchase">Store Purchase</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">Donor Name</label>
-                    <input type="text" id="detail-donor" maxlength="200"
-                        class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500"
-                        placeholder="e.g. Smith Family">
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">Notes</label>
-                    <input type="text" id="detail-notes" maxlength="1000"
-                        class="w-full rounded-lg bg-gray-700 border border-gray-600 text-gray-100 text-sm py-1.5 px-3 focus:border-green-500 focus:ring-green-500">
-                </div>
-            </div>
         </div>
 
-        <!-- Last 5 Scans -->
-        <div class="w-full max-w-lg">
-            <h3 class="text-sm text-gray-500 mb-2">Recent Scans</h3>
-            <div id="kiosk-recent" class="space-y-2 text-sm">
-                <p class="text-gray-600">No scans yet.</p>
-            </div>
-        </div>
-
-        <!-- Session Totals -->
-        <div class="w-full max-w-lg bg-gray-800 rounded-xl p-4 border border-gray-700">
-            <h3 class="text-sm text-gray-500 mb-2">Session Totals</h3>
-            <div id="kiosk-totals" class="text-sm text-gray-400">0 items scanned</div>
-        </div>
     </div>
 
     <script>
@@ -152,17 +165,36 @@
         // Category button click
         document.querySelectorAll('.kiosk-cat-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                selectedCategoryId = this.dataset.categoryId;
-                const catName = this.dataset.categoryName;
-
-                // Highlight selected
-                document.querySelectorAll('.kiosk-cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-green-500'));
-                this.classList.add('ring-2', 'ring-green-500');
-
-                // Submit directly
-                submitReceipt(selectedCategoryId, catName, null);
+                selectCategory(this);
+                submitReceipt(selectedCategoryId, this.dataset.categoryName, null);
             });
         });
+
+        function selectCategory(btn) {
+            selectedCategoryId = btn.dataset.categoryId;
+            document.querySelectorAll('.kiosk-cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-green-500'));
+            btn.classList.add('ring-2', 'ring-green-500');
+        }
+
+        // Keyboard shortcuts: 1-9 then q,w,e,r,t,y,u,i,o,p for categories
+        const shortcutKeys = ['1','2','3','4','5','6','7','8','9','q','w','e','r','t','y','u','i','o','p'];
+        document.addEventListener('keydown', function(e) {
+            // Only when barcode input is focused or no specific input is focused
+            if (document.activeElement && document.activeElement !== input && document.activeElement.tagName === 'INPUT') return;
+            const key = e.key.toLowerCase();
+            if (shortcutKeys.includes(key)) {
+                const btn = document.querySelector(`.kiosk-cat-btn[data-shortcut="${key}"]`);
+                if (btn) {
+                    e.preventDefault();
+                    selectCategory(btn);
+                    submitReceipt(selectedCategoryId, btn.dataset.categoryName, null);
+                }
+            }
+        });
+
+        function findCategoryBtnById(id) {
+            return document.querySelector(`.kiosk-cat-btn[data-category-id="${id}"]`);
+        }
 
         // Barcode scan (Enter key)
         input.addEventListener('keydown', function(e) {
@@ -171,7 +203,6 @@
             const barcode = this.value.trim();
             if (!barcode) return;
 
-            // Look up barcode
             fetch('{{ url("/warehouse/barcode") }}/' + encodeURIComponent(barcode), {
                 headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             })
@@ -179,9 +210,25 @@
             .then(data => {
                 if (data.found) {
                     submitReceipt(data.item.category_id, data.item.category.name, barcode, data.item.id);
+                } else if (data.error) {
+                    showFeedback('OFF lookup failed: ' + data.error, 'red');
                 } else if (data.external) {
                     const extName = data.external.name + (data.external.brand ? ' (' + data.external.brand + ')' : '');
-                    showFeedback('Found: ' + extName + '. Select a category to log it.', 'yellow');
+                    // Use server-side category mapping
+                    let catBtn = null;
+                    if (data.external.suggested_category_id) {
+                        catBtn = findCategoryBtnById(data.external.suggested_category_id);
+                    }
+                    if (catBtn) {
+                        selectCategory(catBtn);
+                        showFeedback(extName + ' → ' + catBtn.dataset.categoryName, 'green');
+                        submitReceipt(selectedCategoryId, catBtn.dataset.categoryName, barcode);
+                    } else if (selectedCategoryId) {
+                        showFeedback(extName + ' → using selected category', 'green');
+                        submitReceipt(selectedCategoryId, null, barcode);
+                    } else {
+                        showFeedback('Found: ' + extName + '. Select a category.', 'yellow');
+                    }
                 } else if (selectedCategoryId) {
                     submitReceipt(selectedCategoryId, null, barcode);
                 } else {
@@ -260,7 +307,35 @@
             }
         }
 
-        // Focus barcode input on page load (not on every click - that steals focus from other inputs)
+        // Clear additional details
+        function clearDetails() {
+            document.getElementById('detail-quantity').value = 1;
+            document.getElementById('detail-source').value = '';
+            document.getElementById('detail-donor').value = '';
+            document.getElementById('detail-notes').value = '';
+            updateDetailsBadge();
+            input.focus();
+        }
+
+        // Show/hide "Active" badge when details are set
+        function updateDetailsBadge() {
+            const badge = document.getElementById('details-active-badge');
+            const sidebar = document.getElementById('details-sidebar');
+            const hasDetails = document.getElementById('detail-source').value ||
+                document.getElementById('detail-donor').value ||
+                document.getElementById('detail-notes').value ||
+                parseInt(document.getElementById('detail-quantity').value) > 1;
+            badge.classList.toggle('hidden', !hasDetails);
+            sidebar.style.borderLeftColor = hasDetails ? '#16a34a' : '';
+            sidebar.style.borderLeftWidth = hasDetails ? '3px' : '';
+        }
+
+        ['detail-source', 'detail-donor', 'detail-notes', 'detail-quantity'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updateDetailsBadge);
+            document.getElementById(id).addEventListener('input', updateDetailsBadge);
+        });
+
+        // Focus barcode input on page load
         input.focus();
     </script>
 </body>

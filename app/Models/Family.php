@@ -69,6 +69,8 @@ class Family extends Model
         'delivery_status',
         'need_for_help',
         'severe_need',
+        'is_severe_need',
+        'severe_need_notes',
         'other_questions',
         'family_done',
         'status_token',
@@ -101,6 +103,7 @@ class Family extends Model
             'delivery_date' => 'date',
             'delivery_status' => DeliveryStatus::class,
             'route_order' => 'integer',
+            'is_severe_need' => 'boolean',
         ];
     }
 
@@ -148,7 +151,7 @@ class Family extends Model
 
     public function scopeSevereNeed($query)
     {
-        return $query->where('severe_need', true)->orWhere('severe_need', 'Yes');
+        return $query->where('is_severe_need', true);
     }
 
     public function scopeNeedsBabySupplies($query)

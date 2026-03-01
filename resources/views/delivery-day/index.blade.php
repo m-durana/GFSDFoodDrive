@@ -10,11 +10,6 @@
                    class="inline-flex items-center px-3 py-1.5 bg-red-700 text-white rounded-md hover:bg-red-600 text-xs font-medium transition">
                     + Assign Driver
                 </button>
-                <button @click="showMap = !showMap; if(showMap) $nextTick(() => initInlineMap())"
-                   class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-xs font-medium transition"
-                   :class="showMap && 'ring-2 ring-blue-300'">
-                    <span x-text="showMap ? 'Hide Map' : 'Live Map'"></span>
-                </button>
                 <a href="{{ route('delivery.map') }}"
                    class="inline-flex items-center px-3 py-1.5 bg-gray-500 text-white rounded-md hover:bg-gray-400 text-xs font-medium transition"
                    title="Open full-screen map">
@@ -32,20 +27,8 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="{ showMap: false }" x-cloak>
+    <div class="py-6" x-data x-cloak>
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
-
-            {{-- Inline Map Panel --}}
-            <div x-show="showMap" x-transition x-cloak class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden" style="display:none;">
-                <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Live Map</h3>
-                    <div class="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                        <span id="inline-map-update"></span>
-                        <button @click="showMap = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">&times; Close</button>
-                    </div>
-                </div>
-                <div id="inline-map" style="height: 400px; width: 100%;"></div>
-            </div>
 
             @if(session('success'))
                 <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded">
@@ -105,6 +88,24 @@
                 </form>
             </div>
 
+            <!-- Routing Eligibility Summary -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 text-sm">
+                    <div class="font-medium text-gray-800 dark:text-gray-200">
+                        Eligible for routing: <span class="text-green-600 dark:text-green-400 font-semibold">{{ $routingStats['eligible'] }}</span>
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 space-x-3">
+                        <span>Missing GPS: {{ $routingStats['missing_coords'] }}</span>
+                        <span>Pickup Only: {{ $routingStats['pickup_only'] }}</span>
+                        <span>Already Routed: {{ $routingStats['already_routed'] }}</span>
+                        <span>Not Pending: {{ $routingStats['not_pending'] }}</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Quick Assign uses pending delivery families with GPS coordinates and no existing route.
+                </p>
+            </div>
+
             <!-- Main content: Routes sidebar + family cards -->
             <div class="flex flex-col lg:flex-row gap-4">
                 <!-- Left sidebar: Active Routes -->
@@ -120,10 +121,13 @@
                         @endphp
                         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
                             <div class="min-w-0">
-                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $route->name }}</div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{{ $route->display_name }}</div>
                                 <div class="text-xs text-gray-500 dark:text-gray-400">
                                     {{ $route->driver ? $route->driver->first_name : ($route->driver_name ?? 'No driver') }}
-                                    &middot; {{ $routeDone }}/{{ $routeTotal }} delivered
+                                    &middot; {{ $route->formattedMeta() }}
+                                </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    {{ $routeDone }}/{{ $routeTotal }} complete
                                 </div>
                             </div>
                             @if($routeTotal > 0)
@@ -136,6 +140,11 @@
                                 <span class="text-gray-300 dark:text-gray-600">|</span>
                                 <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => {this.textContent='Copied!'; setTimeout(() => this.textContent='Copy Link', 1500)})"
                                     class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700">Copy Link</button>
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+                                <form method="POST" action="{{ route('delivery.markRoutePickedUp', $route) }}" class="inline" onsubmit="return confirm('Mark all families in this route as picked up?')">
+                                    @csrf
+                                    <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline">All Picked Up</button>
+                                </form>
                                 <span class="text-gray-300 dark:text-gray-600">|</span>
                                 <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" class="inline" onsubmit="return confirm('Delete this route?')">
                                     @csrf @method('DELETE')
@@ -154,8 +163,10 @@
                         @if($route->families->count() > 0)
                             <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4">
                                 <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
-                                    {{ $route->name }}
-                                    <span class="text-xs font-normal text-gray-500 dark:text-gray-400">{{ $route->formattedDistance() }} &middot; {{ $route->formattedDuration() }}</span>
+                                    {{ $route->display_name }}
+                                    <span class="text-xs font-normal text-gray-500 dark:text-gray-400">
+                                        {{ $route->formattedMeta() }}
+                                    </span>
                                 </h4>
                                 <div class="space-y-2">
                                     @foreach($route->families as $family)
@@ -167,24 +178,28 @@
                     @endforeach
 
                     {{-- Unrouted families --}}
-                    @php
-                        $unroutedWithNumbers = $families->filter(fn($f) => !$f->delivery_route_id);
-                    @endphp
-                    @if($unroutedWithNumbers->count() > 0)
+                    @if($unroutedEligible->count() > 0)
                         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4">
                             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                                Unrouted Families
-                                <span class="text-xs font-normal text-gray-500 dark:text-gray-400">({{ $unroutedWithNumbers->count() }})</span>
+                                Eligible Unrouted Families
+                                <span class="text-xs font-normal text-gray-500 dark:text-gray-400">({{ $unroutedEligible->count() }})</span>
                             </h4>
                             <div class="space-y-2">
-                                @foreach($unroutedWithNumbers as $family)
+                                @foreach($unroutedEligible as $family)
                                     @include('delivery-day._family-card', ['family' => $family])
                                 @endforeach
                             </div>
                         </div>
+                    @else
+                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-4">
+                            <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">No Eligible Unrouted Families</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Quick Assign can only use families who are pending delivery, have GPS coordinates, and are not already routed.
+                            </p>
+                        </div>
                     @endif
 
-                    @if($routes->every(fn($r) => $r->families->isEmpty()) && $unroutedWithNumbers->isEmpty())
+                    @if($routes->every(fn($r) => $r->families->isEmpty()) && $unroutedEligible->isEmpty())
                         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-8 text-center text-gray-400 dark:text-gray-500">
                             No families match the selected filters.
                         </div>
@@ -209,9 +224,10 @@
 
                 {{-- Step 1: Enter driver info --}}
                 <div id="qa-step-form">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Assign Driver</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Create Delivery Route</h3>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        The system will auto-select the next batch of nearby undelivered families and create an optimized route.
+                        Enter a driver's name and batch size. The system clusters nearby unrouted families
+                        (pending delivery status, GPS coordinates, and no existing route) and creates a route.
                     </p>
 
                     <div class="space-y-4">
@@ -222,13 +238,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Families per route</label>
-                            <select id="qa-batch-size" class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
-                                <option value="3">3 families</option>
-                                <option value="5" selected>5 families</option>
-                                <option value="8">8 families</option>
-                                <option value="10">10 families</option>
-                                <option value="15">15 families</option>
-                            </select>
+                            <input type="number" id="qa-batch-size" value="3" min="1" max="25"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Enter any number of families.</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="qa-use-location" class="rounded border-gray-300 text-red-600 shadow-sm">
@@ -268,6 +280,18 @@
                             <span class="text-gray-500 dark:text-gray-400">Families</span>
                             <span class="font-medium text-gray-900 dark:text-gray-100" id="qa-result-stops"></span>
                         </div>
+                    </div>
+
+                    <div id="qa-suggestions" class="hidden mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm font-medium text-gray-700 dark:text-gray-200">Nearby Unrouted Families</p>
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Optional add-ons</span>
+                        </div>
+                        <div id="qa-suggestion-list" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800"></div>
+                        <button onclick="addSuggestedFamilies()" id="qa-add-suggestions-btn"
+                            class="mt-2 w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition">
+                            Add Selected Families
+                        </button>
                     </div>
 
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Share this link with the driver:</p>
@@ -314,82 +338,7 @@
         <div class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
     </div>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
-        let inlineMap = null;
-        let inlineMapMarkers = [];
-        let inlineMapLines = [];
-        let inlineMapBoundsSet = false;
-        let inlineMapInterval = null;
-
-        window.initInlineMap = function() {
-            if (inlineMap) { inlineMap.invalidateSize(); return; }
-            inlineMap = L.map('inline-map').setView([48.0849, -121.9683], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OSM', maxZoom: 19,
-            }).addTo(inlineMap);
-            refreshInlineMap();
-            inlineMapInterval = setInterval(refreshInlineMap, 10000);
-        };
-
-        function refreshInlineMap() {
-            if (!inlineMap) return;
-            const statusColors = { pending: '#EAB308', in_transit: '#F97316', delivered: '#22C55E', picked_up: '#3B82F6' };
-
-            fetch('{{ route("delivery.mapData") }}')
-                .then(r => r.json())
-                .then(data => {
-                    inlineMapMarkers.forEach(m => inlineMap.removeLayer(m));
-                    inlineMapLines.forEach(l => inlineMap.removeLayer(l));
-                    inlineMapMarkers = []; inlineMapLines = [];
-                    const bounds = [];
-
-                    data.families.forEach(f => {
-                        const color = statusColors[f.status] || '#6B7280';
-                        const marker = L.marker([f.lat, f.lng], {
-                            icon: L.divIcon({
-                                className: '',
-                                html: `<div style="background:${color};width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.3);"></div>`,
-                                iconSize: [12, 12], iconAnchor: [6, 6],
-                            })
-                        }).addTo(inlineMap).bindPopup(`<b>#${f.number} ${f.name}</b><br>${f.address}`);
-                        inlineMapMarkers.push(marker);
-                        bounds.push([f.lat, f.lng]);
-                    });
-
-                    data.volunteers.forEach(v => {
-                        const marker = L.marker([v.lat, v.lng], {
-                            icon: L.divIcon({
-                                className: '',
-                                html: `<div style="background:#9333EA;width:22px;height:22px;border-radius:50%;border:2px solid white;color:white;font-size:10px;font-weight:bold;display:flex;align-items:center;justify-content:center;">${v.initial}</div>`,
-                                iconSize: [22, 22], iconAnchor: [11, 11],
-                            })
-                        }).addTo(inlineMap).bindPopup(`${v.name} — ${v.updated}`);
-                        inlineMapMarkers.push(marker);
-                        bounds.push([v.lat, v.lng]);
-                    });
-
-                    if (data.routes) {
-                        data.routes.forEach(r => {
-                            if (r.polyline.length < 2) return;
-                            const line = L.polyline(r.polyline, { color: r.color || '#dc2626', weight: 2, opacity: 0.5, dashArray: '6,8' }).addTo(inlineMap);
-                            inlineMapLines.push(line);
-                        });
-                    }
-
-                    if (bounds.length > 0 && !inlineMapBoundsSet) {
-                        inlineMap.fitBounds(bounds, { padding: [20, 20] });
-                        inlineMapBoundsSet = true;
-                    }
-
-                    const el = document.getElementById('inline-map-update');
-                    if (el) el.textContent = 'Updated ' + new Date().toLocaleTimeString();
-                })
-                .catch(() => {});
-        }
-
         function showToast(msg, color = 'green') {
             const t = document.getElementById('toast');
             const inner = t.querySelector('div');
@@ -414,21 +363,25 @@
                 body: JSON.stringify({ delivery_status: status }),
             })
             .then(r => r.json())
-            .then(data => {
-                if (data.ok) {
-                    showToast(`Status updated: ${data.label}`);
-                    if (badge) {
-                        badge.textContent = data.label;
-                        const colors = {
-                            pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-                            in_transit: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-                            delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                            picked_up: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                        };
-                        badge.className = 'status-badge inline-flex px-2 py-0.5 text-xs font-medium rounded-full ' + (colors[data.status] || '');
+                .then(data => {
+                    if (data.ok) {
+                        showToast(`Status updated: ${data.label}`);
+                        if (badge) {
+                            badge.textContent = data.label;
+                            const colors = {
+                                pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                                in_transit: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+                                delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                                picked_up: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                            };
+                            badge.className = 'status-badge inline-flex px-2 py-0.5 text-xs font-medium rounded-full ' + (colors[data.status] || '');
+                        }
+                        if (card && (data.status === 'delivered' || data.status === 'picked_up')) {
+                            const list = card.parentElement;
+                            if (list) list.appendChild(card);
+                        }
                     }
-                }
-            })
+                })
             .catch(() => showToast('Update failed', 'red'));
         }
 
@@ -449,6 +402,9 @@
             document.getElementById('qa-step-result').classList.add('hidden');
             document.getElementById('qa-step-error').classList.add('hidden');
             document.getElementById('qa-submit-btn').disabled = false;
+            document.getElementById('qa-suggestions').classList.add('hidden');
+            document.getElementById('qa-suggestion-list').innerHTML = '';
+            window.qaRouteId = null;
         }
 
         function submitQuickAssign() {
@@ -483,6 +439,8 @@
                         document.getElementById('qa-result-stops').textContent = data.route.stop_count + ' families';
                         document.getElementById('qa-result-url').value = data.route.driver_url;
                         document.getElementById('qa-result-link').href = data.route.driver_url;
+                        window.qaRouteId = data.route.id;
+                        renderSuggestions(data.suggested || []);
                         document.getElementById('qa-step-result').classList.remove('hidden');
                     } else {
                         document.getElementById('qa-error-message').textContent = data.message || 'An error occurred.';
@@ -513,6 +471,64 @@
                 const btn = document.getElementById('qa-copy-btn');
                 btn.textContent = 'Copied!';
                 setTimeout(() => btn.textContent = 'Copy', 1500);
+            });
+        }
+
+        function renderSuggestions(list) {
+            const container = document.getElementById('qa-suggestion-list');
+            const wrapper = document.getElementById('qa-suggestions');
+            container.innerHTML = '';
+            if (!list.length) {
+                wrapper.classList.add('hidden');
+                return;
+            }
+            list.forEach(s => {
+                const row = document.createElement('label');
+                row.className = 'flex items-start gap-2 text-sm text-gray-700 dark:text-gray-200';
+                row.innerHTML = `
+                    <input type="checkbox" class="mt-1" value="${s.id}">
+                    <div>
+                        <div class="font-medium">#${s.number} ${s.name}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">${s.address}</div>
+                        <div class="text-xs text-gray-400">~${s.distance_miles} mi away</div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+            wrapper.classList.remove('hidden');
+        }
+
+        function addSuggestedFamilies() {
+            const container = document.getElementById('qa-suggestion-list');
+            const ids = [...container.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value);
+            if (!ids.length || !window.qaRouteId) return;
+            const btn = document.getElementById('qa-add-suggestions-btn');
+            btn.disabled = true;
+            btn.textContent = 'Adding...';
+
+            fetch(`/delivery-day/routes/${window.qaRouteId}/add-families`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ family_ids: ids }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    btn.textContent = 'Added!';
+                    setTimeout(() => btn.textContent = 'Add Selected Families', 1500);
+                } else {
+                    btn.textContent = 'Failed';
+                }
+            })
+            .catch(() => {
+                btn.textContent = 'Failed';
+            })
+            .finally(() => {
+                btn.disabled = false;
             });
         }
     </script>
