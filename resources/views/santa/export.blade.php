@@ -48,7 +48,6 @@
                             <option value="pending" {{ request('delivery_status') === 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="in_transit" {{ request('delivery_status') === 'in_transit' ? 'selected' : '' }}>In Transit</option>
                             <option value="delivered" {{ request('delivery_status') === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                            <option value="picked_up" {{ request('delivery_status') === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
                         </select>
                     </div>
                     <div>
@@ -140,7 +139,7 @@
                                         <td class="px-3 py-2 text-sm">
                                             @if($family->delivery_status)
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                                                    {{ $family->delivery_status->value === 'delivered' || $family->delivery_status->value === 'picked_up' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
+                                                    {{ $family->delivery_status->value === 'delivered' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
                                                     {{ $family->delivery_status->value === 'in_transit' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' : '' }}
                                                     {{ $family->delivery_status->value === 'pending' ? 'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-300' : '' }}
                                                 ">{{ $family->delivery_status->label() }}</span>

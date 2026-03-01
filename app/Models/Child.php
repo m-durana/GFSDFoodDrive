@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy(ChildObserver::class)]
 class Child extends Model
@@ -70,6 +71,21 @@ class Child extends Model
     public function family(): BelongsTo
     {
         return $this->belongsTo(Family::class);
+    }
+
+    public function giftTransactions(): HasMany
+    {
+        return $this->hasMany(WarehouseTransaction::class, 'child_id');
+    }
+
+    public function getComputedGiftsReceived(): string
+    {
+        $fromTx = $this->giftTransactions()
+            ->where('source', 'Gift Drop-off')
+            ->get()
+            ->map(fn($tx) => $tx->notes ?: $tx->category?->name)
+            ->filter()->implode(', ');
+        return $fromTx ?: ($this->gifts_received ?? '');
     }
 
     public function scopeAvailableForAdoption(Builder $query): Builder

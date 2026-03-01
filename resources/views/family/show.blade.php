@@ -133,6 +133,7 @@
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sizes</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Toy Ideas</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gift Level</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gifts Received</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Adopter</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tag</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
@@ -154,12 +155,23 @@
                                                     {{ $level->color() === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
                                                 ">{{ $level->label() }}</span>
                                             </td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate">
+                                                @php $computedGifts = $child->getComputedGiftsReceived(); @endphp
+                                                @if($computedGifts)
+                                                    <a href="{{ route('warehouse.child.gifts', $child) }}" class="text-blue-600 dark:text-blue-400 hover:underline" title="{{ $computedGifts }}">{{ $computedGifts }}</a>
+                                                @else
+                                                    <span class="text-gray-400">-</span>
+                                                @endif
+                                            </td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->adopter_name ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm">
                                                 @if($child->mail_merged)
                                                     <span class="text-green-600 dark:text-green-400" title="Printed">Printed</span>
                                                 @else
                                                     <span class="text-gray-400 dark:text-gray-500">Pending</span>
+                                                @endif
+                                                @if($child->adoption_token)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ml-1">Online</span>
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 text-sm whitespace-nowrap">
@@ -173,7 +185,7 @@
                                         </tr>
                                         <!-- Inline edit row (hidden by default) -->
                                         <tr id="edit-child-{{ $child->id }}" class="hidden bg-gray-50 dark:bg-gray-700/50">
-                                            <td colspan="9" class="px-3 py-3">
+                                            <td colspan="10" class="px-3 py-3">
                                                 <form method="POST" action="{{ route('family.updateChild', [$family, $child]) }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                     @csrf
                                                     @method('PUT')

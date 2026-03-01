@@ -580,7 +580,6 @@ class SantaController extends Controller
             'pending' => Family::where('delivery_status', 'pending')->orWhereNull('delivery_status')->count(),
             'in_transit' => Family::where('delivery_status', 'in_transit')->count(),
             'delivered' => Family::where('delivery_status', 'delivered')->count(),
-            'picked_up' => Family::where('delivery_status', 'picked_up')->count(),
         ];
 
         // Families done

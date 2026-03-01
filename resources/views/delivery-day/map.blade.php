@@ -32,10 +32,6 @@
                                 <input type="checkbox" class="status-filter rounded text-green-500" value="delivered" checked>
                                 <span class="w-3 h-3 rounded-full bg-green-500"></span> Delivered
                             </label>
-                            <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                <input type="checkbox" class="status-filter rounded text-blue-500" value="picked_up" checked>
-                                <span class="w-3 h-3 rounded-full bg-blue-500"></span> Picked Up
-                            </label>
                         </div>
                     </div>
 
@@ -120,7 +116,7 @@
             attribution: '&copy; OpenStreetMap contributors', maxZoom: 19,
         }).addTo(map);
 
-        const statusColors = { pending: '#EAB308', in_transit: '#F97316', delivered: '#22C55E', picked_up: '#3B82F6' };
+        const statusColors = { pending: '#EAB308', in_transit: '#F97316', delivered: '#22C55E' };
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
         let familyMarkers = [], driverMarkers = [], volunteerMarkers = [], routeLines = [];
@@ -174,7 +170,7 @@
         function familyPopup(f) {
             const phone = f.phone ? `<a href="tel:${f.phone}" class="text-blue-600">${f.phone}</a><br>` : '';
             const statusLabel = f.status.replace('_', ' ');
-            const markBtn = (f.status !== 'delivered' && f.status !== 'picked_up')
+            const markBtn = (f.status !== 'delivered')
                 ? `<button onclick="markDelivered(${f.id}, this)" style="margin-top:6px;padding:3px 10px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">Mark Delivered</button>`
                 : '';
             return `<strong>#${f.number} ${f.name}</strong><br>${f.address}<br>${phone}Status: <em>${statusLabel}</em>${markBtn}`;

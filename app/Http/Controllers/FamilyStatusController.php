@@ -61,12 +61,10 @@ class FamilyStatusController extends Controller
             ],
             [
                 'label' => 'Delivered',
-                'complete' => in_array($family->delivery_status, [DeliveryStatus::Delivered, DeliveryStatus::PickedUp]),
+                'complete' => $family->delivery_status === DeliveryStatus::Delivered,
                 'description' => $family->delivery_status === DeliveryStatus::Delivered
                     ? 'Your delivery has been completed!'
-                    : ($family->delivery_status === DeliveryStatus::PickedUp
-                        ? 'Your items have been picked up!'
-                        : 'Waiting for delivery.'),
+                    : 'Waiting for delivery.',
             ],
         ];
 

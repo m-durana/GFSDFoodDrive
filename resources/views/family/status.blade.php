@@ -145,7 +145,6 @@
                                         {{ $ds === \App\Enums\DeliveryStatus::Pending ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : '' }}
                                         {{ $ds === \App\Enums\DeliveryStatus::InTransit ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' : '' }}
                                         {{ $ds === \App\Enums\DeliveryStatus::Delivered ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
-                                        {{ $ds === \App\Enums\DeliveryStatus::PickedUp ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
                                     ">{{ $ds->label() }}</span>
                                 </dd>
                             </div>

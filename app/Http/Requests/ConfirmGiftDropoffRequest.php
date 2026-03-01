@@ -15,6 +15,9 @@ class ConfirmGiftDropoffRequest extends FormRequest
     {
         return [
             'gifts_received' => ['nullable', 'string', 'max:1000'],
+            'items' => ['nullable', 'array'],
+            'items.*.name' => ['required_with:items', 'string'],
+            'items.*.barcode' => ['nullable', 'string'],
         ];
     }
 }

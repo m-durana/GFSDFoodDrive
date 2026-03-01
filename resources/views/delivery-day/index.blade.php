@@ -4,6 +4,7 @@
             <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                 Delivery Day
                 <x-hint key="delivery-dispatch" text="Manage deliveries in real-time. Assign drivers to auto-create optimized routes, track progress on the live map, and update delivery statuses." />
+                <x-live-indicator class="ml-3" />
             </h2>
             <div class="flex items-center gap-2">
                 <button onclick="openQuickAssign()"
@@ -42,7 +43,7 @@
             @endif
 
             <!-- Stats cards -->
-            <div class="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <div class="grid grid-cols-3 md:grid-cols-5 gap-3">
                 <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3 text-center">
                     <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['total'] }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">Total</div>
@@ -63,10 +64,6 @@
                     <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $stats['delivered'] }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">Delivered</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3 text-center">
-                    <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $stats['picked_up'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">Picked Up</div>
-                </div>
             </div>
 
             <!-- Filters -->
@@ -80,7 +77,6 @@
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                             <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit</option>
                             <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
-                            <option value="picked_up" {{ request('status') == 'picked_up' ? 'selected' : '' }}>Picked Up</option>
                         </select>
                     </div>
                     <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">Filter</button>
@@ -116,7 +112,7 @@
                     </div>
                     @forelse($routes as $route)
                         @php
-                            $routeDone = $route->families->filter(fn($f) => in_array($f->delivery_status?->value, ['delivered', 'picked_up']))->count();
+                            $routeDone = $route->families->filter(fn($f) => $f->delivery_status?->value === 'delivered')->count();
                             $routeTotal = $route->families->count();
                         @endphp
                         <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
@@ -141,10 +137,12 @@
                                 <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => {this.textContent='Copied!'; setTimeout(() => this.textContent='Copy Link', 1500)})"
                                     class="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700">Copy Link</button>
                                 <span class="text-gray-300 dark:text-gray-600">|</span>
-                                <form method="POST" action="{{ route('delivery.markRoutePickedUp', $route) }}" class="inline" onsubmit="return confirm('Mark all families in this route as picked up?')">
+                                <form method="POST" action="{{ route('delivery.markRouteReturning', $route) }}" class="inline" onsubmit="return confirm('Mark this route as returning?')">
                                     @csrf
-                                    <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline">All Picked Up</button>
+                                    <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline">Returning</button>
                                 </form>
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+                                <button type="button" onclick="recalcRoute({{ $route->id }}, this)" class="text-xs text-orange-600 dark:text-orange-400 hover:underline">Recalc</button>
                                 <span class="text-gray-300 dark:text-gray-600">|</span>
                                 <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" class="inline" onsubmit="return confirm('Delete this route?')">
                                     @csrf @method('DELETE')
@@ -183,6 +181,7 @@
                             <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
                                 Eligible Unrouted Families
                                 <span class="text-xs font-normal text-gray-500 dark:text-gray-400">({{ $unroutedEligible->count() }})</span>
+                                <x-hint key="unrouted-families" text="These families are not assigned to any route yet but have GPS coordinates and pending delivery status. They are geographically nearby and can be added to existing routes or used to create new ones via Quick Assign." />
                             </h4>
                             <div class="space-y-2">
                                 @foreach($unroutedEligible as $family)
@@ -231,6 +230,16 @@
                     </p>
 
                     <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Driver</label>
+                            <select id="qa-driver-user" onchange="prefillDriverName(this)"
+                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <option value="">— Manual entry —</option>
+                                @foreach($drivers as $driver)
+                                    <option value="{{ $driver->id }}" data-name="{{ $driver->first_name }} {{ $driver->last_name }}">{{ $driver->first_name }} {{ $driver->last_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Driver Name</label>
                             <input type="text" id="qa-driver-name" placeholder="e.g. John Smith" required
@@ -372,17 +381,33 @@
                                 pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                                 in_transit: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
                                 delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                                picked_up: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                             };
                             badge.className = 'status-badge inline-flex px-2 py-0.5 text-xs font-medium rounded-full ' + (colors[data.status] || '');
                         }
-                        if (card && (data.status === 'delivered' || data.status === 'picked_up')) {
+                        if (card && data.status === 'delivered') {
                             const list = card.parentElement;
                             if (list) list.appendChild(card);
                         }
                     }
                 })
             .catch(() => showToast('Update failed', 'red'));
+        }
+
+        function prefillDriverName(sel) {
+            const opt = sel.options[sel.selectedIndex];
+            if (opt.dataset.name) document.getElementById('qa-driver-name').value = opt.dataset.name;
+        }
+
+        function recalcRoute(routeId, btn) {
+            btn.disabled = true;
+            btn.textContent = '...';
+            fetch(`/santa/delivery-routes/${routeId}/recalculate`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+            })
+            .then(r => r.json())
+            .then(data => { showToast(data.ok ? 'Route recalculated' : 'Failed'); btn.textContent = 'Recalc'; btn.disabled = false; })
+            .catch(() => { showToast('Error', 'red'); btn.textContent = 'Recalc'; btn.disabled = false; });
         }
 
         // ─── Quick Assign Modal ───
@@ -418,8 +443,11 @@
             document.getElementById('qa-step-form').classList.add('hidden');
             document.getElementById('qa-step-loading').classList.remove('hidden');
 
+            const driverUserId = document.getElementById('qa-driver-user').value;
+
             const doRequest = (lat, lng) => {
                 const body = { driver_name: name, batch_size: parseInt(batchSize) };
+                if (driverUserId) body.driver_user_id = driverUserId;
                 if (lat && lng) { body.start_lat = lat; body.start_lng = lng; }
 
                 fetch('{{ route("delivery.quickAssign") }}', {

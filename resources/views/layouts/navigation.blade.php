@@ -39,8 +39,8 @@
                         <a href="{{ route('warehouse.index') }}" data-tour="nav-warehouse" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Warehouse
                         </a>
-                        <a href="{{ route('warehouse.gifts-intake') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.gifts-intake') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
-                            Gifts Intake
+                        <a href="{{ route('santa.commandCenter') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.commandCenter*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                            Command Center
                         </a>
                     @endif
                 </div>
@@ -117,7 +117,7 @@
             @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
                 <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Coordinator</a>
                 <a href="{{ route('warehouse.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Warehouse</a>
-                <a href="{{ route('warehouse.gifts-intake') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Gifts Intake</a>
+                <a href="{{ route('santa.commandCenter') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Command Center</a>
             @endif
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">

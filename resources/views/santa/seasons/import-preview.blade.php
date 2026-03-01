@@ -73,10 +73,16 @@
                     @if(!empty($isAccess) && !empty($accessTable))
                         <input type="hidden" name="access_table" value="{{ $accessTable }}">
                     @endif
-                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-600 text-sm font-medium transition"
-                            onclick="this.textContent='Importing...'; this.disabled=true; this.form.submit();">
-                        Confirm Import
-                    </button>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <input type="checkbox" name="background" value="1" class="rounded border-gray-300 dark:border-gray-600">
+                            Run in background
+                        </label>
+                        <button type="submit" class="inline-flex items-center px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-600 text-sm font-medium transition"
+                                onclick="this.textContent='Importing...'; this.disabled=true; this.form.submit();">
+                            Confirm Import
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

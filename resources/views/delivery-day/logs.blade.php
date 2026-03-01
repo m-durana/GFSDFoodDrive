@@ -67,7 +67,6 @@
                                                 $logStatusColors = [
                                                     'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                                                     'left_at_door' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                                                    'picked_up' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                                                     'no_answer' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
                                                     'attempted' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                                                     'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',

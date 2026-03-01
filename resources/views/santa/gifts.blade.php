@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            Gift Tracking Overview
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                Gift Tracking Overview
+            </h2>
+            <a href="{{ route('warehouse.gift-bank') }}" class="inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded-md hover:bg-purple-500 text-xs font-medium transition">
+                Gift Bank
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -120,8 +125,15 @@
                                                     {{ $level->color() === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
                                                 ">{{ $level->label() }}</span>
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate" title="{{ $child->gifts_received }}">
-                                                {{ $child->gifts_received ?? '—' }}
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[200px]" x-data="{ expanded: false }">
+                                                @php $computedGifts = $child->getComputedGiftsReceived(); @endphp
+                                                @if($computedGifts)
+                                                    <span x-show="!expanded" class="truncate block cursor-pointer" @click="expanded = true" title="Click to expand">{{ $computedGifts }}</span>
+                                                    <span x-show="expanded" x-cloak class="cursor-pointer whitespace-normal" @click="expanded = false">{{ $computedGifts }}</span>
+                                                    <a href="{{ route('warehouse.child.gifts', $child) }}" class="text-xs text-blue-500 dark:text-blue-400 hover:underline block mt-0.5">view details &rarr;</a>
+                                                @else
+                                                    <span class="text-gray-400">—</span>
+                                                @endif
                                             </td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">
                                                 @if($child->adopter_name)
@@ -135,6 +147,9 @@
                                                     <span class="text-green-600 dark:text-green-400">Printed</span>
                                                 @else
                                                     <span class="text-gray-400 dark:text-gray-500">Pending</span>
+                                                @endif
+                                                @if($child->adoption_token)
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ml-1">Online</span>
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->where_is_tag ?? '—' }}</td>

@@ -1,11 +1,10 @@
 @php
     $status = $family->delivery_status?->value ?? 'pending';
-    $isDone = in_array($status, ['delivered', 'picked_up']);
+    $isDone = $status === 'delivered';
     $statusColors = [
         'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
         'in_transit' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
         'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-        'picked_up' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     ];
 @endphp
 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 {{ $isDone ? 'bg-green-50/50 dark:bg-green-900/10' : '' }}"
@@ -62,7 +61,6 @@
                 <option value="pending" {{ $status === 'pending' ? 'selected' : '' }}>Pending</option>
                 <option value="in_transit" {{ $status === 'in_transit' ? 'selected' : '' }}>In Transit</option>
                 <option value="delivered" {{ $status === 'delivered' ? 'selected' : '' }}>Delivered</option>
-                <option value="picked_up" {{ $status === 'picked_up' ? 'selected' : '' }}>Picked Up</option>
             </select>
         </div>
     </div>

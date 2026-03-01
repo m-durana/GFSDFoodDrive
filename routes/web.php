@@ -17,6 +17,7 @@ use App\Http\Controllers\DeliveryTeamController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
+use App\Http\Controllers\GiftBankController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
@@ -122,6 +123,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::delete('/delivery-routes/{deliveryRoute}', [DeliveryRouteController::class, 'destroy'])->name('deliveryRoutes.destroy');
     Route::post('/delivery-routes/optimize', [DeliveryRouteController::class, 'optimize'])->name('deliveryRoutes.optimize');
     Route::put('/delivery-routes/{deliveryRoute}/families', [DeliveryRouteController::class, 'updateFamilies'])->name('deliveryRoutes.updateFamilies');
+    Route::post('/delivery-routes/{deliveryRoute}/recalculate', [DeliveryRouteController::class, 'recalculate'])->name('deliveryRoutes.recalculate');
 
     // Backups
     Route::get('/backups', [SantaController::class, 'backups'])->name('backups');
@@ -134,6 +136,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::get('/seasons/import', [SeasonController::class, 'importForm'])->name('seasons.import');
     Route::post('/seasons/import/preview', [SeasonController::class, 'previewImport'])->name('seasons.previewImport');
     Route::post('/seasons/import/execute', [SeasonController::class, 'executeImport'])->name('seasons.executeImport');
+    Route::get('/seasons/import/status/{key}', [SeasonController::class, 'importStatus'])->name('seasons.importStatus');
     Route::get('/seasons/import/access-tables', [SeasonController::class, 'accessTables'])->name('seasons.accessTables');
     Route::post('/seasons/import/access-preview', [SeasonController::class, 'previewAccessTable'])->name('seasons.previewAccessTable');
     Route::post('/seasons/import/legacy', [SeasonController::class, 'importLegacy'])->name('seasons.importLegacy');
@@ -187,6 +190,7 @@ Route::post('/delivery/route/{token}/complete/{family}', [DeliveryRouteControlle
 Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
 Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');
 Route::post('/delivery/route/{token}/heading/{family}', [DeliveryRouteController::class, 'markHeading'])->name('delivery.markHeading');
+Route::post('/delivery/route/{token}/returning', [DeliveryRouteController::class, 'markReturning'])->name('delivery.markReturning');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
@@ -206,6 +210,16 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')
     Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
     Route::get('/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('mobile-scan');
     Route::get('/gifts-intake', [WarehouseController::class, 'giftsIntake'])->name('gifts-intake');
+    Route::get('/child/{child}/gifts', [WarehouseController::class, 'childGifts'])->name('child.gifts');
+    Route::get('/items/{item}', [WarehouseController::class, 'itemDetail'])->name('item.detail');
+
+    // Gift Bank
+    Route::get('/gift-bank', [GiftBankController::class, 'index'])->name('gift-bank');
+    Route::post('/gift-bank', [GiftBankController::class, 'store'])->name('gift-bank.store');
+    Route::post('/gift-bank/{item}/assign/{child}', [GiftBankController::class, 'assign'])->name('gift-bank.assign');
+    Route::post('/gift-bank/{item}/unassign', [GiftBankController::class, 'unassign'])->name('gift-bank.unassign');
+    Route::delete('/gift-bank/{item}', [GiftBankController::class, 'destroy'])->name('gift-bank.destroy');
+    Route::get('/gift-bank/suggestions/{child}', [GiftBankController::class, 'suggestions'])->name('gift-bank.suggestions');
 });
 
 // Help/Wiki routes (accessible by all authenticated users)
@@ -229,7 +243,7 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::get('/track', [DeliveryDayController::class, 'track'])->name('track');
     Route::post('/quick-assign', [DeliveryDayController::class, 'quickAssign'])->name('quickAssign');
     Route::post('/routes/{deliveryRoute}/add-families', [DeliveryDayController::class, 'addFamiliesToRoute'])->name('addFamiliesToRoute');
-    Route::post('/routes/{deliveryRoute}/mark-picked-up', [DeliveryDayController::class, 'markRoutePickedUp'])->name('markRoutePickedUp');
+    Route::post('/routes/{deliveryRoute}/mark-returning', [DeliveryDayController::class, 'markRouteReturning'])->name('markRouteReturning');
 });
 
 // Santa duplicate detection routes

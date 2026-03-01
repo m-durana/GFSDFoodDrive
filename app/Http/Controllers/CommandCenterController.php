@@ -99,17 +99,15 @@ class CommandCenterController extends Controller
         })->count();
         $inTransit = (clone $base)->where('delivery_status', DeliveryStatus::InTransit)->count();
         $delivered = (clone $base)->where('delivery_status', DeliveryStatus::Delivered)->count();
-        $pickedUp = (clone $base)->where('delivery_status', DeliveryStatus::PickedUp)->count();
 
-        $total = $delivered + $pickedUp + $inTransit + $pending;
-        $done = $delivered + $pickedUp;
+        $total = $delivered + $inTransit + $pending;
+        $done = $delivered;
         $pct = $total > 0 ? round(($done / $total) * 100) : 0;
 
         // Routes summary
         $palette = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#f97316', '#0ea5e9', '#22c55e', '#a855f7'];
         $routes = DeliveryRoute::withCount(['families as completed_count' => function ($q) {
-            $q->where('delivery_status', DeliveryStatus::Delivered)
-                ->orWhere('delivery_status', DeliveryStatus::PickedUp);
+            $q->where('delivery_status', DeliveryStatus::Delivered);
         }])->withCount('families')
         ->with(['families' => fn($q) => $q
             ->where('delivery_status', DeliveryStatus::InTransit)
@@ -153,7 +151,6 @@ class CommandCenterController extends Controller
             'pending' => $pending,
             'in_transit' => $inTransit,
             'delivered' => $delivered,
-            'picked_up' => $pickedUp,
             'done' => $done,
             'total' => $total,
             'pct' => $pct,

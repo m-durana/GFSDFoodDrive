@@ -582,28 +582,58 @@ class WarehouseService
      * Confirm gift drop-off for a child.
      * Sets gift_dropped_off = true, bumps gift_level to at least Moderate, creates IN transaction.
      */
-    public function confirmGiftDropoff(Child $child, User $user, ?string $giftsReceived = null): WarehouseTransaction
+    public function confirmGiftDropoff(Child $child, User $user, ?string $giftsReceived = null, array $items = []): WarehouseTransaction
     {
+        // Determine gift category based on child gender/age
+        $categoryName = $this->giftCategoryForChild($child);
+        $category = WarehouseCategory::where('name', $categoryName)->first()
+            ?? WarehouseCategory::where('name', 'Gift - Neutral')->first();
+
+        // Compute gifts_received text from items if provided
+        if (!empty($items)) {
+            $itemNames = collect($items)->pluck('name')->filter()->implode(', ');
+            $giftsReceived = $itemNames ?: $giftsReceived;
+        }
+
         $child->update([
             'gift_dropped_off' => true,
             'gift_level' => max($child->gift_level?->value ?? 0, GiftLevel::Moderate->value),
             'gifts_received' => $giftsReceived ?: $child->gifts_received,
         ]);
 
-        // Determine gift category based on child gender/age
-        $categoryName = $this->giftCategoryForChild($child);
-        $category = WarehouseCategory::where('name', $categoryName)->first()
-            ?? WarehouseCategory::where('name', 'Gift - Neutral')->first();
+        // Create per-item transactions if items provided
+        $lastTransaction = null;
+        if (!empty($items)) {
+            foreach ($items as $item) {
+                $lastTransaction = WarehouseTransaction::create([
+                    'category_id' => $category->id,
+                    'family_id' => $child->family_id,
+                    'child_id' => $child->id,
+                    'transaction_type' => TransactionType::In,
+                    'quantity' => 1,
+                    'source' => 'Gift Drop-off',
+                    'scanned_by' => $user->id,
+                    'notes' => $item['name'] ?? null,
+                    'barcode_scanned' => $item['barcode'] ?? null,
+                ]);
+            }
+        }
 
-        return WarehouseTransaction::create([
-            'category_id' => $category->id,
-            'family_id' => $child->family_id,
-            'child_id' => $child->id,
-            'transaction_type' => TransactionType::In,
-            'quantity' => 1,
-            'source' => 'Gift Drop-off',
-            'scanned_by' => $user->id,
-        ]);
+        // Fallback: single summary transaction if no items array
+        if (empty($items)) {
+            $lastTransaction = WarehouseTransaction::create([
+                'category_id' => $category->id,
+                'family_id' => $child->family_id,
+                'child_id' => $child->id,
+                'transaction_type' => TransactionType::In,
+                'quantity' => 1,
+                'source' => 'Gift Drop-off',
+                'scanned_by' => $user->id,
+                'notes' => $giftsReceived,
+            ]);
+        }
+
+        return $lastTransaction;
     }
 
     /**

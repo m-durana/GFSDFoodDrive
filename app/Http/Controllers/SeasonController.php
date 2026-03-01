@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ImportExcelRequest;
+use App\Jobs\ImportDataJob;
 use App\Models\Child;
 use App\Models\Family;
 use App\Models\Season;
 use App\Models\Setting;
 use App\Services\AccessImportService;
 use App\Services\ExcelImportService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class SeasonController extends Controller
 {
@@ -212,6 +216,15 @@ class SeasonController extends Controller
         ));
     }
 
+    public function importStatus(string $key): JsonResponse
+    {
+        $data = Cache::get("import:{$key}");
+        if (!$data) {
+            return response()->json(['status' => 'unknown', 'message' => 'No import found with this key.']);
+        }
+        return response()->json($data);
+    }
+
     public function executeImport(Request $request)
     {
         $request->validate([
@@ -219,6 +232,7 @@ class SeasonController extends Controller
             'type' => ['required', 'in:family,child'],
             'season_year' => ['required', 'integer', 'between:2000,2099'],
             'access_table' => ['nullable', 'string'],
+            'background' => ['nullable', 'boolean'],
         ]);
 
         $fullPath = storage_path('app/' . $request->input('path'));
@@ -229,6 +243,23 @@ class SeasonController extends Controller
         $type = $request->input('type');
         $seasonYear = (int) $request->input('season_year');
         $accessTable = $request->input('access_table');
+
+        // Background import via queue
+        if ($request->boolean('background')) {
+            $importKey = Str::random(16);
+            Cache::put("import:{$importKey}", [
+                'status' => 'queued',
+                'message' => 'Import queued...',
+                'errors' => [],
+                'updated_at' => now()->toIso8601String(),
+            ], now()->addHours(1));
+
+            ImportDataJob::dispatch($importKey, $fullPath, $type, $seasonYear, $accessTable);
+
+            return redirect()->route('santa.seasons.import')
+                ->with('import_key', $importKey)
+                ->with('success', 'Import started in background. Progress will update automatically.');
+        }
 
         $excelService = new ExcelImportService();
 

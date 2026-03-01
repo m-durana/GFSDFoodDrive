@@ -125,6 +125,20 @@ class DeliveryRouteController extends Controller
     }
 
     /**
+     * Recalculate route geometry without changing stop order.
+     */
+    public function recalculate(DeliveryRoute $deliveryRoute): JsonResponse
+    {
+        $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+
+        return response()->json([
+            'ok' => true,
+            'distance' => $deliveryRoute->fresh()->formattedDistance(),
+            'duration' => $deliveryRoute->fresh()->formattedDuration(),
+        ]);
+    }
+
+    /**
      * Add/remove families from a route.
      */
     public function updateFamilies(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse
@@ -164,7 +178,7 @@ class DeliveryRouteController extends Controller
     {
         $route = DeliveryRoute::where('access_token', $token)
             ->with(['families' => fn($q) => $q
-                ->orderByRaw("CASE WHEN delivery_status IN ('delivered', 'picked_up') THEN 1 ELSE 0 END")
+                ->orderByRaw("CASE WHEN delivery_status = 'delivered' THEN 1 ELSE 0 END")
                 ->orderBy('route_order')
             ])
             ->firstOrFail();
@@ -258,6 +272,17 @@ class DeliveryRouteController extends Controller
             'family_id' => $family->id,
             'status' => 'in_transit',
         ]);
+    }
+
+    /**
+     * Driver marks route as returning (all stops done, heading back).
+     */
+    public function markReturning(Request $request, string $token): JsonResponse
+    {
+        $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+        $route->update(['returning_at' => now()]);
+
+        return response()->json(['ok' => true, 'route_status' => $route->route_status]);
     }
 
     /**

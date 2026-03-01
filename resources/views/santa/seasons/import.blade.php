@@ -20,6 +20,36 @@
                 </div>
             @endif
 
+            @if(session('import_key'))
+                <div class="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 px-4 py-3 rounded" id="import-progress">
+                    <div class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <span id="import-message">Import running in background...</span>
+                    </div>
+                </div>
+                <script>
+                    (function() {
+                        const key = @json(session('import_key'));
+                        const url = @json(route('santa.seasons.importStatus', '__KEY__')).replace('__KEY__', key);
+                        const interval = setInterval(async () => {
+                            try {
+                                const res = await fetch(url);
+                                const data = await res.json();
+                                document.getElementById('import-message').textContent = data.message || 'Processing...';
+                                if (data.status === 'complete' || data.status === 'failed') {
+                                    clearInterval(interval);
+                                    const el = document.getElementById('import-progress');
+                                    el.className = data.status === 'complete'
+                                        ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded'
+                                        : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded';
+                                    el.querySelector('svg')?.remove();
+                                }
+                            } catch (e) {}
+                        }, 2000);
+                    })();
+                </script>
+            @endif
+
             @if(session('import_errors') && count(session('import_errors')) > 0)
                 <div class="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 px-4 py-3 rounded">
                     <h4 class="font-medium mb-2">Import Errors:</h4>

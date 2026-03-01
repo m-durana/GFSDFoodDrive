@@ -25,6 +25,10 @@
             <h1 class="text-xl font-bold text-red-500">GFSD Food Drive</h1>
             <span class="text-gray-500">|</span>
             <span class="text-sm text-gray-400">Command Center</span>
+            <span class="inline-flex items-center gap-1.5 text-xs ml-2">
+                <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>
+                <span class="font-semibold text-red-500 uppercase tracking-wider">Live</span>
+            </span>
         </div>
         <div class="flex items-center space-x-4">
             <!-- Mode Toggle -->
@@ -48,20 +52,20 @@
         <!-- OVERVIEW MODE -->
         <div id="mode-overview" class="hidden h-full grid grid-cols-4 grid-rows-3 gap-4">
             <!-- Top stats row -->
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-4xl font-bold text-white" id="stat-families">—</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-white" id="stat-families">—</div>
                 <div class="text-sm text-gray-400 mt-1">Families</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-4xl font-bold text-white" id="stat-children">—</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-white" id="stat-children">—</div>
                 <div class="text-sm text-gray-400 mt-1">Children</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-4xl font-bold text-white" id="stat-members">—</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-white" id="stat-members">—</div>
                 <div class="text-sm text-gray-400 mt-1">Total People</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-4xl font-bold" id="stat-gifts-pct">—</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold" id="stat-gifts-pct">—</div>
                 <div class="text-sm text-gray-400 mt-1">Gifts Covered</div>
             </div>
 
@@ -81,7 +85,7 @@
         <!-- SHOPPING MODE -->
         <div id="mode-shopping" class="hidden h-full grid grid-cols-4 grid-rows-3 gap-4">
             <!-- Overall progress -->
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center col-span-1 row-span-1">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-1 row-span-1">
                 <div class="relative">
                     <svg class="w-28 h-28 transform -rotate-90">
                         <circle cx="56" cy="56" r="48" stroke="#374151" stroke-width="8" fill="none"/>
@@ -168,7 +172,14 @@
 
             <div class="col-span-4 flex flex-col gap-4 min-h-0">
                 <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
-                    <h3 class="text-sm font-medium text-gray-400 mb-3">Active Routes</h3>
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-medium text-gray-400">Active Routes</h3>
+                        <div class="flex gap-1">
+                            <button onclick="setRouteSort('name')" id="sort-name" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Name</button>
+                            <button onclick="setRouteSort('progress')" id="sort-progress" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Progress</button>
+                            <button onclick="setRouteSort('stops')" id="sort-stops" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Stops</button>
+                        </div>
+                    </div>
                     <div id="route-bars" class="space-y-3">
                         <div class="text-gray-500 text-sm">Loading...</div>
                     </div>
@@ -193,6 +204,24 @@
         let routeVisibility = {}; // routeId → bool, default true
         let giftChart = null;
         let deliveryChart = null;
+        let routeSort = localStorage.getItem('cc_route_sort') || 'name';
+
+        function setRouteSort(sort) {
+            routeSort = sort;
+            localStorage.setItem('cc_route_sort', sort);
+            updateSortButtons();
+            refresh();
+        }
+        function updateSortButtons() {
+            ['name', 'progress', 'stops'].forEach(s => {
+                const btn = document.getElementById('sort-' + s);
+                if (!btn) return;
+                btn.className = s === routeSort
+                    ? 'text-[10px] px-1.5 py-0.5 rounded bg-gray-700 text-white'
+                    : 'text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300';
+            });
+        }
+        updateSortButtons();
 
         // Clock
         function updateClock() {
@@ -237,7 +266,7 @@
             routePolylines = {};
             const bounds = [];
 
-            const statusColors = { pending: '#6b7280', in_transit: '#f97316', delivered: '#22c55e', picked_up: '#a855f7' };
+            const statusColors = { pending: '#6b7280', in_transit: '#f97316', delivered: '#22c55e' };
 
             (mapData.families || []).forEach(f => {
                 const color = statusColors[f.status] || '#6b7280';
@@ -308,10 +337,10 @@
             if (line) line.setStyle({ weight: 3, opacity: 0.7 });
         }
 
-        function markRoutePickedUp(routeId) {
-            if (!confirm('Mark all families in this route as picked up?')) return;
+        function markRouteReturning(routeId) {
+            if (!confirm('Mark this route as returning?')) return;
             const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
-            fetch(`/delivery-day/routes/${routeId}/mark-picked-up`, {
+            fetch(`/delivery-day/routes/${routeId}/mark-returning`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
             }).then(r => { if (r.ok) refresh(); });
@@ -384,7 +413,12 @@
                 document.getElementById('delivery-done').textContent = data.delivery.done;
 
                 let routeBars = '';
-                data.delivery.routes.forEach(r => {
+                const sortedRoutes = [...data.delivery.routes].sort((a, b) => {
+                    if (routeSort === 'progress') return b.pct - a.pct;
+                    if (routeSort === 'stops') return b.total - a.total;
+                    return a.name.localeCompare(b.name);
+                });
+                sortedRoutes.forEach(r => {
                     const headingHtml = r.heading_to
                         ? `<div class="text-xs text-blue-400 mt-1.5 flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg> Heading to ${r.heading_to}</div>`
                         : '';
@@ -409,8 +443,8 @@
                             </div>
                             ${headingHtml}
                             <div class="flex items-center gap-2 mt-2">
-                                <button onclick="markRoutePickedUp(${r.id})"
-                                    class="text-xs text-violet-400 hover:text-violet-300 transition">All Picked Up</button>
+                                <button onclick="markRouteReturning(${r.id})"
+                                    class="text-xs text-indigo-400 hover:text-indigo-300 transition">Mark Returning</button>
                             </div>
                         </div>
                     `;
@@ -430,9 +464,9 @@
                 let activityHtml = '';
                 data.recent_activity.forEach(a => {
                     const statusColors = {
-                        'Delivered': 'text-green-400', 'Picked up': 'text-purple-400',
-                        'In transit': 'text-blue-400', 'Attempted': 'text-yellow-400',
-                        'Left at door': 'text-green-300', 'No answer': 'text-red-400',
+                        'Delivered': 'text-green-400', 'In transit': 'text-blue-400',
+                        'Attempted': 'text-yellow-400', 'Left at door': 'text-green-300',
+                        'No answer': 'text-red-400',
                     };
                     const color = statusColors[a.status] || 'text-gray-400';
                     activityHtml += `<div class="text-xs border-b border-gray-700 pb-2">
@@ -491,10 +525,10 @@
             if (!ctx) return;
 
             const chartData = {
-                labels: ['Delivered', 'Picked Up', 'In Transit', 'Pending'],
+                labels: ['Delivered', 'In Transit', 'Pending'],
                 datasets: [{
-                    data: [delivery.delivered, delivery.picked_up, delivery.in_transit, delivery.pending],
-                    backgroundColor: ['#22c55e', '#a855f7', '#3b82f6', '#6b7280'],
+                    data: [delivery.delivered, delivery.in_transit, delivery.pending],
+                    backgroundColor: ['#22c55e', '#3b82f6', '#6b7280'],
                     borderWidth: 0,
                 }]
             };

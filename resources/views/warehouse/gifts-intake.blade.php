@@ -55,6 +55,69 @@
                     <div id="no-child-state" class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-12 text-center">
                         <p class="text-lg text-gray-400 dark:text-gray-500">Select a child from the list to start scanning gift items</p>
                         <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">You can also type a family number in the search box</p>
+                        <div class="mt-6">
+                            <button onclick="openGeneralDonation()" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-500 text-sm font-medium transition">
+                                Record General Gift Donation
+                            </button>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">For gift donations not linked to a specific child</p>
+                        </div>
+                    </div>
+
+                    <!-- General donation modal — enhanced with Gift Bank metadata -->
+                    <div id="general-donation-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">General Gift Donation</h3>
+                            <form method="POST" action="{{ route('warehouse.gift-bank.store') }}">
+                                @csrf
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description <span class="text-red-500">*</span></label>
+                                        <input type="text" name="description" required placeholder="e.g., Assorted toys, Board games..."
+                                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Age Range</label>
+                                            <select name="age_range" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                                <option value="any">Any age</option>
+                                                <option value="0-5">0-5</option>
+                                                <option value="6-12">6-12</option>
+                                                <option value="13-17">13-17</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Gender</label>
+                                            <select name="gender_suitability" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                                <option value="neutral">Neutral</option>
+                                                <option value="male">Male</option>
+                                                <option value="female">Female</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Gift Type</label>
+                                            <input type="text" name="gift_type" placeholder="e.g., Toy, Book..."
+                                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Quantity</label>
+                                            <input type="number" name="quantity" value="1" min="1"
+                                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Donor Name (optional)</label>
+                                        <input type="text" name="donor_name" placeholder="Anonymous"
+                                            class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                    </div>
+                                </div>
+                                <div class="flex justify-end gap-2 mt-5">
+                                    <button type="button" onclick="closeGeneralDonation()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md text-sm">Cancel</button>
+                                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-500 text-sm font-medium">Add to Gift Bank</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
                     <!-- Active scan mode -->
@@ -314,6 +377,7 @@
                 },
                 body: JSON.stringify({
                     gifts_received: giftsText || null,
+                    items: boxItems.map(i => ({ name: i.name, barcode: i.barcode || null })),
                     _token: csrfToken
                 })
             })
@@ -378,6 +442,14 @@
             inner.textContent = msg;
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 3000);
+        }
+
+        // General donation functions
+        function openGeneralDonation() {
+            document.getElementById('general-donation-modal').classList.remove('hidden');
+        }
+        function closeGeneralDonation() {
+            document.getElementById('general-donation-modal').classList.add('hidden');
         }
 
         // Auto-select first child if search matches exactly one on Enter

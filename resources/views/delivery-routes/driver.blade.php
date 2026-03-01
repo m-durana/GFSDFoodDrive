@@ -54,7 +54,7 @@
         <!-- Progress Bar -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3" id="progress-section">
         @php
-            $delivered = $route->families->filter(fn($f) => in_array($f->delivery_status?->value, ['delivered', 'picked_up']))->count();
+            $delivered = $route->families->filter(fn($f) => $f->delivery_status?->value === 'delivered')->count();
             $total = $route->families->count();
             $pct = $total > 0 ? round(($delivered / $total) * 100) : 0;
         @endphp
@@ -82,7 +82,7 @@
         @foreach($route->families as $family)
             @php
                 $status = $family->delivery_status?->value ?? 'pending';
-                $isDone = in_array($status, ['delivered', 'picked_up']);
+                $isDone = $status === 'delivered';
             @endphp
             <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 {{ $isDone ? 'stop-delivered' : '' }}" data-stop-id="{{ $family->id }}">
                 <div class="flex items-start justify-between gap-3">
@@ -110,7 +110,7 @@
                         {{ $status === 'delivered' ? 'bg-emerald-100 text-emerald-800' : '' }}
                         {{ $status === 'in_transit' ? 'bg-blue-100 text-blue-800' : '' }}
                         {{ $status === 'pending' ? 'bg-slate-100 text-slate-800' : '' }}
-                        {{ $status === 'picked_up' ? 'bg-violet-100 text-violet-800' : '' }}">
+                        ">
                         {{ ucfirst(str_replace('_', ' ', $status)) }}
                     </span>
                 </div>
@@ -142,6 +142,15 @@
                 </div>
             </div>
         @endforeach
+        </div>
+
+        <!-- Returning button -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3 text-center">
+            <button onclick="markReturning()" id="returning-btn"
+                class="px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-500 transition">
+                All Done — Heading Back
+            </button>
+            <p class="text-xs text-slate-400 mt-1">Tap when all deliveries are complete and you're returning.</p>
         </div>
     </div>
 
@@ -252,7 +261,7 @@
                     data.stops.forEach(stop => {
                         const card = document.querySelector(`[data-stop-id="${stop.id}"]`);
                         if (!card) return;
-                        const isDone = stop.status === 'delivered' || stop.status === 'picked_up';
+                        const isDone = stop.status === 'delivered';
                         if (isDone && !card.classList.contains('stop-delivered')) {
                             applyStopDelivered(stop.id);
                         }
@@ -295,6 +304,29 @@
                 },
                 { enableHighAccuracy: true, maximumAge: 10000 }
             );
+        }
+
+        // ── Mark Returning ────────────────────────────────────
+        function markReturning() {
+            if (!confirm('Mark this route as returning (all deliveries done)?')) return;
+            const btn = document.getElementById('returning-btn');
+            btn.disabled = true;
+            btn.textContent = '...';
+
+            fetch(`/delivery/route/${routeToken}/returning`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                body: JSON.stringify({}),
+                credentials: 'same-origin',
+            })
+            .then(r => r.json())
+            .then(data => {
+                showToast('Route marked as returning!');
+                btn.textContent = 'Returning...';
+                btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
+                btn.classList.add('bg-green-600');
+            })
+            .catch(() => { btn.disabled = false; btn.textContent = 'All Done — Heading Back'; });
         }
 
         // ── Map ─────────────────────────────────────────────────
@@ -344,7 +376,7 @@
             @endif
 
             stops.forEach(s => {
-                const isDone = s.status === 'delivered' || s.status === 'picked_up';
+                const isDone = s.status === 'delivered';
                 const color = isDone ? '#22c55e' : '#dc2626';
                 const marker = L.marker([s.lat, s.lng], {
                     icon: L.divIcon({
@@ -379,7 +411,7 @@
         function updateMapMarkers(stops) {
             stops.forEach(s => {
                 if (!mapMarkers[s.id]) return;
-                const isDone = s.status === 'delivered' || s.status === 'picked_up';
+                const isDone = s.status === 'delivered';
                 const color = isDone ? '#22c55e' : '#dc2626';
                 mapMarkers[s.id].setIcon(L.divIcon({
                     className: '',

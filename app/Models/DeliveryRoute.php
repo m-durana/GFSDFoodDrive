@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeliveryStatus;
 use App\Models\Scopes\SeasonScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,8 @@ class DeliveryRoute extends Model
         'driver_lat',
         'driver_lng',
         'driver_location_at',
+        'returning_at',
+        'completed_at',
         'route_geometry',
         'geometry_updated_at',
         'total_distance_meters',
@@ -53,6 +56,8 @@ class DeliveryRoute extends Model
             'driver_lat' => 'decimal:7',
             'driver_lng' => 'decimal:7',
             'driver_location_at' => 'datetime',
+            'returning_at' => 'datetime',
+            'completed_at' => 'datetime',
             'route_geometry' => 'array',
             'geometry_updated_at' => 'datetime',
             'total_distance_meters' => 'integer',
@@ -98,5 +103,38 @@ class DeliveryRoute extends Model
         if ($this->formattedDistance() !== '—') $parts[] = $this->formattedDistance();
         if ($this->formattedDuration() !== '—') $parts[] = $this->formattedDuration();
         return implode(' · ', $parts);
+    }
+
+    public function getRouteStatusAttribute(): string
+    {
+        $families = $this->families;
+        if ($families->isEmpty()) return 'pending';
+
+        $delivered = $families->where('delivery_status', DeliveryStatus::Delivered)->count();
+        $total = $families->count();
+
+        if ($this->completed_at || ($delivered === $total && $this->isNearStart())) return 'complete';
+        if ($this->returning_at || $delivered === $total) return 'returning';
+        if ($delivered > 0 && $delivered < $total) return 'partially_delivered';
+        if ($families->where('delivery_status', DeliveryStatus::InTransit)->count() > 0) return 'in_transit';
+
+        return 'pending';
+    }
+
+    private function isNearStart(): bool
+    {
+        if (! $this->driver_lat || ! $this->start_lat) return false;
+
+        $latFrom = deg2rad((float) $this->driver_lat);
+        $lngFrom = deg2rad((float) $this->driver_lng);
+        $latTo = deg2rad((float) $this->start_lat);
+        $lngTo = deg2rad((float) $this->start_lng);
+
+        $dlat = $latTo - $latFrom;
+        $dlng = $lngTo - $lngFrom;
+        $a = sin($dlat / 2) ** 2 + cos($latFrom) * cos($latTo) * sin($dlng / 2) ** 2;
+        $km = 6371 * 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $km < 0.5;
     }
 }

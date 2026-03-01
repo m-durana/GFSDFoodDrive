@@ -489,11 +489,9 @@ class TestDataSeeder extends Seeder
             13 => 'S', 14 => 'M', 15 => 'M', 16 => 'L', 17 => 'L',
         ];
 
-        // Generate 150 family definitions
+        // Generate 150 family definitions — all get numbers
         $totalFamilies = 150;
-        $familiesWithNumbers = 120; // first 120 get numbers, last 30 are unassigned
-        $familyNumbers = $this->generateFamilyNumbers($familiesWithNumbers);
-        $familiesWithNumbers = count($familyNumbers);
+        $familyNumbers = $this->generateFamilyNumbers($totalFamilies);
 
         // Languages: ~70% English, ~25% Spanish, ~5% Other
         $languages = array_merge(
@@ -503,7 +501,7 @@ class TestDataSeeder extends Seeder
         );
 
         // Delivery status distribution
-        $statuses = ['pending', 'pending', 'pending', 'pending', 'pending', 'in_transit', 'delivered', 'picked_up'];
+        $statuses = ['pending', 'pending', 'pending', 'pending', 'pending', 'in_transit', 'delivered'];
 
         // Gift level pattern: ~30% none(0), ~20% partial(1), ~20% moderate(2), ~30% full(3)
         $giftLevelPattern = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3];
@@ -540,7 +538,6 @@ class TestDataSeeder extends Seeder
             $numAdults = $femaleAdults + $maleAdults;
 
             // Decide delivery preference
-            $hasNumber = $fIdx < $familiesWithNumbers;
             $deliveryPref = mt_rand(0, 4) === 0 ? 'Pickup' : 'Delivery';
             $seasonYear = (int) Setting::get('season_year', date('Y'));
             $deliveryDate = mt_rand(0, 1)
@@ -554,10 +551,10 @@ class TestDataSeeder extends Seeder
             $hasBaby = false;
             $hasPet = mt_rand(0, 4) === 0;
 
-            $status = $hasNumber ? $this->pick($statuses) : null;
-            $teamName = ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTeams) : null;
+            $status = $this->pick($statuses);
+            $teamName = $needsDelivery ? $this->pick($this->deliveryTeams) : null;
             $teamModel = $teamName ? DeliveryTeam::where('name', $teamName)->first() : null;
-            $familyDone = $hasNumber && mt_rand(0, 4) === 0;
+            $familyDone = mt_rand(0, 4) === 0;
 
             // Generate children ages
             $childrenDefs = [];
@@ -605,9 +602,9 @@ class TestDataSeeder extends Seeder
                 'has_gfhs_children'      => $teenagers > 0,
                 'needs_baby_supplies'    => $hasBaby,
                 'pet_information'        => $hasPet ? $this->pick($this->petInfos) : null,
-                'delivery_preference'    => $hasNumber ? $deliveryPref : null,
-                'delivery_date'          => $hasNumber ? $deliveryDate : null,
-                'delivery_time'          => ($hasNumber && $needsDelivery) ? $this->pick($this->deliveryTimes) : null,
+                'delivery_preference'    => $deliveryPref,
+                'delivery_date'          => $deliveryDate,
+                'delivery_time'          => $needsDelivery ? $this->pick($this->deliveryTimes) : null,
                 'delivery_reason'        => $needsDelivery ? $this->pick($this->deliveryReasons) : null,
                 'delivery_team'          => $teamName,
                 'delivery_team_id'       => $teamModel?->id,
@@ -616,7 +613,7 @@ class TestDataSeeder extends Seeder
                 'severe_need'            => $hasSevere ? $this->pick($this->severeNeedTexts) : null,
                 'is_severe_need'         => $hasSevere,
                 'family_done'            => $familyDone,
-                'family_number'          => $hasNumber ? $familyNumbers[$fIdx] : null,
+                'family_number'          => $familyNumbers[$fIdx],
                 'latitude'               => $lat,
                 'longitude'              => $lng,
             ];
@@ -664,8 +661,7 @@ class TestDataSeeder extends Seeder
         mt_srand();
 
         $totalChildren = Child::count();
-        $this->command->info("Created {$totalFamilies} families with {$totalChildren} children.");
-        $this->command->info("{$familiesWithNumbers} families have family numbers assigned, " . ($totalFamilies - $familiesWithNumbers) . " are unnumbered (ready for assignment).");
+        $this->command->info("Created {$totalFamilies} families with {$totalChildren} children (all families have numbers assigned).");
     }
 
     // ---------------------------------------------------------------------------

@@ -482,8 +482,8 @@ class ExcelImportService
             'in_transit' => 'in_transit',
             'in transit' => 'in_transit',
             'delivered' => 'delivered',
-            'picked_up' => 'picked_up',
-            'picked up' => 'picked_up',
+            'picked_up' => 'delivered',
+            'picked up' => 'delivered',
         ];
         return $map[$str] ?? null;
     }

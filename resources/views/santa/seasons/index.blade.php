@@ -75,13 +75,11 @@
                                             'pending' => 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
                                             'in_transit' => 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
                                             'delivered' => 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-                                            'picked_up' => 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
                                         ];
                                         $statusLabels = [
                                             'pending' => 'Pending',
                                             'in_transit' => 'In Transit',
                                             'delivered' => 'Delivered',
-                                            'picked_up' => 'Picked Up',
                                         ];
                                     @endphp
                                     <div class="rounded-lg p-3 text-center {{ $statusColors[$status] ?? 'bg-gray-50 dark:bg-gray-700' }}">
@@ -228,7 +226,7 @@
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ $season->total_families }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ $season->total_children }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ $season->total_family_members }}</td>
-                                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ $season->deliveries_completed + $season->pickups_completed }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{{ $season->deliveries_completed }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $season->archived_at?->format('M j, Y') ?? 'Imported' }}</td>
                                     <td class="px-6 py-4 text-sm text-right space-x-3">
                                         <a href="{{ route('santa.seasons.show', $season) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400">Details</a>
@@ -284,27 +282,13 @@
 
         @if($currentStats)
             // Delivery Status Doughnut Chart
-            @php
-                $dsLabels = [];
-                $dsData = [];
-                $dsColors = [
-                    'pending' => '#eab308',
-                    'in_transit' => '#3b82f6',
-                    'delivered' => '#22c55e',
-                    'picked_up' => '#a855f7',
-                ];
-                foreach ($currentStats['families_by_delivery_status'] as $status => $count) {
-                    $dsLabels[] = $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
-                    $dsData[] = $count;
-                }
-            @endphp
             new Chart(document.getElementById('deliveryStatusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: @json(array_values(['Pending', 'In Transit', 'Delivered', 'Picked Up'])),
+                    labels: @json(array_values(['Pending', 'In Transit', 'Delivered'])),
                     datasets: [{
                         data: @json(array_values($currentStats['families_by_delivery_status'])),
-                        backgroundColor: ['#eab308', '#3b82f6', '#22c55e', '#a855f7'],
+                        backgroundColor: ['#eab308', '#3b82f6', '#22c55e'],
                     }]
                 },
                 options: {

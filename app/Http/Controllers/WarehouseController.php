@@ -7,6 +7,7 @@ use App\Http\Requests\StoreWarehouseReceiptRequest;
 use App\Models\Child;
 use App\Models\Setting;
 use App\Models\WarehouseCategory;
+use App\Models\WarehouseItem;
 use App\Models\WarehouseTransaction;
 use App\Services\WarehouseService;
 use Illuminate\Http\JsonResponse;
@@ -105,7 +106,12 @@ class WarehouseController extends Controller
 
     public function confirmGiftDropoff(ConfirmGiftDropoffRequest $request, Child $child): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $transaction = $this->warehouse->confirmGiftDropoff($child, $request->user(), $request->input('gifts_received'));
+        $transaction = $this->warehouse->confirmGiftDropoff(
+            $child,
+            $request->user(),
+            $request->input('gifts_received'),
+            $request->input('items', [])
+        );
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -161,6 +167,41 @@ class WarehouseController extends Controller
     public function mobileScan(): View
     {
         return view('warehouse.mobile-scan');
+    }
+
+    public function itemDetail(WarehouseItem $item): View
+    {
+        $item->load('category');
+
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
+
+        // Compute stock on hand from transactions
+        $stockOnHand = WarehouseTransaction::where('item_id', $item->id)
+            ->where('season_year', $seasonYear)
+            ->selectRaw('SUM(CASE WHEN transaction_type IN (?, ?) THEN quantity ELSE -quantity END) as total', [
+                \App\Enums\TransactionType::In->value, \App\Enums\TransactionType::Return->value
+            ])
+            ->value('total') ?? 0;
+
+        // Recent transactions for this item
+        $transactions = WarehouseTransaction::with(['scanner', 'family'])
+            ->where('item_id', $item->id)
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get();
+
+        return view('warehouse.item-detail', compact('item', 'stockOnHand', 'transactions', 'seasonYear'));
+    }
+
+    public function childGifts(Child $child): View
+    {
+        $child->load('family');
+        $transactions = WarehouseTransaction::with(['category', 'scanner'])
+            ->where('child_id', $child->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('warehouse.child-gifts', compact('child', 'transactions'));
     }
 
     public function giftsIntake(): View

@@ -3,6 +3,7 @@
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
             Warehouse Dashboard
             <x-hint key="warehouse-dashboard" text="Track all incoming donations here. The deficit table shows what's still needed. Use Kiosk Mode for fast barcode scanning, or Gift Intake to record child-specific gifts." />
+            <x-live-indicator class="ml-3" />
         </h2>
     </x-slot>
 
@@ -10,7 +11,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Quick Actions -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <a href="{{ route('warehouse.kiosk') }}" class="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm hover:bg-green-100 dark:hover:bg-green-900/30 transition border border-green-200 dark:border-green-800 text-center">
                     <div class="text-2xl mb-1">📦</div>
                     <h4 class="font-medium text-green-800 dark:text-green-300">Kiosk Scanner</h4>
@@ -30,6 +31,11 @@
                     <div class="text-2xl mb-1">🎁</div>
                     <h4 class="font-medium text-purple-800 dark:text-purple-300">Gift Intake</h4>
                     <p class="text-xs text-purple-700/70 dark:text-purple-400/60 mt-1">Record child-specific gift drop-offs</p>
+                </a>
+                <a href="{{ route('warehouse.gift-bank') }}" class="block p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg shadow-sm hover:bg-pink-100 dark:hover:bg-pink-900/30 transition border border-pink-200 dark:border-pink-800 text-center">
+                    <div class="text-2xl mb-1">🏦</div>
+                    <h4 class="font-medium text-pink-800 dark:text-pink-300">Gift Bank</h4>
+                    <p class="text-xs text-pink-700/70 dark:text-pink-400/60 mt-1">General gifts for matching to children</p>
                 </a>
             </div>
 

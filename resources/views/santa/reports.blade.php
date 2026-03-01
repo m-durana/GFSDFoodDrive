@@ -115,19 +115,10 @@
                                 <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ ($deliveryStats['delivered'] / $deliveryTotal) * 100 }}%"></div>
                             </div>
                         </div>
-                        <div>
-                            <div class="flex justify-between text-sm mb-1">
-                                <span class="text-purple-600 dark:text-purple-400 font-medium">Picked Up</span>
-                                <span class="text-gray-600 dark:text-gray-300">{{ $deliveryStats['picked_up'] }}</span>
-                            </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                <div class="bg-purple-500 h-2.5 rounded-full" style="width: {{ ($deliveryStats['picked_up'] / $deliveryTotal) * 100 }}%"></div>
-                            </div>
-                        </div>
                     </div>
                     @if($totalFamilies > 0)
                         <div class="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                            {{ round((($deliveryStats['delivered'] + $deliveryStats['picked_up']) / $totalFamilies) * 100) }}% delivery complete
+                            {{ round(($deliveryStats['delivered'] / $totalFamilies) * 100) }}% delivery complete
                         </div>
                     @endif
                 </div>

@@ -28,7 +28,7 @@ class DeliveryDayController extends Controller
             ->get();
         $routes->each(function ($route) {
             $sorted = $route->families->sortBy([
-                fn($f) => in_array($f->delivery_status?->value ?? 'pending', ['delivered', 'picked_up']) ? 1 : 0,
+                fn($f) => ($f->delivery_status?->value ?? 'pending') === 'delivered' ? 1 : 0,
                 fn($f) => $f->route_order ?? 9999,
             ])->values();
             $route->setRelation('families', $sorted);
@@ -71,7 +71,6 @@ class DeliveryDayController extends Controller
                 ->count(),
             'in_transit' => (clone $allDeliveryFamilies)->where('delivery_status', DeliveryStatus::InTransit)->count(),
             'delivered' => (clone $allDeliveryFamilies)->where('delivery_status', DeliveryStatus::Delivered)->count(),
-            'picked_up' => (clone $allDeliveryFamilies)->where('delivery_status', DeliveryStatus::PickedUp)->count(),
         ];
 
         // Routing eligibility stats (for clearer UI messaging)
@@ -114,15 +113,19 @@ class DeliveryDayController extends Controller
             return !$f->delivery_route_id && $f->latitude && $f->longitude && $isPending && $isDelivery;
         });
 
+        $drivers = User::where('permission', '>=', 8)
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name']);
+
         return view('delivery-day.index', compact(
-            'routes', 'families', 'stats', 'routingStats', 'unroutedEligible'
+            'routes', 'families', 'stats', 'routingStats', 'unroutedEligible', 'drivers'
         ));
     }
 
     public function updateStatus(Request $request, Family $family): RedirectResponse
     {
         $request->validate([
-            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered,picked_up'],
+            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered'],
         ]);
 
         $family->update(['delivery_status' => $request->delivery_status]);
@@ -141,7 +144,7 @@ class DeliveryDayController extends Controller
     public function updateStatusAjax(Request $request, Family $family): JsonResponse
     {
         $request->validate([
-            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered,picked_up'],
+            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -195,7 +198,7 @@ class DeliveryDayController extends Controller
     public function addLog(Request $request, Family $family): RedirectResponse
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:delivered,left_at_door,no_answer,attempted,picked_up,note'],
+            'status' => ['required', 'string', 'in:delivered,left_at_door,no_answer,attempted,note'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -207,8 +210,8 @@ class DeliveryDayController extends Controller
         ]);
 
         // Auto-update family delivery_status for terminal statuses
-        if (in_array($request->status, ['delivered', 'picked_up'])) {
-            $family->update(['delivery_status' => $request->status]);
+        if ($request->status === 'delivered') {
+            $family->update(['delivery_status' => 'delivered']);
         } elseif ($request->status === 'attempted' || $request->status === 'left_at_door') {
             $family->update(['delivery_status' => 'in_transit']);
         }
@@ -345,6 +348,7 @@ class DeliveryDayController extends Controller
     {
         $request->validate([
             'driver_name' => ['required', 'string', 'max:255'],
+            'driver_user_id' => ['nullable', 'exists:users,id'],
             'batch_size' => ['nullable', 'integer', 'min:1', 'max:20'],
             'start_lat' => ['nullable', 'numeric'],
             'start_lng' => ['nullable', 'numeric'],
@@ -402,6 +406,7 @@ class DeliveryDayController extends Controller
         $route = DeliveryRoute::create([
             'name' => $request->driver_name . ' - ' . now()->format('g:ia'),
             'driver_name' => $request->driver_name,
+            'driver_user_id' => $request->driver_user_id,
             'start_lat' => $request->start_lat,
             'start_lng' => $request->start_lng,
             'stop_count' => $families->count(),
@@ -478,25 +483,16 @@ class DeliveryDayController extends Controller
         ]);
     }
 
-    public function markRoutePickedUp(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse|\Illuminate\Http\JsonResponse
+    public function markRouteReturning(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse|\Illuminate\Http\JsonResponse
     {
-        $families = Family::where('delivery_route_id', $deliveryRoute->id)->get();
-        foreach ($families as $family) {
-            $family->update(['delivery_status' => DeliveryStatus::PickedUp]);
-            DeliveryLog::create([
-                'family_id' => $family->id,
-                'user_id' => auth()->id(),
-                'status' => 'picked_up',
-                'notes' => 'Marked picked up for entire route.',
-            ]);
-        }
+        $deliveryRoute->update(['returning_at' => now()]);
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true, 'count' => $families->count()]);
+            return response()->json(['ok' => true, 'route_status' => $deliveryRoute->route_status]);
         }
 
         return redirect()->route('delivery.index')
-            ->with('success', "All families in {$deliveryRoute->name} marked as picked up.");
+            ->with('success', "Route {$deliveryRoute->name} marked as returning.");
     }
 
     private function selectNearbyFamilies($eligible, int $batchSize, ?float $startLat, ?float $startLng)

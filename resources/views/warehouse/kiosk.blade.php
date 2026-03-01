@@ -181,6 +181,7 @@
         document.addEventListener('keydown', function(e) {
             // Only when barcode input is focused or no specific input is focused
             if (document.activeElement && document.activeElement !== input && document.activeElement.tagName === 'INPUT') return;
+            if (e.ctrlKey || e.metaKey || e.altKey) return;
             const key = e.key.toLowerCase();
             if (shortcutKeys.includes(key)) {
                 const btn = document.querySelector(`.kiosk-cat-btn[data-shortcut="${key}"]`);
