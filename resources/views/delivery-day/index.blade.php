@@ -406,7 +406,7 @@
                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
             })
             .then(r => r.json())
-            .then(data => { showToast(data.ok ? 'Route recalculated' : 'Failed'); btn.textContent = 'Recalc'; btn.disabled = false; })
+            .then(data => { showToast(data.ok ? (data.message || 'Route recalculated') : 'Failed', data.ors ? 'green' : 'yellow'); btn.textContent = 'Recalc'; btn.disabled = false; })
             .catch(() => { showToast('Error', 'red'); btn.textContent = 'Recalc'; btn.disabled = false; });
         }
 

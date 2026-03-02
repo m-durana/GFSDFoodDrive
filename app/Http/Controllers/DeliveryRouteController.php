@@ -129,12 +129,15 @@ class DeliveryRouteController extends Controller
      */
     public function recalculate(DeliveryRoute $deliveryRoute): JsonResponse
     {
-        $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+        $orsUsed = $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+        $deliveryRoute->refresh();
 
         return response()->json([
             'ok' => true,
-            'distance' => $deliveryRoute->fresh()->formattedDistance(),
-            'duration' => $deliveryRoute->fresh()->formattedDuration(),
+            'ors' => $orsUsed,
+            'message' => $orsUsed ? 'Route geometry updated from ORS' : 'ORS unavailable — using straight-line fallback',
+            'distance' => $deliveryRoute->formattedDistance(),
+            'duration' => $deliveryRoute->formattedDuration(),
         ]);
     }
 

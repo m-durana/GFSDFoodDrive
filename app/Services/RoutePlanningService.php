@@ -7,6 +7,7 @@ use App\Models\Family;
 use App\Models\Setting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RoutePlanningService
 {
@@ -44,7 +45,7 @@ class RoutePlanningService
             'service' => 300,
         ])->all();
 
-        $response = $this->client($orsKey)->post('https://api.openrouteservice.org/optimization', [
+        $payload = [
             'jobs' => $jobs,
             'vehicles' => [[
                 'id' => $route->id,
@@ -52,9 +53,22 @@ class RoutePlanningService
                 'start' => [$startLng, $startLat],
                 'end' => [$startLng, $startLat],
             ]],
+        ];
+
+        Log::info('ORS Optimization request', [
+            'route_id' => $route->id,
+            'job_count' => count($jobs),
+            'start' => [$startLng, $startLat],
         ]);
 
+        $response = $this->client($orsKey)->post('https://api.openrouteservice.org/optimization', $payload);
+
         if (! $response->successful()) {
+            Log::error('ORS Optimization failed', [
+                'route_id' => $route->id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
             return false;
         }
 
@@ -111,12 +125,23 @@ class RoutePlanningService
             return false;
         }
 
+        Log::info('ORS Directions request', [
+            'route_id' => $route->id,
+            'coordinate_count' => count($coordinates),
+            'coordinates' => array_slice($coordinates, 0, 3), // log first 3 for debugging
+        ]);
+
         $response = $this->client($orsKey)->post('https://api.openrouteservice.org/v2/directions/driving-car/geojson', [
             'coordinates' => $coordinates,
             'instructions' => false,
         ]);
 
         if (! $response->successful()) {
+            Log::error('ORS Directions failed', [
+                'route_id' => $route->id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
             $route->update([
                 'route_geometry' => $this->fallbackPolyline($route, $families),
                 'geometry_updated_at' => now(),
@@ -124,13 +149,35 @@ class RoutePlanningService
             return false;
         }
 
-        $feature = collect($response->json('features', []))->first();
-        $geometry = collect($feature['geometry']['coordinates'] ?? [])
+        $data = $response->json();
+        $feature = collect($data['features'] ?? [])->first();
+
+        if (! $feature || empty($feature['geometry']['coordinates'] ?? [])) {
+            Log::warning('ORS Directions returned empty geometry', [
+                'route_id' => $route->id,
+                'response_keys' => array_keys($data),
+            ]);
+            $route->update([
+                'route_geometry' => $this->fallbackPolyline($route, $families),
+                'geometry_updated_at' => now(),
+            ]);
+            return false;
+        }
+
+        $geometry = collect($feature['geometry']['coordinates'])
             ->map(fn($pair) => [(float) $pair[1], (float) $pair[0]])
             ->values()
             ->all();
 
         $summary = $feature['properties']['summary'] ?? [];
+
+        Log::info('ORS Directions success', [
+            'route_id' => $route->id,
+            'geometry_points' => count($geometry),
+            'distance_m' => $summary['distance'] ?? null,
+            'duration_s' => $summary['duration'] ?? null,
+        ]);
+
         $route->update([
             'route_geometry' => $geometry,
             'geometry_updated_at' => now(),
@@ -165,7 +212,8 @@ class RoutePlanningService
             ->withoutVerifying()
             ->withHeaders([
                 'Authorization' => $orsKey,
-                'Accept' => 'application/json',
+                'Content-type' => 'application/json',
+                'Accept' => 'application/json, application/geo+json',
             ]);
     }
 
