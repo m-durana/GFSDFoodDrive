@@ -12,18 +12,10 @@
             <!-- Families & People -->
             <div>
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 px-1">Families & People</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <a href="{{ route('family.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">All Families</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">View and manage registered families</p>
-                    </a>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <a href="{{ route('santa.numberAssignment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Number Assignment</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Assign family numbers by school</p>
-                    </a>
-                    <a href="{{ route('santa.volunteers') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Volunteer Assignment</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Assign families to volunteers</p>
                     </a>
                     <a href="{{ route('santa.duplicates') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Duplicate Detection</h4>
@@ -52,31 +44,9 @@
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Day</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">NINJA assignments & live checklists</p>
                     </a>
-                    <a href="{{ route('warehouse.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/10">
-                        <h4 class="font-medium text-green-700 dark:text-green-300">Warehouse</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Inventory, barcode scanning & gift drop-off</p>
-                    </a>
                 </div>
             </div>
 
-            <!-- Delivery -->
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 px-1">Delivery</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <a href="{{ route('delivery.index') }}" class="block p-4 bg-red-50 dark:bg-red-900/10 rounded-lg shadow-sm hover:bg-red-100 dark:hover:bg-red-900/20 transition border border-red-200 dark:border-red-800">
-                        <h4 class="font-medium text-red-700 dark:text-red-300">Delivery Dispatch</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Routes, statuses, picked-up batches, and driver links</p>
-                    </a>
-                    <a href="{{ route('santa.commandCenter', ['mode' => 'delivery']) }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/10">
-                        <h4 class="font-medium text-blue-700 dark:text-blue-300">Delivery Command Center</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Live route map, vehicle positions, and ops overview</p>
-                    </a>
-                    <a href="{{ route('coordinator.index') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Print Documents</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Gift tags, family summaries, delivery sheets</p>
-                    </a>
-                </div>
-            </div>
 
             <!-- Data & Reports -->
             <div>

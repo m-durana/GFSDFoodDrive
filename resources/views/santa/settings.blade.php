@@ -37,6 +37,7 @@
                         <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">UI</p>
                         <a href="#hints" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Hints & Tips</a>
                         <a href="#feature-modes" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Feature Modes</a>
+                        <a href="#packing-system" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Packing System</a>
 
                         <p class="text-sm font-bold text-gray-700 dark:text-gray-300 tracking-wide mt-6 mb-2 px-3 pb-1 border-b border-gray-200 dark:border-gray-700">Branding</p>
                         <a href="#site-logo" class="settings-nav block px-3 py-1.5 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition">Logo</a>
@@ -81,6 +82,14 @@
                                             class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown on the public website. Delivery sheets use HS Phone if set, otherwise this number.</p>
                                     </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="footer_text" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Footer Text</label>
+                                    <input type="text" name="footer_text" id="footer_text"
+                                        value="{{ Setting::get('footer_text', 'Made in 🇨🇭') }}"
+                                        placeholder="Made in 🇨🇭"
+                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Shown at the bottom of all pages. Supports HTML and emojis.</p>
                                 </div>
                             </div>
                         </div>
@@ -181,6 +190,33 @@
                         </div>
 
                         {{-- ═══ OPERATIONS ═══ --}}
+
+                        <!-- Backup Settings -->
+                        <div id="backup-settings" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Backup</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="backup_interval_hours" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Backup Interval</label>
+                                        <select name="backup_interval_hours" id="backup_interval_hours"
+                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                            @foreach([1 => 'Every hour', 2 => 'Every 2 hours', 4 => 'Every 4 hours', 6 => 'Every 6 hours', 12 => 'Every 12 hours', 24 => 'Daily'] as $val => $label)
+                                                <option value="{{ $val }}" {{ Setting::get('backup_interval_hours', '4') == $val ? 'selected' : '' }}>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Identical databases are skipped (no duplicate files created).</p>
+                                    </div>
+                                    <div>
+                                        <label for="backup_path" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Backup Path</label>
+                                        <input type="text" name="backup_path" id="backup_path"
+                                            value="{{ Setting::get('backup_path', storage_path('backups')) }}"
+                                            placeholder="{{ storage_path('backups') }}"
+                                            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Absolute path. Use a network drive or cloud sync folder for off-site backups.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Delivery Dates & Time Ranges -->
                         <div id="delivery-dates" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
@@ -492,6 +528,47 @@
                                         </label>
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             Disable the online Adopt-a-Tag portal and use the traditional print-and-distribute method for gift tags.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Packing System -->
+                        <div id="packing-system" class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Packing System</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Control the packing list system. When disabled, all packing routes and navigation links are hidden.
+                                </p>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="packing_system_enabled" value="1" {{ $packingSystemEnabled ? 'checked' : '' }}
+                                                class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable packing system</span>
+                                        </label>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            When disabled, packing list routes return 404 and the Packing link is hidden from navigation.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label for="packing_fulfillment_alert_threshold" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Fulfillment Alert Threshold (%)</label>
+                                        <input type="number" name="packing_fulfillment_alert_threshold" id="packing_fulfillment_alert_threshold"
+                                            value="{{ $packingFulfillmentThreshold }}" min="0" max="100"
+                                            class="mt-1 block w-32 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Show an alert on the packing dashboard when the fulfillment rate drops below this percentage.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label class="inline-flex items-center">
+                                            <input type="checkbox" name="packing_show_names" value="1" {{ Setting::get('packing_show_names', '1') === '1' ? 'checked' : '' }}
+                                                class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Show family names in packing views</span>
+                                        </label>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            When disabled, packing lists, index, and print views show "Family #NNN" instead of the family name.
                                         </p>
                                     </div>
                                 </div>

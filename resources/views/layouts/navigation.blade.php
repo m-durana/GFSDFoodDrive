@@ -18,30 +18,51 @@
                     @endif
 
                     @if(auth()->user()->isSanta())
-                        <a href="{{ route('santa.index') }}" data-tour="nav-santa" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                        <a href="{{ route('santa.index') }}" data-tour="nav-santa" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.*') && !request()->routeIs('santa.commandCenter*') && !request()->routeIs('santa.shoppingDay') && !request()->routeIs('santa.analytics*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Santa
                         </a>
-                        @if(\App\Models\Setting::get('use_classic_delivery', '0') === '1')
-                            <a href="{{ route('coordinator.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('coordinator.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
-                                Delivery Sheets
-                            </a>
-                        @else
-                            <a href="{{ route('delivery.index') }}" data-tour="nav-delivery" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('delivery.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
-                                Delivery Day
-                            </a>
-                        @endif
                     @endif
 
                     @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
                         <a href="{{ route('coordinator.index') }}" data-tour="nav-coordinator" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('coordinator.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
-                            Coordinator
+                            Print Tags
                         </a>
                         <a href="{{ route('warehouse.index') }}" data-tour="nav-warehouse" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('warehouse.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Warehouse
                         </a>
+                        @if(\App\Models\Setting::get('packing_system_enabled', '1') === '1')
+                        @php $packingQaCount = \App\Models\PackingList::where('status', 'complete')->count(); @endphp
+                        <a href="{{ route('packing.index') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('packing.*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                            Packing
+                            @if($packingQaCount > 0)
+                                <span class="packing-qa-badge ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">{{ $packingQaCount }}</span>
+                            @endif
+                        </a>
+                        @endif
                         <a href="{{ route('santa.commandCenter') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.commandCenter*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
                             Command Center
                         </a>
+
+                        <a href="{{ route('santa.analytics') }}" class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('santa.analytics*') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out">
+                            Analytics
+                        </a>
+
+                        {{-- Event Day dropdown: Delivery Day + Shopping Day --}}
+                        <div x-data="{ eventMenu: false }" class="relative inline-flex items-center">
+                            <button @click="eventMenu = !eventMenu" @click.away="eventMenu = false"
+                                class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('delivery.*') || request()->routeIs('santa.shoppingDay') ? 'border-red-400 text-gray-900 dark:text-gray-100' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600' }} text-sm font-medium leading-5 transition duration-150 ease-in-out h-full">
+                                Event Day
+                                <svg class="ml-1 w-3 h-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
+                            </button>
+                            <div x-show="eventMenu" x-transition class="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
+                                <a href="{{ route('delivery.index') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('delivery.*') ? 'font-semibold' : '' }}">
+                                    Delivery Day
+                                </a>
+                                <a href="{{ route('santa.shoppingDay') }}" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 {{ request()->routeIs('santa.shoppingDay') ? 'font-semibold' : '' }}">
+                                    Shopping Day
+                                </a>
+                            </div>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -108,16 +129,23 @@
             <a href="{{ route('family.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Families</a>
             @if(auth()->user()->isSanta())
                 <a href="{{ route('santa.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Santa</a>
-                @if(\App\Models\Setting::get('use_classic_delivery', '0') === '1')
-                    <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Sheets</a>
-                @else
-                    <a href="{{ route('delivery.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Day</a>
-                @endif
             @endif
             @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
-                <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Coordinator</a>
+                <a href="{{ route('coordinator.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Print Tags</a>
                 <a href="{{ route('warehouse.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Warehouse</a>
+                @if(\App\Models\Setting::get('packing_system_enabled', '1') === '1')
+                <a href="{{ route('packing.index') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Packing
+                    @if(($packingQaCount ?? 0) > 0)
+                        <span class="packing-qa-badge ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-blue-600 rounded-full">{{ $packingQaCount }}</span>
+                    @endif
+                </a>
+                @endif
                 <a href="{{ route('santa.commandCenter') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Command Center</a>
+                <a href="{{ route('santa.analytics') }}" class="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Analytics</a>
+                <div class="pl-3 pr-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Event Day</div>
+                <a href="{{ route('delivery.index') }}" class="block pl-6 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Delivery Day</a>
+                <a href="{{ route('santa.shoppingDay') }}" class="block pl-6 pr-4 py-2 text-base font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700">Shopping Day</a>
             @endif
         </div>
         <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">

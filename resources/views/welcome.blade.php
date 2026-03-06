@@ -227,22 +227,25 @@
             </div>
 
             @php
-                $coordinators = \App\Models\User::where('permission', '>=', 8)
-                    ->where('show_on_website', true)
+                $teamMembers = \App\Models\User::where('permission', '>=', 7)
+                    ->where(fn($q) => $q->where('show_on_website', true)->orWhere('force_show_on_website', true))
                     ->orderByRaw("CASE WHEN position = 'System Engineer' THEN 0 ELSE 1 END")
                     ->orderByDesc('permission')
                     ->orderBy('first_name')
                     ->get();
             @endphp
 
-            @if($coordinators->count() > 0)
+            @if($teamMembers->count() > 0)
                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    @foreach($coordinators as $coord)
+                    @foreach($teamMembers as $coord)
                         <div class="bg-white dark:bg-gray-800 rounded-lg p-4 text-center shadow-sm border border-gray-200 dark:border-gray-700">
                             <img src="{{ $coord->avatar_url }}" alt="{{ $coord->first_name }}"
                                 class="mx-auto w-14 h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 mb-3">
                             <div class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $coord->first_name }} {{ $coord->last_name }}</div>
-                            <div class="text-xs text-red-600 dark:text-red-400 mt-0.5">{{ $coord->position ?: ($coord->permission === 9 ? 'Director' : 'Coordinator') }}</div>
+                            <div class="text-xs text-red-600 dark:text-red-400 mt-0.5">{{ $coord->position ?: ($coord->permission === 9 ? 'Director' : ($coord->permission === 8 ? 'Coordinator' : 'Advisor')) }}</div>
+                            @if($coord->permission === 7 && $coord->school_source)
+                                <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{{ $coord->school_source }}</div>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -346,31 +349,21 @@
         </section>
     @endif
 
-    {{-- Footer --}}
-    <footer class="bg-gray-900 text-gray-400 py-12">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="text-center sm:text-left">
-                    <div class="flex items-center gap-2 justify-center sm:justify-start">
-                        <img src="{{ asset('storage/' . $siteLogo) }}" alt="" class="h-8 w-auto" onerror="this.outerHTML='<span class=\'text-xl\'>&#10052;</span>'">
-                        <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
-                    </div>
-                    <p class="text-sm mt-1">Granite Falls School District &mdash; Love in Action</p>
-                </div>
-                <div class="flex items-center gap-6 text-sm">
-                    <a href="{{ route('login') }}" class="hover:text-white transition">Staff Login</a>
-                    @if($adoptionEnabled)
-                        <a href="{{ route('adopt.index') }}" class="hover:text-white transition">Adopt a Tag</a>
-                    @endif
-                    <a href="https://granite.gfalls.wednet.edu/fooddrive/" target="_blank" class="hover:text-white transition">Official Website</a>
-                </div>
+    <x-site-footer variant="full-dark">
+        <x-slot name="brand">
+            <div class="flex items-center gap-2 justify-center sm:justify-start">
+                <img src="{{ asset('storage/' . $siteLogo) }}" alt="" class="h-8 w-auto" onerror="this.outerHTML='<span class=\'text-xl\'>&#10052;</span>'">
+                <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
             </div>
-            <div class="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
-                &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive. All rights reserved.
-                <span class="mx-1">&middot;</span>
-                <span>Made in 🇨🇭</span>
-            </div>
-        </div>
-    </footer>
+            <p class="text-sm mt-1">Granite Falls School District &mdash; Love in Action</p>
+        </x-slot>
+        <x-slot name="links">
+            <a href="{{ route('login') }}" class="hover:text-white transition">Staff Login</a>
+            @if($adoptionEnabled)
+                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">Adopt a Tag</a>
+            @endif
+            <a href="https://granite.gfalls.wednet.edu/fooddrive/" target="_blank" class="hover:text-white transition">Official Website</a>
+        </x-slot>
+    </x-site-footer>
 </body>
 </html>

@@ -213,12 +213,14 @@
             @foreach($pair as $child)
             @if($child)
             <td class="footer-cell">
+                @php
+                    $tagDeadline = $adoptDeadline ?? '';
+                    $tagEmail = \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu');
+                    $tagPhone = \App\Models\Setting::get('primary_phone');
+                @endphp
                 <div class="card-footer">
-                    Please bring all gifts <u>UNWRAPPED</u> with this tag attached.
-                    <span class="email">Questions? {{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}</span>
-                    @if(!empty($adoptDeadline))
-                    <span class="deadline">Deadline: {{ $adoptDeadline }}</span>
-                    @endif
+                    Please bring in all gifts <u>UNWRAPPED</u> with this tag attached{{ $tagDeadline ? " by {$tagDeadline}" : '' }}.
+                    <span class="email">Questions? Email us at: {{ $tagEmail }}{{ $tagPhone ? " or contact us at: {$tagPhone}" : '' }}</span>
                 </div>
             </td>
             @else

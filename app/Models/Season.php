@@ -13,12 +13,26 @@ class Season extends Model
         'total_families',
         'total_children',
         'total_family_members',
+        'total_adults',
         'gifts_level_0',
         'gifts_level_1',
         'gifts_level_2',
         'gifts_level_3',
         'deliveries_completed',
+        'pickups_completed',
         'tags_adopted',
+        'families_severe_need',
+        'families_with_pets',
+        'families_needing_baby_supplies',
+        'children_by_age_group',
+        'families_by_school',
+        'families_by_size',
+        'families_by_language',
+        'families_by_delivery_date',
+        'warehouse_stats',
+        'avg_family_size',
+        'avg_children_per_family',
+        'adoption_rate',
         'notes',
         'archived_at',
     ];
@@ -27,6 +41,12 @@ class Season extends Model
     {
         return [
             'archived_at' => 'datetime',
+            'children_by_age_group' => 'array',
+            'families_by_school' => 'array',
+            'families_by_size' => 'array',
+            'families_by_language' => 'array',
+            'families_by_delivery_date' => 'array',
+            'warehouse_stats' => 'array',
         ];
     }
 
@@ -101,5 +121,82 @@ class Season extends Model
             'families_by_language' => $familiesByLanguage,
             'total_warehouse_items' => (int) $totalWarehouseItems,
         ];
+    }
+
+    /**
+     * Compute detailed stats for analytics — richer breakdowns for archiving.
+     */
+    public static function computeDetailedStats(int $year): array
+    {
+        $base = static::computeStats($year);
+
+        $families = Family::withoutGlobalScopes()->where('season_year', $year);
+        $children = Child::withoutGlobalScopes()->where('season_year', $year);
+
+        // Children by age group
+        $childrenByAgeGroup = [
+            'Infants (0-2)' => (clone $families)->sum('infants'),
+            'Young (3-7)' => (clone $families)->sum('young_children'),
+            'Children (8-12)' => (clone $families)->sum('children_count'),
+            'Tweens (13-14)' => (clone $families)->sum('tweens'),
+            'Teens (15-17)' => (clone $families)->sum('teenagers'),
+        ];
+
+        // Families by school (based on children's schools)
+        $familiesBySchool = (clone $children)
+            ->whereNotNull('school')
+            ->where('school', '!=', '')
+            ->selectRaw('school, count(distinct family_id) as family_count')
+            ->groupBy('school')
+            ->orderByDesc('family_count')
+            ->pluck('family_count', 'school')
+            ->toArray();
+
+        // Family size distribution
+        $familiesBySize = [
+            '1-2' => (clone $families)->whereBetween('number_of_family_members', [1, 2])->count(),
+            '3-4' => (clone $families)->whereBetween('number_of_family_members', [3, 4])->count(),
+            '5-6' => (clone $families)->whereBetween('number_of_family_members', [5, 6])->count(),
+            '7+' => (clone $families)->where('number_of_family_members', '>=', 7)->count(),
+        ];
+
+        // Severe need families
+        $familiesSevereNeed = (clone $families)->where('is_severe_need', true)->count();
+
+        // Pickup vs delivery
+        $pickupsCompleted = (clone $families)
+            ->where(function ($q) {
+                $q->where('delivery_preference', 'Pickup')
+                    ->orWhere('delivery_preference', 'pickup');
+            })
+            ->where('delivery_status', DeliveryStatus::Delivered)
+            ->count();
+
+        // Warehouse category breakdown
+        $warehouseStats = [];
+        try {
+            $warehouseStats = WarehouseTransaction::withoutGlobalScopes()
+                ->where('season_year', $year)
+                ->where('transaction_type', 'in')
+                ->join('warehouse_items', 'warehouse_transactions.warehouse_item_id', '=', 'warehouse_items.id')
+                ->join('warehouse_categories', 'warehouse_items.category_id', '=', 'warehouse_categories.id')
+                ->selectRaw('warehouse_categories.type, sum(warehouse_transactions.quantity) as total')
+                ->groupBy('warehouse_categories.type')
+                ->pluck('total', 'type')
+                ->toArray();
+        } catch (\Exception $e) {
+            // Warehouse tables may not exist in older seasons
+        }
+
+        return array_merge($base, [
+            'children_by_age_group' => $childrenByAgeGroup,
+            'families_by_school' => $familiesBySchool,
+            'families_by_size' => $familiesBySize,
+            'families_severe_need' => $familiesSevereNeed,
+            'pickups_completed' => $pickupsCompleted,
+            'families_with_pets' => $base['families_with_pets'],
+            'families_needing_baby_supplies' => $base['families_needing_baby_supplies'],
+            'warehouse_stats' => $warehouseStats,
+        ]);
     }
 }

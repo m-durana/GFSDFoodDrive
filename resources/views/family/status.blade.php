@@ -115,6 +115,46 @@
                 </div>
             @endif
 
+            <!-- Packing Progress Card -->
+            @if($packingProgress)
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Box Packing Progress</h3>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ $packingProgress['packed'] }} of {{ $packingProgress['total'] }} items packed
+                        </span>
+                        @php
+                            $ps = $packingProgress['status'];
+                            $packingLabel = match($ps->value) {
+                                'pending' => 'Not Started',
+                                'in_progress' => 'In Progress',
+                                'complete' => 'Complete',
+                                'verified' => 'Verified',
+                                default => 'Pending',
+                            };
+                            $packingColor = match($ps->value) {
+                                'pending' => 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300',
+                                'in_progress' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+                                'complete' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+                                'verified' => 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+                                default => 'bg-gray-100 text-gray-700',
+                            };
+                        @endphp
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $packingColor }}">
+                            {{ $packingLabel }}
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full transition-all" style="width: {{ $packingProgress['percentage'] }}%"></div>
+                    </div>
+                    @if($packingProgress['status']->value === 'verified')
+                        <p class="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">Your box has been packed and verified!</p>
+                    @elseif($packingProgress['status']->value === 'complete')
+                        <p class="mt-2 text-sm text-blue-600 dark:text-blue-400">Your box is packed and awaiting verification.</p>
+                    @endif
+                </div>
+            @endif
+
             <!-- Delivery Info Card -->
             @if($family->delivery_date)
                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
@@ -165,12 +205,7 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-            <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-gray-400 dark:text-gray-500">
-                Granite Falls School District Food Drive
-            </div>
-        </footer>
+        <x-site-footer variant="border" />
     </div>
 </body>
 </html>

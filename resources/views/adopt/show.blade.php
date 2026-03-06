@@ -82,6 +82,21 @@
                 </div>
             </div>
 
+            <!-- Instructions -->
+            @php
+                $deadline = \App\Models\Setting::get('adopt_a_tag_deadline');
+                $contactEmail = \App\Models\Setting::get('primary_contact_email');
+                $contactPhone = \App\Models\Setting::get('primary_phone');
+            @endphp
+            <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4 mb-6">
+                <p class="text-sm text-amber-800 dark:text-amber-200">
+                    Please bring in all gifts <strong>UNWRAPPED</strong> with this tag attached{!! $deadline ? ' by <strong>' . e($deadline) . '</strong>' : '' !!}.
+                    @if($contactEmail)
+                        Questions? Email us at: <a href="mailto:{{ $contactEmail }}" class="underline">{{ $contactEmail }}</a>{{ $contactPhone ? " or contact us at: {$contactPhone}" : '' }}.
+                    @endif
+                </p>
+            </div>
+
             <!-- Claim Form -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h3 class="text-lg font-semibold mb-4">Adopt This Tag</h3>
@@ -137,24 +152,13 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="bg-gray-900 text-gray-400 mt-12 py-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
-                    <div class="flex items-center gap-4 text-sm">
-                        <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
-                        <a href="{{ route('adopt.index') }}" class="hover:text-white transition">All Tags</a>
-                        <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
-                    &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive.
-                    <span class="mx-1">&middot;</span>
-                    <span>Made in &#x1F1E8;&#x1F1ED;</span>
-                </div>
-            </div>
-        </footer>
+        <x-site-footer variant="dark">
+            <x-slot name="links">
+                <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
+                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">All Tags</a>
+                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+            </x-slot>
+        </x-site-footer>
     </div>
 </body>
 </html>

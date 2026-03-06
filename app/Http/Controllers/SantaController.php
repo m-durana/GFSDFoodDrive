@@ -17,6 +17,7 @@ use App\Models\SchoolRange;
 use App\Models\Setting;
 use App\Models\ShoppingAssignment;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -182,6 +183,8 @@ class SantaController extends Controller
             'familyStatusEnabled' => Setting::get('family_status_enabled', '0') === '1',
             'deliveryDates' => Setting::get('delivery_dates', 'December 18th,December 19th'),
             'coordinatorPositions' => Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'),
+            'packingSystemEnabled' => Setting::get('packing_system_enabled', '1') === '1',
+            'packingFulfillmentThreshold' => Setting::get('packing_fulfillment_alert_threshold', '80'),
         ]);
     }
 
@@ -190,6 +193,13 @@ class SantaController extends Controller
         // Primary contact info
         Setting::set('primary_contact_email', $request->input('primary_contact_email', ''));
         Setting::set('primary_contact_phone', $request->input('primary_contact_phone', ''));
+        Setting::set('footer_text', $request->input('footer_text', 'Made in 🇨🇭'));
+
+        // Backup settings
+        Setting::set('backup_interval_hours', $request->input('backup_interval_hours', '4'));
+        if ($request->filled('backup_path')) {
+            Setting::set('backup_path', $request->input('backup_path'));
+        }
 
         Setting::set('self_registration_enabled', $request->boolean('self_registration_enabled') ? '1' : '0');
         Setting::set('season_year', $request->input('season_year', (string) date('Y')));
@@ -244,6 +254,11 @@ class SantaController extends Controller
         // Feature modes (classic vs new)
         Setting::set('use_classic_delivery', $request->boolean('use_classic_delivery') ? '1' : '0');
         Setting::set('use_classic_adoption', $request->boolean('use_classic_adoption') ? '1' : '0');
+
+        // Packing System
+        Setting::set('packing_system_enabled', $request->boolean('packing_system_enabled') ? '1' : '0');
+        Setting::set('packing_fulfillment_alert_threshold', $request->input('packing_fulfillment_alert_threshold', '80'));
+        Setting::set('packing_show_names', $request->boolean('packing_show_names') ? '1' : '0');
 
         // Coordinator positions
         Setting::set('coordinator_positions', $request->input('coordinator_positions', ''));
@@ -375,61 +390,6 @@ class SantaController extends Controller
         return view('santa.gifts', compact('children', 'counts'));
     }
 
-    public function volunteers(): View
-    {
-        $volunteers = User::where('permission', '>=', 7)
-            ->where('permission', '<=', 9)
-            ->orderBy('first_name')
-            ->get();
-
-        $unassignedFamilies = Family::whereNull('volunteer_id')
-            ->whereNotNull('family_number')
-            ->orderBy('family_number')
-            ->get();
-
-        $assignments = [];
-        foreach ($volunteers as $volunteer) {
-            $assignments[$volunteer->id] = Family::where('volunteer_id', $volunteer->id)
-                ->with('children')
-                ->orderBy('family_number')
-                ->get();
-        }
-
-        return view('santa.volunteers', compact('volunteers', 'unassignedFamilies', 'assignments'));
-    }
-
-    public function assignVolunteer(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'family_id' => ['required', 'exists:families,id'],
-            'volunteer_id' => ['required', 'exists:users,id'],
-        ]);
-
-        Family::findOrFail($request->family_id)->update(['volunteer_id' => $request->volunteer_id]);
-
-        return redirect()->route('santa.volunteers')
-            ->with('success', 'Family assigned to volunteer.');
-    }
-
-    public function unassignVolunteer(Family $family): RedirectResponse
-    {
-        $family->update(['volunteer_id' => null]);
-
-        return redirect()->route('santa.volunteers')
-            ->with('success', "Family '{$family->family_name}' unassigned.");
-    }
-
-    public function volunteerList(User $user)
-    {
-        $families = Family::where('volunteer_id', $user->id)
-            ->with('children')
-            ->orderBy('family_number')
-            ->get();
-
-        $volunteerName = $user->first_name . ' ' . $user->last_name;
-
-        return view('documents.volunteer-list', compact('families', 'volunteerName'));
-    }
 
     public function exportFamilies(Request $request)
     {
@@ -1051,32 +1011,162 @@ class SantaController extends Controller
         $maxFamilyNumber = Family::max('family_number') ?? 0;
         $schoolRanges = SchoolRange::orderBy('sort_order')->get();
 
+        // Shopping deficits from packing lists
+        $deficits = app(\App\Services\PackingService::class)->getShoppingDeficits();
+
+        // Available grocery categories for category split
+        $groceryCategories = \App\Models\GroceryItem::select('category')->distinct()->pluck('category')->toArray();
+
+        // Grocery items grouped by category (for subcategory split)
+        $groceryItemsByCategory = \App\Models\GroceryItem::orderBy('category')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('category')
+            ->map(fn ($items) => $items->map(fn ($item) => ['id' => $item->id, 'name' => $item->name]))
+            ->toArray();
+
+        // Reconciliation data
+        $reconciliation = app(\App\Services\PackingService::class)->getShoppingReconciliation();
+
         return view('santa.shopping-day', compact(
-            'assignments', 'coordinators', 'assignedRanges', 'maxFamilyNumber', 'schoolRanges'
+            'assignments', 'coordinators', 'assignedRanges', 'maxFamilyNumber', 'schoolRanges',
+            'deficits', 'groceryCategories', 'groceryItemsByCategory', 'reconciliation'
         ));
     }
 
     public function createAssignment(Request $request): RedirectResponse
     {
-        $request->validate([
+        $rules = [
             'user_id' => ['nullable', 'exists:users,id'],
             'ninja_name' => ['required_without:user_id', 'nullable', 'string', 'max:255'],
-            'family_start' => ['required', 'integer', 'min:1'],
-            'family_end' => ['required', 'integer', 'min:1'],
+            'split_type' => ['required', 'string', 'in:family_range,category,deficit,smart_split,subcategory'],
             'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        ];
 
-        ShoppingAssignment::create([
+        // Conditional validation based on split_type
+        if ($request->split_type === 'family_range') {
+            $rules['family_start'] = ['required', 'integer', 'min:1'];
+            $rules['family_end'] = ['required', 'integer', 'min:1'];
+        } elseif ($request->split_type === 'category') {
+            $rules['categories'] = ['required', 'array', 'min:1'];
+            $rules['categories.*'] = ['string'];
+        } elseif ($request->split_type === 'smart_split') {
+            $rules['num_shoppers'] = ['required', 'integer', 'min:2', 'max:10'];
+        } elseif ($request->split_type === 'subcategory') {
+            $rules['subcategory_category'] = ['required', 'string'];
+            $rules['subcategory_items'] = ['required', 'array', 'min:1'];
+            $rules['subcategory_items.*'] = ['integer', 'exists:grocery_items,id'];
+        }
+
+        $request->validate($rules);
+
+        // Handle smart_split: create N assignments via greedy bin-packing
+        if ($request->split_type === 'smart_split') {
+            return $this->createSmartSplitAssignments($request);
+        }
+
+        $data = [
             'user_id' => $request->user_id ?: null,
             'ninja_name' => $request->ninja_name,
-            'split_type' => 'family_range',
-            'family_start' => $request->family_start,
-            'family_end' => $request->family_end,
+            'split_type' => $request->split_type,
             'notes' => $request->notes,
-        ]);
+        ];
+
+        if ($request->split_type === 'family_range') {
+            $data['family_start'] = $request->family_start;
+            $data['family_end'] = $request->family_end;
+        } elseif ($request->split_type === 'category') {
+            $data['categories'] = $request->categories;
+        } elseif ($request->split_type === 'subcategory') {
+            $categoryName = $request->subcategory_category;
+            $itemIds = array_map('intval', $request->subcategory_items);
+            $data['config'] = [
+                'category_name' => $categoryName,
+                'item_ids' => $itemIds,
+            ];
+        }
+
+        ShoppingAssignment::create($data);
 
         return redirect()->route('santa.shoppingDay')
             ->with('success', 'Shopping assignment created. Share the link with the shopper!');
+    }
+
+    /**
+     * Create N smart-split assignments using greedy bin-packing.
+     * Families are sorted by item count descending, then greedily assigned to the
+     * shopper with the fewest total items so far.
+     */
+    private function createSmartSplitAssignments(Request $request): RedirectResponse
+    {
+        $numShoppers = (int) $request->num_shoppers;
+
+        // Get all families in the current season with their item counts
+        $families = Family::whereNotNull('family_number')
+            ->with('children')
+            ->get()
+            ->map(function ($family) {
+                $list = GroceryItem::calculateForFamily($family);
+                $totalItems = collect($list)->sum('quantity');
+                return [
+                    'id' => $family->id,
+                    'family_number' => $family->family_number,
+                    'item_count' => $totalItems,
+                ];
+            })
+            ->filter(fn ($f) => $f['item_count'] > 0)
+            ->sortByDesc('item_count')
+            ->values();
+
+        if ($families->isEmpty()) {
+            return redirect()->route('santa.shoppingDay')
+                ->with('success', 'No families with items found for smart split.');
+        }
+
+        // Greedy bin-packing: assign each family to the shopper with the fewest items
+        $bins = array_fill(0, $numShoppers, ['family_ids' => [], 'total_items' => 0]);
+
+        foreach ($families as $family) {
+            // Find bin with minimum items
+            $minIdx = 0;
+            $minItems = $bins[0]['total_items'];
+            for ($i = 1; $i < $numShoppers; $i++) {
+                if ($bins[$i]['total_items'] < $minItems) {
+                    $minItems = $bins[$i]['total_items'];
+                    $minIdx = $i;
+                }
+            }
+            $bins[$minIdx]['family_ids'][] = $family['id'];
+            $bins[$minIdx]['total_items'] += $family['item_count'];
+        }
+
+        // Create one assignment per bin
+        $baseName = $request->ninja_name ?: 'Shopper';
+        $created = 0;
+
+        foreach ($bins as $i => $bin) {
+            if (empty($bin['family_ids'])) {
+                continue;
+            }
+
+            ShoppingAssignment::create([
+                'user_id' => $request->user_id ?: null,
+                'ninja_name' => $baseName . ' ' . ($i + 1),
+                'split_type' => 'smart_split',
+                'notes' => $request->notes,
+                'config' => [
+                    'family_ids' => $bin['family_ids'],
+                    'group_number' => $i + 1,
+                    'total_groups' => $numShoppers,
+                    'estimated_items' => $bin['total_items'],
+                ],
+            ]);
+            $created++;
+        }
+
+        return redirect()->route('santa.shoppingDay')
+            ->with('success', "{$created} smart-split assignments created. Share the links with shoppers!");
     }
 
     public function deleteAssignment(ShoppingAssignment $assignment): RedirectResponse
@@ -1106,7 +1196,7 @@ class SantaController extends Controller
     public function storeUser(StoreUserRequest $request): RedirectResponse
     {
         $roleToPermission = [
-            'family' => 7,
+            'family' => 7, 'advisor' => 7,
             'coordinator' => 8,
             'santa' => 9,
         ];
@@ -1169,6 +1259,82 @@ class SantaController extends Controller
 
         return redirect()->route('santa.users')
             ->with('success', "User '{$user->username}' updated successfully.");
+    }
+
+    public function bulkUpdateUsers(Request $request): RedirectResponse
+    {
+        $roleToPermission = [
+            'family' => 7,
+            'coordinator' => 8,
+            'santa' => 9,
+            'inactive' => 0,
+        ];
+
+        $users = $request->input('users', []);
+        $updatedCount = 0;
+
+        foreach ($users as $userId => $userData) {
+            $user = User::find($userId);
+            if (!$user) continue;
+
+            $role = $userData['role'] ?? 'family';
+            $data = [
+                'first_name' => $userData['first_name'] ?? $user->first_name,
+                'last_name' => $userData['last_name'] ?? $user->last_name,
+                'permission' => $roleToPermission[$role] ?? 7,
+                'school_source' => $role !== 'santa' ? ($userData['school_source'] ?? null) : null,
+                'position' => in_array($role, ['coordinator', 'santa']) ? ($userData['position'] ?? null) : null,
+                'force_show_on_website' => isset($userData['force_show_on_website']),
+                'avatar_restricted' => isset($userData['avatar_restricted']),
+            ];
+
+            if (!empty($userData['password'])) {
+                $data['password'] = $userData['password'];
+            }
+
+            $user->update($data);
+
+            // Sync Spatie role
+            if (method_exists($user, 'syncRoles')) {
+                $user->syncRoles([]);
+                if ($role !== 'inactive') {
+                    $user->assignRole($role);
+                }
+            }
+
+            $updatedCount++;
+        }
+
+        return redirect()->route('santa.users')
+            ->with('success', "{$updatedCount} user(s) updated successfully.");
+    }
+
+    public function deleteUser(User $user): RedirectResponse
+    {
+        if ($user->id === auth()->id()) {
+            return redirect()->route('santa.users')
+                ->with('error', 'You cannot delete your own account.');
+        }
+
+        $username = $user->username;
+        $user->delete();
+
+        return redirect()->route('santa.users')
+            ->with('success', "User '{$username}' has been deleted.");
+    }
+
+    public function randomizeUserAvatar(Request $request, User $user): RedirectResponse|JsonResponse
+    {
+        $seed = uniqid('avatar_');
+        $avatarUrl = "https://api.dicebear.com/7.x/adventurer/svg?seed={$seed}";
+        $user->update(['avatar_path' => $avatarUrl]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['avatar_url' => $avatarUrl]);
+        }
+
+        return redirect()->route('santa.users')
+            ->with('success', "Avatar randomized for '{$user->username}'.");
     }
 
     /**

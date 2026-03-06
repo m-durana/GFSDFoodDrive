@@ -166,6 +166,18 @@
                                     <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Family needs baby supplies / baby food</span>
                                 </label>
                             </div>
+                            @if(auth()->user()->isSanta() || auth()->user()->permission >= 7)
+                            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="is_severe_need" value="1" {{ old('is_severe_need') ? 'checked' : '' }}
+                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500"
+                                        id="is_severe_need_checkbox">
+                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need</span>
+                                </label>
+                                <textarea name="severe_need_notes" id="severe_need_notes" rows="2" placeholder="Optional: describe the severe need"
+                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ old('is_severe_need') ? '' : 'hidden' }}">{{ old('severe_need_notes') }}</textarea>
+                            </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -228,18 +240,6 @@
                                 <textarea name="need_for_help" id="need_for_help" rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('need_for_help') }}</textarea>
                             </div>
-                            @if(auth()->user()->isSanta() || auth()->user()->permission >= 7)
-                            <div>
-                                <label class="inline-flex items-center">
-                                    <input type="checkbox" name="is_severe_need" value="1" {{ old('is_severe_need') ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500"
-                                        id="is_severe_need_checkbox">
-                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need</span>
-                                </label>
-                                <textarea name="severe_need_notes" id="severe_need_notes" rows="2" placeholder="Optional: describe the severe need"
-                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ old('is_severe_need') ? '' : 'hidden' }}">{{ old('severe_need_notes') }}</textarea>
-                            </div>
-                            @endif
                             <div>
                                 <label for="other_questions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Questions / Comments</label>
                                 <textarea name="other_questions" id="other_questions" rows="3"

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdoptionController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\GoogleController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\CoordinatorController;
 use App\Http\Controllers\DeliveryDayController;
 use App\Http\Controllers\HelpController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SelfServiceController;
 use App\Http\Controllers\ShoppingController;
 use App\Http\Controllers\GiftBankController;
+use App\Http\Controllers\PackingController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
@@ -83,10 +85,6 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::get('/gifts', [SantaController::class, 'gifts'])->name('gifts');
     Route::get('/reports', [SantaController::class, 'reports'])->name('reports');
     Route::get('/export', [SantaController::class, 'exportFamilies'])->name('export');
-    Route::get('/volunteers', [SantaController::class, 'volunteers'])->name('volunteers');
-    Route::post('/volunteers/assign', [SantaController::class, 'assignVolunteer'])->name('assignVolunteer');
-    Route::delete('/volunteers/unassign/{family}', [SantaController::class, 'unassignVolunteer'])->name('unassignVolunteer');
-    Route::get('/volunteers/{user}/list', [SantaController::class, 'volunteerList'])->name('volunteerList');
     Route::get('/shopping-list', [SantaController::class, 'shoppingList'])->name('shoppingList');
     Route::post('/shopping-list/items', [SantaController::class, 'storeGroceryItem'])->name('storeGroceryItem');
     Route::put('/shopping-list/items/{groceryItem}', [SantaController::class, 'updateGroceryItem'])->name('updateGroceryItem');
@@ -103,6 +101,9 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::post('/users', [SantaController::class, 'storeUser'])->name('storeUser');
     Route::put('/users/{user}', [SantaController::class, 'updateUser'])->name('updateUser');
     Route::put('/users/{user}/reset-password', [SantaController::class, 'resetPassword'])->name('resetPassword');
+    Route::post('/users/bulk-update', [SantaController::class, 'bulkUpdateUsers'])->name('bulkUpdateUsers');
+    Route::delete('/users/{user}', [SantaController::class, 'deleteUser'])->name('deleteUser');
+    Route::post('/users/{user}/randomize-avatar', [SantaController::class, 'randomizeUserAvatar'])->name('randomizeUserAvatar');
 
     // Access Requests (OAuth approval flow)
     Route::post('/access-requests/{accessRequest}/approve', [SantaController::class, 'approveAccessRequest'])->name('approveAccessRequest');
@@ -131,6 +132,10 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::get('/backups/download/{filename}', [SantaController::class, 'downloadBackup'])->name('downloadBackup');
     Route::post('/backups/rollback', [SantaController::class, 'rollbackBackup'])->name('rollbackBackup');
 
+    // Analytics
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+    Route::get('/analytics/export', [AnalyticsController::class, 'export'])->name('analytics.export');
+
     // Season Archive & Import
     Route::get('/seasons', [SeasonController::class, 'index'])->name('seasons.index');
     Route::get('/seasons/import', [SeasonController::class, 'importForm'])->name('seasons.import');
@@ -158,6 +163,8 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('coordinator
     Route::get('/gift-tags', [CoordinatorController::class, 'giftTags'])->name('giftTags');
     Route::get('/family-summary', [CoordinatorController::class, 'familySummary'])->name('familySummary');
     Route::get('/delivery-day', [CoordinatorController::class, 'deliveryDay'])->name('deliveryDay');
+    Route::get('/pdf-status/{jobKey}', [CoordinatorController::class, 'pdfStatus'])->name('pdfStatus');
+    Route::get('/pdf-download/{jobKey}', [CoordinatorController::class, 'pdfDownload'])->name('pdfDownload');
 });
 
 // QR Code scan routes (public, secured by signed URLs)
@@ -208,10 +215,12 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')
     Route::get('/gift-dropoff/{child}', [WarehouseController::class, 'giftDropoff'])->name('gift.dropoff');
     Route::post('/gift-dropoff/{child}', [WarehouseController::class, 'confirmGiftDropoff'])->name('gift.dropoff.confirm');
     Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
-    Route::get('/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('mobile-scan');
+    Route::get('/kiosk/gifts', [WarehouseController::class, 'giftKiosk'])->name('kiosk.gifts');
     Route::get('/gifts-intake', [WarehouseController::class, 'giftsIntake'])->name('gifts-intake');
     Route::get('/child/{child}/gifts', [WarehouseController::class, 'childGifts'])->name('child.gifts');
     Route::get('/items/{item}', [WarehouseController::class, 'itemDetail'])->name('item.detail');
+    Route::put('/items/{item}/location', [WarehouseController::class, 'updateItemLocation'])->name('item.location');
+    Route::delete('/items/{item}/remove', [WarehouseController::class, 'removeItem'])->name('item.remove');
 
     // Gift Bank
     Route::get('/gift-bank', [GiftBankController::class, 'index'])->name('gift-bank');
@@ -221,6 +230,9 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')
     Route::delete('/gift-bank/{item}', [GiftBankController::class, 'destroy'])->name('gift-bank.destroy');
     Route::get('/gift-bank/suggestions/{child}', [GiftBankController::class, 'suggestions'])->name('gift-bank.suggestions');
 });
+
+// Mobile scanner (public — QR token on packing list provides access)
+Route::get('/warehouse/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('warehouse.mobile-scan');
 
 // Help/Wiki routes (accessible by all authenticated users)
 Route::middleware('auth')->group(function () {
@@ -244,6 +256,22 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::post('/quick-assign', [DeliveryDayController::class, 'quickAssign'])->name('quickAssign');
     Route::post('/routes/{deliveryRoute}/add-families', [DeliveryDayController::class, 'addFamiliesToRoute'])->name('addFamiliesToRoute');
     Route::post('/routes/{deliveryRoute}/mark-returning', [DeliveryDayController::class, 'markRouteReturning'])->name('markRouteReturning');
+});
+
+// Packing list routes
+Route::middleware(['auth', 'permission:coordinator,santa', \App\Http\Middleware\PackingSystemEnabled::class])->prefix('santa/packing')->name('packing.')->group(function () {
+    Route::get('/', [PackingController::class, 'index'])->name('index');
+    Route::get('/dashboard', [PackingController::class, 'dashboard'])->name('dashboard');
+    Route::get('/summary', [PackingController::class, 'summary'])->name('summary');
+    Route::post('/generate', [PackingController::class, 'generate'])->name('generate');
+    Route::post('/print-batch', [PackingController::class, 'printBatch'])->name('printBatch');
+    Route::get('/{packingList}', [PackingController::class, 'show'])->name('show');
+    Route::get('/{packingList}/print', [PackingController::class, 'print'])->name('print');
+    Route::post('/{packingList}/refresh', [PackingController::class, 'refreshList'])->name('refresh');
+    Route::post('/{packingList}/verify', [PackingController::class, 'verify'])->name('verify');
+    Route::post('/{packingList}/notes', [PackingController::class, 'updateNotes'])->name('updateNotes');
+    Route::post('/{packingList}/item/{packingItem}/pack', [PackingController::class, 'markItemPacked'])->name('packItem');
+    Route::post('/family/{family}/generate', [PackingController::class, 'generateSingle'])->name('generateSingle');
 });
 
 // Santa duplicate detection routes

@@ -34,7 +34,7 @@ class CheckPermission
         // Fallback: check legacy integer permission column
         $roleToPermission = [
             'self_service' => 6,
-            'family' => 7,
+            'family' => 7, 'advisor' => 7,
             'coordinator' => 8,
             'santa' => 9,
         ];

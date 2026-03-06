@@ -11,11 +11,16 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Quick Actions -->
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
                 <a href="{{ route('warehouse.kiosk') }}" class="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm hover:bg-green-100 dark:hover:bg-green-900/30 transition border border-green-200 dark:border-green-800 text-center">
                     <div class="text-2xl mb-1">📦</div>
                     <h4 class="font-medium text-green-800 dark:text-green-300">Kiosk Scanner</h4>
                     <p class="text-xs text-green-700/70 dark:text-green-400/60 mt-1">Scan barcodes and log donations fast</p>
+                </a>
+                <a href="{{ route('warehouse.kiosk.gifts') }}" class="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 transition border border-purple-200 dark:border-purple-800 text-center">
+                    <div class="text-2xl mb-1">🎀</div>
+                    <h4 class="font-medium text-purple-800 dark:text-purple-300">Gift Kiosk</h4>
+                    <p class="text-xs text-purple-700/70 dark:text-purple-400/60 mt-1">Log incoming gifts by category</p>
                 </a>
                 <a href="{{ route('warehouse.inventory') }}" class="block p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition border border-blue-200 dark:border-blue-800 text-center">
                     <div class="text-2xl mb-1">📋</div>

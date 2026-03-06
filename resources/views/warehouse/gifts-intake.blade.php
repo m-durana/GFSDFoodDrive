@@ -19,7 +19,7 @@
                 <div class="lg:w-80 shrink-0 space-y-3" id="child-panel">
                     <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
                         <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Select a Child</h4>
-                        <input type="text" id="child-search" placeholder="Family # or name..."
+                        <input type="text" id="child-search" placeholder="Family # or gender/age..."
                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm mb-2"
                             autofocus>
                         <div class="space-y-1.5 max-h-[60vh] overflow-y-auto" id="child-list">
@@ -28,7 +28,7 @@
                                     class="child-btn w-full text-left px-3 py-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition text-xs"
                                     data-child-id="{{ $child->id }}"
                                     data-family-number="{{ $child->family->family_number ?? '' }}"
-                                    data-family-name="{{ $child->family->family_name ?? '' }}"
+                                    data-family-name=""
                                     data-gender="{{ $child->gender ?? 'Unknown' }}"
                                     data-age="{{ $child->age ?? '?' }}"
                                     data-toy-ideas="{{ $child->toy_ideas ?? '' }}"
@@ -37,12 +37,11 @@
                                     data-gift-level="{{ $child->gift_level?->value ?? 0 }}"
                                     data-adopter="{{ $child->adopter_name ?? '' }}"
                                     data-dropped-off="{{ $child->gift_dropped_off ? '1' : '0' }}"
-                                    data-search="{{ strtolower(($child->family->family_number ?? '') . ' ' . ($child->family->family_name ?? '') . ' ' . ($child->gender ?? '') . ' ' . ($child->age ?? '')) }}">
+                                    data-search="{{ strtolower(($child->family->family_number ?? '') . ' ' . ($child->gender ?? '') . ' ' . ($child->age ?? '')) }}">
                                     <div class="flex items-center justify-between">
                                         <span class="font-bold text-gray-900 dark:text-gray-100">#{{ $child->family->family_number ?? '?' }}</span>
                                         <span class="text-gray-500 dark:text-gray-400">{{ $child->gender ?? '?' }}, {{ $child->age ?? '?' }}</span>
                                     </div>
-                                    <div class="text-gray-500 dark:text-gray-400 truncate">{{ $child->family->family_name ?? '' }}</div>
                                 </button>
                             @endforeach
                         </div>
@@ -132,12 +131,15 @@
                                     <p class="text-sm text-purple-700 dark:text-purple-300 mt-1" id="active-child-details"></p>
                                     <p class="text-xs text-purple-600 dark:text-purple-400 mt-1" id="active-child-prefs"></p>
                                 </div>
-                                <div class="flex gap-2">
+                                <div class="flex flex-wrap gap-2">
                                     <button onclick="finishBox()" class="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-md hover:bg-green-500 transition">
                                         Finish Box
                                     </button>
                                     <button onclick="nextChild()" class="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-500 transition">
                                         Next Child
+                                    </button>
+                                    <button onclick="deselectChild()" class="px-3 py-1.5 bg-gray-500 text-white text-xs font-medium rounded-md hover:bg-gray-400 transition">
+                                        Back to General
                                     </button>
                                 </div>
                             </div>
@@ -217,7 +219,7 @@
             document.getElementById('active-child-label').textContent =
                 `#${btn.dataset.familyNumber} — ${btn.dataset.gender}, age ${btn.dataset.age}`;
             document.getElementById('active-child-details').textContent =
-                `${btn.dataset.familyName}` + (btn.dataset.adopter ? ` | Adopter: ${btn.dataset.adopter}` : '');
+                btn.dataset.adopter ? `Adopter: ${btn.dataset.adopter}` : '';
 
             const prefs = [];
             if (btn.dataset.toyIdeas) prefs.push(`Toy ideas: ${btn.dataset.toyIdeas}`);
@@ -405,6 +407,22 @@
             .catch(() => {
                 showToast('Failed to save box. Try again.', 'red');
             });
+        }
+
+        function deselectChild() {
+            if (boxItems.length > 0) {
+                if (!confirm('You have unsaved items in the current box. Deselect child anyway?')) return;
+            }
+            boxItems = [];
+            activeChildId = null;
+            activeChildData = null;
+
+            // Remove highlight from all child buttons
+            document.querySelectorAll('.child-btn').forEach(b => b.classList.remove('ring-2', 'ring-purple-500', 'bg-purple-50', 'dark:bg-purple-900/20'));
+
+            // Show no-child state, hide scan mode
+            document.getElementById('scan-mode').classList.add('hidden');
+            document.getElementById('no-child-state').classList.remove('hidden');
         }
 
         function nextChild() {

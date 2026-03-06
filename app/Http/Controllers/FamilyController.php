@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\AssignFamilyNumber;
 use App\Http\Requests\StoreFamilyRequest;
 use App\Models\Child;
 use App\Models\Family;
@@ -17,7 +18,7 @@ class FamilyController extends Controller
 
         // Santa and coordinators see all families; family advisors see only their own
         $families = ($user->isSanta() || $user->isCoordinator())
-            ? Family::orderBy('family_number')->get()
+            ? Family::with('packingList')->orderBy('family_number')->get()
             : $user->families;
 
         return view('family.index', [
@@ -65,13 +66,24 @@ class FamilyController extends Controller
             }
         }
 
+        // Auto-assign family number based on eldest child's school
+        if (!$family->family_number) {
+            $family->load('children');
+            $assigner = new AssignFamilyNumber();
+            $result = $assigner->assignNext($family);
+            if ($result !== true) {
+                return redirect()->route('family.show', $family)
+                    ->with('warning', "Family created but number assignment failed: {$result}");
+            }
+        }
+
         return redirect()->route('family.show', $family)
-            ->with('success', "Family '{$family->family_name}' created successfully.");
+            ->with('success', "Family '{$family->family_name}' created successfully (#{$family->family_number}).");
     }
 
     public function show(Family $family): View
     {
-        $family->load('children');
+        $family->load(['children', 'packingList.volunteer']);
 
         return view('family.show', compact('family'));
     }
@@ -94,6 +106,7 @@ class FamilyController extends Controller
         $data['has_crhs_children'] = $request->boolean('has_crhs_children');
         $data['has_gfhs_children'] = $request->boolean('has_gfhs_children');
         $data['needs_baby_supplies'] = $request->boolean('needs_baby_supplies');
+        $data['dietary_restrictions'] = $request->input('dietary_restrictions', []);
 
         $family->update($data);
 
@@ -115,7 +128,16 @@ class FamilyController extends Controller
             'all_sizes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $oldEldest = $family->children->sortByDesc(fn($c) => (int) $c->age)->first();
         $family->children()->create($validated);
+        $family->load('children');
+        $newEldest = $family->children->sortByDesc(fn($c) => (int) $c->age)->first();
+
+        // Reassign family number if eldest child changed (different school)
+        if ($newEldest && $oldEldest?->school !== $newEldest->school) {
+            $assigner = new AssignFamilyNumber();
+            $assigner->assignNext($family);
+        }
 
         return redirect()->route('family.show', $family)
             ->with('success', 'Child added successfully.');

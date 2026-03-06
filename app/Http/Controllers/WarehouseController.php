@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ConfirmGiftDropoffRequest;
 use App\Http\Requests\StoreWarehouseReceiptRequest;
 use App\Models\Child;
+use App\Models\PackingList;
 use App\Models\Setting;
 use App\Models\WarehouseCategory;
 use App\Models\WarehouseItem;
@@ -159,14 +160,55 @@ class WarehouseController extends Controller
 
     public function kiosk(): View
     {
-        $categories = WarehouseCategory::active()->orderBy('sort_order')->get();
+        $categories = WarehouseCategory::active()
+            ->where('type', '!=', 'gift')
+            ->orderBy('sort_order')
+            ->get();
 
         return view('warehouse.kiosk', compact('categories'));
     }
 
-    public function mobileScan(): View
+    public function giftKiosk(): View
     {
-        return view('warehouse.mobile-scan');
+        $categories = WarehouseCategory::active()
+            ->where('type', 'gift')
+            ->orderBy('sort_order')
+            ->get();
+
+        return view('warehouse.gift-kiosk', compact('categories'));
+    }
+
+    public function mobileScan(Request $request): View|\Illuminate\Http\RedirectResponse
+    {
+        $token = $request->query('token');
+
+        if ($token) {
+            $packingList = PackingList::withoutGlobalScopes()
+                ->where('qr_token', $token)
+                ->with(['family', 'items.category'])
+                ->first();
+
+            if (!$packingList) {
+                abort(404, 'Invalid packing list token.');
+            }
+
+            return view('warehouse.mobile-scan', [
+                'packingList' => $packingList,
+                'token' => $token,
+                'mode' => 'packing',
+            ]);
+        }
+
+        // No token — show generic scanner (requires auth)
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        return view('warehouse.mobile-scan', [
+            'packingList' => null,
+            'token' => null,
+            'mode' => 'general',
+        ]);
     }
 
     public function itemDetail(WarehouseItem $item): View
@@ -190,7 +232,16 @@ class WarehouseController extends Controller
             ->limit(50)
             ->get();
 
-        return view('warehouse.item-detail', compact('item', 'stockOnHand', 'transactions', 'seasonYear'));
+        // Fetch OFF product data if item has a barcode
+        $offData = null;
+        if ($item->barcode) {
+            $offData = $this->warehouse->lookupBarcodeExternal($item->barcode);
+            if (is_array($offData) && ($offData['error'] ?? false)) {
+                $offData = null;
+            }
+        }
+
+        return view('warehouse.item-detail', compact('item', 'stockOnHand', 'transactions', 'seasonYear', 'offData'));
     }
 
     public function childGifts(Child $child): View
@@ -202,6 +253,41 @@ class WarehouseController extends Controller
             ->get();
 
         return view('warehouse.child-gifts', compact('child', 'transactions'));
+    }
+
+    public function removeItem(WarehouseItem $item): \Illuminate\Http\RedirectResponse
+    {
+        $packingService = app(\App\Services\PackingService::class);
+        $coordinator = auth()->user();
+
+        $affected = $packingService->autoSubstituteRemovedItem($item, $coordinator);
+        $item->update(['active' => false]);
+
+        $message = "Item '{$item->name}' deactivated.";
+        if ($affected > 0) {
+            $message .= " {$affected} packing item(s) were auto-substituted or marked unfulfilled.";
+        }
+
+        return redirect()->route('warehouse.inventory')
+            ->with('success', $message);
+    }
+
+    public function updateItemLocation(WarehouseItem $item, Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'location_zone' => 'nullable|string|max:10',
+            'location_shelf' => 'nullable|string|max:10',
+            'location_bin' => 'nullable|string|max:20',
+        ]);
+
+        $item->update([
+            'location_zone' => $request->input('location_zone'),
+            'location_shelf' => $request->input('location_shelf'),
+            'location_bin' => $request->input('location_bin'),
+        ]);
+
+        return redirect()->route('warehouse.item.detail', $item)
+            ->with('success', "Location updated to {$item->locationLabel()}.");
     }
 
     public function giftsIntake(): View

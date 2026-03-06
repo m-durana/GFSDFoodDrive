@@ -50,14 +50,46 @@
             {{ $slot }}
         </main>
 
-        <!-- Footer -->
-        <footer class="py-4 text-center text-xs text-gray-400 dark:text-gray-600">
-            <span>GFSD Food Drive &copy; {{ date('Y') }}</span>
-            <span class="mx-1">&middot;</span>
-            <span>Made in 🇨🇭</span>
-        </footer>
+        <x-site-footer />
     </div>
     @include('partials.hints')
     @include('partials.guided-tour')
+
+    <!-- Sortable table Alpine component -->
+    <script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('sortTable', () => ({
+            sortKey: '',
+            sortAsc: true,
+            sort(key) {
+                if (this.sortKey === key) {
+                    this.sortAsc = !this.sortAsc;
+                } else {
+                    this.sortKey = key;
+                    this.sortAsc = true;
+                }
+                const tbody = this.$el.querySelector('tbody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll(':scope > tr'));
+                const idx = Array.from(this.$el.querySelectorAll('th[data-sort-key]'))
+                    .findIndex(th => th.dataset.sortKey === key);
+                if (idx < 0) return;
+                rows.sort((a, b) => {
+                    // Prefer data-col attribute lookup, fall back to positional index
+                    const aCell = Array.from(a.querySelectorAll('td')).find(td => td.dataset.col === key) ?? a.querySelectorAll('td')[idx];
+                    const bCell = Array.from(b.querySelectorAll('td')).find(td => td.dataset.col === key) ?? b.querySelectorAll('td')[idx];
+                    if (!aCell || !bCell) return 0;
+                    let aVal = (aCell.dataset.sortValue ?? aCell.textContent).trim();
+                    let bVal = (bCell.dataset.sortValue ?? bCell.textContent).trim();
+                    const aNum = parseFloat(aVal), bNum = parseFloat(bVal);
+                    if (!isNaN(aNum) && !isNaN(bNum)) return this.sortAsc ? aNum - bNum : bNum - aNum;
+                    return this.sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                });
+                rows.forEach(r => tbody.appendChild(r));
+            }
+        }));
+    });
+    </script>
+    @stack('scripts')
 </body>
 </html>

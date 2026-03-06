@@ -14,6 +14,7 @@ return new class extends Migration
             $table->unsignedInteger('total_families')->default(0);
             $table->unsignedInteger('total_children')->default(0);
             $table->unsignedInteger('total_family_members')->default(0);
+            $table->unsignedInteger('total_adults')->default(0);
             $table->unsignedInteger('gifts_level_0')->default(0);
             $table->unsignedInteger('gifts_level_1')->default(0);
             $table->unsignedInteger('gifts_level_2')->default(0);

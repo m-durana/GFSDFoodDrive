@@ -60,6 +60,21 @@
                 </div>
             </div>
 
+            <!-- Instructions -->
+            @php
+                $deadline = \App\Models\Setting::get('adopt_a_tag_deadline');
+                $contactEmail = \App\Models\Setting::get('primary_contact_email');
+                $contactPhone = \App\Models\Setting::get('primary_phone');
+            @endphp
+            <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4 mb-6">
+                <p class="text-sm text-amber-800 dark:text-amber-200">
+                    Please bring in all gifts <strong>UNWRAPPED</strong> with this tag attached{!! $deadline ? ' by <strong>' . e($deadline) . '</strong>' : '' !!}.
+                    @if($contactEmail)
+                        Questions? Email us at: <a href="mailto:{{ $contactEmail }}" class="underline">{{ $contactEmail }}</a>{{ $contactPhone ? " or contact us at: {$contactPhone}" : '' }}.
+                    @endif
+                </p>
+            </div>
+
             <!-- Deadline & Drop-off -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
                 <h3 class="text-lg font-semibold mb-4">Drop-off Information</h3>
@@ -106,12 +121,7 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                Organized by Granite Falls School District Food Drive
-            </div>
-        </footer>
+        <x-site-footer variant="light" />
     </div>
 </body>
 </html>

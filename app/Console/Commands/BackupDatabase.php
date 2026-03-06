@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Setting;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class BackupDatabase extends Command
     {
         $driver = config('database.default');
         $timestamp = now()->format('Y-m-d_H-i-s');
-        $backupDir = storage_path('backups');
+        $backupDir = Setting::get('backup_path', storage_path('backups'));
 
         if (! is_dir($backupDir)) {
             mkdir($backupDir, 0755, true);

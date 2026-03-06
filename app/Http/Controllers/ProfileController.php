@@ -27,6 +27,12 @@ class ProfileController extends Controller
 
         $action = $data['avatar_action'] ?? null;
 
+        // Admin can restrict avatar changes
+        if ($user->avatar_restricted && $action) {
+            return redirect()->route('profile.edit')
+                ->with('error', 'Your avatar has been locked by an administrator.');
+        }
+
         if ($action === 'upload' && $request->hasFile('avatar')) {
             if ($user->avatar_path) {
                 Storage::disk('public')->delete($user->avatar_path);

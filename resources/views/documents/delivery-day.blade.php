@@ -271,7 +271,7 @@
                 @php
                     $returnRole = \App\Models\Setting::get('delivery_return_to_role', '');
                     if ($returnRole) {
-                        $returnNames = \App\Models\User::where('position', $returnRole)->limit(2)->pluck('name')->implode(' & ');
+                        $returnNames = \App\Models\User::where('position', $returnRole)->limit(2)->get()->map(fn($u) => $u->first_name . ' ' . $u->last_name)->implode(' & ');
                         $returnTo = $returnNames ?: $returnRole;
                     } else {
                         $returnTo = \App\Models\Setting::get('delivery_return_to', 'System Engineers');

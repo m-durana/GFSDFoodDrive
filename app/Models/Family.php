@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 #[ObservedBy(FamilyObserver::class)]
@@ -67,6 +68,8 @@ class Family extends Model
         'latitude',
         'longitude',
         'delivery_status',
+        'dietary_restrictions',
+        'dietary_notes',
         'need_for_help',
         'severe_need',
         'is_severe_need',
@@ -104,7 +107,22 @@ class Family extends Model
             'delivery_status' => DeliveryStatus::class,
             'route_order' => 'integer',
             'is_severe_need' => 'boolean',
+            'dietary_restrictions' => 'array',
         ];
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?self
+    {
+        // Try to resolve by family_number (within current season scope)
+        if (is_numeric($value)) {
+            $family = static::where('family_number', (int) $value)->first();
+            if ($family) {
+                return $family;
+            }
+        }
+
+        // Fallback to default (id)
+        return static::where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 
     public function user(): BelongsTo
@@ -135,6 +153,16 @@ class Family extends Model
     public function deliveryTeam(): BelongsTo
     {
         return $this->belongsTo(DeliveryTeam::class);
+    }
+
+    public function packingList(): HasOne
+    {
+        return $this->hasOne(PackingList::class);
+    }
+
+    public function packingLists(): HasMany
+    {
+        return $this->hasMany(PackingList::class);
     }
 
     // Query Scopes

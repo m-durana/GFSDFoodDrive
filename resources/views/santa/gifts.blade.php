@@ -39,7 +39,7 @@
 
             <!-- Filters -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4">
-                <form method="GET" action="{{ route('santa.gifts') }}" class="flex flex-wrap items-center gap-4">
+                <form method="GET" action="{{ route('santa.gifts') }}" class="flex flex-wrap items-end gap-4">
                     <div>
                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Gift Level</label>
                         <select name="level" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
@@ -84,20 +84,20 @@
                     </h3>
 
                     @if($children->count() > 0)
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" x-data="sortTable()">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Family #</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Family Name</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gender</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Age</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">School</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gift Level</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gifts Received</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Adopter</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tag</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Where</th>
+                                        <x-sort-th key="family_number" class="!px-3 !py-2">Family #</x-sort-th>
+                                        <x-sort-th key="family_name" class="!px-3 !py-2">Family Name</x-sort-th>
+                                        <x-sort-th key="gender" class="!px-3 !py-2">Gender</x-sort-th>
+                                        <x-sort-th key="age" class="!px-3 !py-2">Age</x-sort-th>
+                                        <x-sort-th key="school" class="!px-3 !py-2">School</x-sort-th>
+                                        <x-sort-th key="gift_level" class="!px-3 !py-2">Gift Level</x-sort-th>
+                                        <x-sort-th key="gifts_received" class="!px-3 !py-2">Gifts Received</x-sort-th>
+                                        <x-sort-th key="adopter" class="!px-3 !py-2">Adopter</x-sort-th>
+                                        <x-sort-th key="tag" class="!px-3 !py-2">Tag</x-sort-th>
+                                        <x-sort-th key="where" class="!px-3 !py-2">Where</x-sort-th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">

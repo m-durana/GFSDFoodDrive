@@ -303,7 +303,7 @@ class WarehouseService
     {
         $seasonYear = $seasonYear ?? (int) Setting::get('season_year', date('Y'));
         $stock = $this->currentStock($seasonYear);
-        $categories = WarehouseCategory::active()->orderBy('sort_order')->get();
+        $categories = WarehouseCategory::active()->with(['items.latestTransaction'])->orderBy('sort_order')->get();
 
         // Calculate needs from families
         $totalBoxes = Family::sum('number_of_boxes') ?: 0;

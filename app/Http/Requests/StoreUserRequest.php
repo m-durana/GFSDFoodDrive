@@ -19,7 +19,7 @@ class StoreUserRequest extends FormRequest
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['required', Password::min(8)],
-            'role' => ['required', 'string', 'in:family,coordinator,santa'],
+            'role' => ['required', 'string', 'in:family,advisor,coordinator,santa'],
             'school_source' => ['nullable', 'string', 'max:255'],
         ];
     }

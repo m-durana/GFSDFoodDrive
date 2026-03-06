@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DeliveryStatus;
+use App\Enums\PackingStatus;
 use App\Models\Child;
 use App\Models\DeliveryLog;
 use App\Models\DeliveryRoute;
 use App\Models\Family;
+use App\Models\PackingList;
 use App\Models\ShoppingAssignment;
 use App\Models\ShoppingCheck;
+use App\Models\WarehouseCategory;
+use App\Models\WarehouseItem;
+use App\Models\WarehouseTransaction;
 use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -39,6 +44,7 @@ class CommandCenterController extends Controller
             'shopping' => $this->shoppingStats(),
             'delivery' => $this->deliveryStats(),
             'gifts' => $this->giftStats(),
+            'stock' => $this->stockStats(),
             'recent_activity' => $this->recentActivity(),
             'delivery_map' => $this->deliveryMapData(),
             'timestamp' => now()->format('g:i:s A'),
@@ -122,6 +128,7 @@ class CommandCenterController extends Controller
             'completed' => $r->completed_count,
             'pct' => $r->families_count > 0 ? round(($r->completed_count / $r->families_count) * 100) : 0,
             'color' => $palette[$r->id % count($palette)],
+            'access_token' => $r->access_token ?? null,
             'heading_to' => $r->families->first()
                 ? "#{$r->families->first()->family_number} {$r->families->first()->family_name}"
                 : null,
@@ -276,6 +283,60 @@ class CommandCenterController extends Controller
             'routes' => $routesData,
             'families' => $families,
             'drivers' => $drivers,
+        ];
+    }
+
+    private function stockStats(): array
+    {
+        // Warehouse inventory by category
+        $categories = WarehouseCategory::active()
+            ->withCount(['items as total_items' => fn($q) => $q->where('active', true)])
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn($cat) => [
+                'name' => $cat->name,
+                'type' => $cat->type,
+                'count' => $cat->total_items,
+            ]);
+
+        $totalOnHand = WarehouseItem::where('active', true)->count();
+
+        // Receipts today
+        $receiptsToday = WarehouseTransaction::where('type', 'receipt')
+            ->whereDate('created_at', today())
+            ->count();
+
+        // Packing stats
+        $packingPending = PackingList::where('status', PackingStatus::Pending)->count();
+        $packingInProgress = PackingList::where('status', PackingStatus::InProgress)->count();
+        $packingComplete = PackingList::where('status', PackingStatus::Complete)->count();
+        $packingVerified = PackingList::where('status', PackingStatus::Verified)->count();
+        $packingTotal = $packingPending + $packingInProgress + $packingComplete + $packingVerified;
+        $packingPct = $packingTotal > 0 ? round((($packingComplete + $packingVerified) / $packingTotal) * 100) : 0;
+
+        // Gift intake
+        $giftsReceived = Child::whereHas('family', fn($q) => $q->whereNotNull('family_number'))
+            ->where('gift_dropped_off', true)->count();
+        $totalChildren = Child::whereHas('family', fn($q) => $q->whereNotNull('family_number'))->count();
+
+        return [
+            'warehouse' => [
+                'categories' => $categories,
+                'total_on_hand' => $totalOnHand,
+                'receipts_today' => $receiptsToday,
+            ],
+            'packing' => [
+                'pending' => $packingPending,
+                'in_progress' => $packingInProgress,
+                'complete' => $packingComplete,
+                'verified' => $packingVerified,
+                'total' => $packingTotal,
+                'pct' => $packingPct,
+            ],
+            'gifts' => [
+                'received' => $giftsReceived,
+                'total_children' => $totalChildren,
+            ],
         ];
     }
 }

@@ -7,7 +7,7 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{ activeTab: 'all', expanded: {} }">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="Object.assign(sortTable(), { activeTab: 'all', expanded: {} })">
 
             <!-- Inventory Table -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
@@ -24,11 +24,11 @@
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b border-gray-200 dark:border-gray-700">
-                                <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Category</th>
-                                <th class="text-center py-3 px-4 text-gray-500 dark:text-gray-400">Unit</th>
-                                <th class="text-right py-3 px-4 text-gray-500 dark:text-gray-400">On Hand</th>
-                                <th class="text-right py-3 px-4 text-gray-500 dark:text-gray-400">Needed</th>
-                                <th class="text-right py-3 px-4 text-gray-500 dark:text-gray-400">Deficit/Surplus</th>
+                                <x-sort-th key="category" class="text-left">Category</x-sort-th>
+                                <x-sort-th key="unit" class="text-center">Unit</x-sort-th>
+                                <x-sort-th key="on_hand" class="text-right">On Hand</x-sort-th>
+                                <x-sort-th key="needed" class="text-right">Needed</x-sort-th>
+                                <x-sort-th key="deficit" class="text-right">Deficit/Surplus</x-sort-th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,17 +36,17 @@
                                 <tr class="border-b border-gray-100 dark:border-gray-700/50 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
                                     x-show="activeTab === 'all' || activeTab === '{{ $row['category']->type }}'"
                                     @click="expanded[{{ $i }}] = !expanded[{{ $i }}]">
-                                    <td class="py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">
+                                    <td data-col="category" class="py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">
                                         <span class="inline-block w-2 h-2 rounded-full mr-2 {{ $row['category']->type === 'food' ? 'bg-amber-400' : ($row['category']->type === 'gift' ? 'bg-purple-400' : ($row['category']->type === 'baby' ? 'bg-pink-400' : 'bg-blue-400')) }}"></span>
                                         {{ $row['category']->name }}
                                         @if($row['category']->items->count())
                                             <svg class="inline h-4 w-4 text-gray-400 ml-1 transition-transform" :class="expanded[{{ $i }}] && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                                         @endif
                                     </td>
-                                    <td class="text-center py-3 px-4 text-gray-500 dark:text-gray-400">{{ $row['category']->unit }}</td>
-                                    <td class="text-right py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">{{ $row['on_hand'] }}</td>
-                                    <td class="text-right py-3 px-4 text-gray-600 dark:text-gray-400">{{ $row['needed'] }}</td>
-                                    <td class="text-right py-3 px-4 font-medium {{ $row['deficit'] > 0 ? 'text-red-600 dark:text-red-400' : ($row['deficit'] < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400') }}">
+                                    <td data-col="unit" class="text-center py-3 px-4 text-gray-500 dark:text-gray-400">{{ $row['category']->unit }}</td>
+                                    <td data-col="on_hand" data-sort-value="{{ $row['on_hand'] }}" class="text-right py-3 px-4 text-gray-900 dark:text-gray-100 font-medium">{{ $row['on_hand'] }}</td>
+                                    <td data-col="needed" data-sort-value="{{ $row['needed'] }}" class="text-right py-3 px-4 text-gray-600 dark:text-gray-400">{{ $row['needed'] }}</td>
+                                    <td data-col="deficit" data-sort-value="{{ $row['deficit'] }}" class="text-right py-3 px-4 font-medium {{ $row['deficit'] > 0 ? 'text-red-600 dark:text-red-400' : ($row['deficit'] < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400') }}">
                                         @if($row['deficit'] > 0)
                                             -{{ $row['deficit'] }}
                                         @elseif($row['deficit'] < 0)
@@ -60,13 +60,17 @@
                                     <tr x-show="(activeTab === 'all' || activeTab === '{{ $row['category']->type }}') && expanded[{{ $i }}]" x-cloak
                                         class="bg-gray-50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-600/30 cursor-pointer"
                                         onclick="window.location='{{ route('warehouse.item.detail', $item) }}'">
-                                        <td class="py-2 px-4 pl-10 text-gray-600 dark:text-gray-400 text-xs">
-                                            {{ $item->name }}
-                                            @if($item->barcode) <span class="text-gray-400 dark:text-gray-500 ml-1">[{{ $item->barcode }}]</span> @endif
+                                        <td class="py-2 px-4 pl-10 text-gray-600 dark:text-gray-400 text-xs" colspan="2">
+                                            <span class="font-medium text-gray-800 dark:text-gray-200">{{ $item->name }}</span>
+                                            @if($item->barcode) <span class="text-gray-400 dark:text-gray-500 ml-1 font-mono">[{{ $item->barcode }}]</span> @endif
+                                            @if($item->brand ?? null) <span class="text-gray-400 dark:text-gray-500 ml-1">&middot; {{ $item->brand }}</span> @endif
                                         </td>
-                                        <td class="text-center py-2 px-4 text-xs text-gray-500 dark:text-gray-400">{{ $item->stock_quantity ?? 0 }}</td>
-                                        <td class="text-right py-2 px-4 text-xs text-gray-500 dark:text-gray-400">{{ $item->brand ?? '' }}</td>
-                                        <td class="text-right py-2 px-4 text-xs text-gray-500 dark:text-gray-400">{{ $item->source ?? '' }}</td>
+                                        <td class="text-right py-2 px-4 text-xs font-medium text-gray-700 dark:text-gray-300">{{ $item->stock_quantity ?? 0 }}</td>
+                                        <td class="text-right py-2 px-4 text-xs text-gray-400 dark:text-gray-500">
+                                            @if($item->latestTransaction)
+                                                {{ $item->latestTransaction->created_at->diffForHumans() }}
+                                            @endif
+                                        </td>
                                         <td class="text-right py-2 px-4 text-xs">
                                             <span class="text-blue-500 dark:text-blue-400">Detail &rarr;</span>
                                         </td>

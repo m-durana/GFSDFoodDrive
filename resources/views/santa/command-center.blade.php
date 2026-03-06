@@ -28,6 +28,7 @@
             <span class="inline-flex items-center gap-1.5 text-xs ml-2">
                 <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>
                 <span class="font-semibold text-red-500 uppercase tracking-wider">Live</span>
+                <span id="live-age" class="text-gray-500 ml-0.5">just now</span>
             </span>
         </div>
         <div class="flex items-center space-x-4">
@@ -38,10 +39,9 @@
                 <button onclick="setMode('overview')" id="btn-overview"
                     class="px-3 py-1.5 rounded-md font-medium transition">Overview</button>
                 <button onclick="setMode('shopping')" id="btn-shopping"
-                    class="px-3 py-1.5 rounded-md font-medium transition">Shopping</button>
+                    class="px-3 py-1.5 rounded-md font-medium transition">Stock</button>
             </div>
             <span id="clock" class="text-sm text-gray-400 font-mono"></span>
-            <span id="last-update" class="text-xs text-gray-600"></span>
             <a href="{{ route('santa.index') }}" class="text-xs text-gray-500 hover:text-gray-300">Exit</a>
         </div>
     </div>
@@ -82,42 +82,94 @@
             </div>
         </div>
 
-        <!-- SHOPPING MODE -->
-        <div id="mode-shopping" class="hidden h-full grid grid-cols-4 grid-rows-3 gap-4">
-            <!-- Overall progress -->
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-1 row-span-1">
+        <!-- STOCK MODE -->
+        <div id="mode-shopping" class="hidden h-full grid grid-cols-6 grid-rows-3 gap-3">
+            <!-- Row 1: Key stats -->
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
                 <div class="relative">
-                    <svg class="w-28 h-28 transform -rotate-90">
-                        <circle cx="56" cy="56" r="48" stroke="#374151" stroke-width="8" fill="none"/>
-                        <circle id="shopping-ring" cx="56" cy="56" r="48" stroke="#22c55e" stroke-width="8" fill="none"
-                            stroke-dasharray="301.59" stroke-dashoffset="301.59" class="progress-ring" stroke-linecap="round"/>
+                    <svg class="w-20 h-20 transform -rotate-90">
+                        <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
+                        <circle id="shopping-ring" cx="40" cy="40" r="34" stroke="#22c55e" stroke-width="6" fill="none"
+                            stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <span id="shopping-pct" class="text-2xl font-bold">0%</span>
+                        <span id="shopping-pct" class="text-lg font-bold">0%</span>
                     </div>
                 </div>
-                <div class="text-sm text-gray-400 mt-2">Shopping Complete</div>
+                <div class="text-xs text-gray-400 mt-1">Shopping</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-green-400" id="shopping-checked">0</div>
+                <div class="text-xs text-gray-400 mt-1">Checked</div>
+                <div class="text-xs text-gray-600"><span id="shopping-remaining">0</span> left</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-amber-400" id="stock-on-hand">0</div>
+                <div class="text-xs text-gray-400 mt-1">Items On Hand</div>
+                <div class="text-xs text-gray-600"><span id="stock-today">0</span> today</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="relative">
+                    <svg class="w-20 h-20 transform -rotate-90">
+                        <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
+                        <circle id="packing-ring" cx="40" cy="40" r="34" stroke="#3b82f6" stroke-width="6" fill="none"
+                            stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="packing-pct" class="text-lg font-bold">0%</span>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-400 mt-1">Packing</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-purple-400" id="gifts-received">0</div>
+                <div class="text-xs text-gray-400 mt-1">Gifts In</div>
+                <div class="text-xs text-gray-600">of <span id="gifts-total-children">0</span></div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-2xl font-bold text-gray-300" id="shopping-total">0</div>
+                <div class="text-xs text-gray-400 mt-1">Shopping Items</div>
             </div>
 
-            <!-- Item counts -->
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-3xl font-bold text-green-400" id="shopping-checked">0</div>
-                <div class="text-sm text-gray-400 mt-1">Items Checked</div>
+            <!-- Row 2: Warehouse categories + Packing breakdown -->
+            <div class="bg-gray-800 rounded-lg p-3 col-span-3 overflow-y-auto">
+                <h3 class="text-xs font-medium text-gray-400 mb-2">Warehouse Inventory</h3>
+                <div id="stock-categories" class="space-y-2">
+                    <div class="text-gray-500 text-xs">Loading...</div>
+                </div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-3xl font-bold text-gray-300" id="shopping-total">0</div>
-                <div class="text-sm text-gray-400 mt-1">Total Items</div>
-            </div>
-            <div class="bg-gray-800 rounded-lg p-5 flex flex-col justify-center items-center">
-                <div class="text-3xl font-bold text-yellow-400" id="shopping-remaining">0</div>
-                <div class="text-sm text-gray-400 mt-1">Remaining</div>
+            <div class="bg-gray-800 rounded-lg p-3 col-span-3 overflow-y-auto">
+                <h3 class="text-xs font-medium text-gray-400 mb-2">Packing Status</h3>
+                <div class="grid grid-cols-4 gap-2 mb-3" id="packing-status-cards">
+                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="text-lg font-bold text-gray-400" id="pack-pending">0</div>
+                        <div class="text-[10px] text-gray-500">Pending</div>
+                    </div>
+                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="text-lg font-bold text-yellow-400" id="pack-progress">0</div>
+                        <div class="text-[10px] text-gray-500">In Progress</div>
+                    </div>
+                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="text-lg font-bold text-blue-400" id="pack-complete">0</div>
+                        <div class="text-[10px] text-gray-500">Complete</div>
+                    </div>
+                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="text-lg font-bold text-green-400" id="pack-verified">0</div>
+                        <div class="text-[10px] text-gray-500">Verified</div>
+                    </div>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-3 overflow-hidden flex" id="packing-bar">
+                    <div class="bg-green-500 h-3 transition-all" id="pbar-verified" style="width:0"></div>
+                    <div class="bg-blue-500 h-3 transition-all" id="pbar-complete" style="width:0"></div>
+                    <div class="bg-yellow-500 h-3 transition-all" id="pbar-progress" style="width:0"></div>
+                </div>
             </div>
 
-            <!-- NINJA progress bars -->
-            <div class="bg-gray-800 rounded-lg p-4 col-span-4 row-span-2 overflow-y-auto">
-                <h3 class="text-sm font-medium text-gray-400 mb-3">NINJA Progress</h3>
-                <div id="ninja-bars" class="space-y-3">
-                    <div class="text-gray-500 text-sm">Loading...</div>
+            <!-- Row 3: NINJA progress bars -->
+            <div class="bg-gray-800 rounded-lg p-3 col-span-6 overflow-y-auto">
+                <h3 class="text-xs font-medium text-gray-400 mb-2">NINJA Shopping Progress</h3>
+                <div id="ninja-bars" class="space-y-2">
+                    <div class="text-gray-500 text-xs">Loading...</div>
                 </div>
             </div>
         </div>
@@ -205,6 +257,19 @@
         let giftChart = null;
         let deliveryChart = null;
         let routeSort = localStorage.getItem('cc_route_sort') || 'name';
+        let lastFetchTime = Date.now();
+
+        // Relative time updater for LIVE indicator
+        function updateLiveAge() {
+            const secs = Math.round((Date.now() - lastFetchTime) / 1000);
+            let label;
+            if (secs < 5) label = 'just now';
+            else if (secs < 60) label = secs + 's ago';
+            else { const mins = Math.floor(secs / 60); label = mins + 'm ago'; }
+            const el = document.getElementById('live-age');
+            if (el) el.textContent = label;
+        }
+        setInterval(updateLiveAge, 5000);
 
         function setRouteSort(sort) {
             routeSort = sort;
@@ -346,6 +411,36 @@
             }).then(r => { if (r.ok) refresh(); });
         }
 
+        function copyRouteLink(token) {
+            if (!token) return;
+            const url = window.location.origin + '/delivery/route/' + token;
+            navigator.clipboard.writeText(url).then(() => {
+                // Brief visual feedback could be added here
+            });
+        }
+
+        function recalcRoute(routeId, btn) {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const svg = btn.querySelector('svg');
+            if (svg) svg.classList.add('animate-spin');
+            fetch(`/santa/delivery-routes/${routeId}/recalculate`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(r => {
+                if (svg) svg.classList.remove('animate-spin');
+                if (r.ok) refresh();
+            }).catch(() => { if (svg) svg.classList.remove('animate-spin'); });
+        }
+
+        function deleteRoute(routeId) {
+            if (!confirm('Delete this route? Families will be unassigned.')) return;
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            fetch(`/santa/delivery-routes/${routeId}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            }).then(r => { if (r.ok) refresh(); });
+        }
+
         // Progress ring helper
         function setRing(id, pct) {
             const ring = document.getElementById(id);
@@ -376,7 +471,8 @@
                 const res = await fetch(DATA_URL);
                 const data = await res.json();
 
-                document.getElementById('last-update').textContent = 'Updated ' + data.timestamp;
+                lastFetchTime = Date.now();
+                updateLiveAge();
 
                 // Overview
                 document.getElementById('stat-families').textContent = data.overview.total_families;
@@ -392,7 +488,7 @@
                 // Delivery chart
                 updateDeliveryDoughnut(data.delivery);
 
-                // Shopping mode
+                // Stock mode — Shopping
                 document.getElementById('shopping-pct').textContent = data.shopping.pct + '%';
                 setRing('shopping-ring', data.shopping.pct);
                 document.getElementById('shopping-checked').textContent = data.shopping.checked_items;
@@ -403,7 +499,45 @@
                 data.shopping.ninjas.forEach(n => {
                     ninjaBars += progressBar(n.name + ' — ' + n.description, n.pct, n.checked_items, n.total_items, 'green');
                 });
-                document.getElementById('ninja-bars').innerHTML = ninjaBars || '<div class="text-gray-500 text-sm">No NINJA assignments yet.</div>';
+                document.getElementById('ninja-bars').innerHTML = ninjaBars || '<div class="text-gray-500 text-xs">No NINJA assignments yet.</div>';
+
+                // Stock mode — Warehouse & Packing
+                if (data.stock) {
+                    const s = data.stock;
+                    document.getElementById('stock-on-hand').textContent = s.warehouse.total_on_hand;
+                    document.getElementById('stock-today').textContent = s.warehouse.receipts_today;
+                    document.getElementById('packing-pct').textContent = s.packing.pct + '%';
+                    setRing('packing-ring', s.packing.pct);
+                    document.getElementById('gifts-received').textContent = s.gifts.received;
+                    document.getElementById('gifts-total-children').textContent = s.gifts.total_children;
+
+                    // Packing status cards
+                    document.getElementById('pack-pending').textContent = s.packing.pending;
+                    document.getElementById('pack-progress').textContent = s.packing.in_progress;
+                    document.getElementById('pack-complete').textContent = s.packing.complete;
+                    document.getElementById('pack-verified').textContent = s.packing.verified;
+
+                    // Packing stacked bar
+                    const pt = s.packing.total || 1;
+                    document.getElementById('pbar-verified').style.width = (s.packing.verified / pt * 100) + '%';
+                    document.getElementById('pbar-complete').style.width = (s.packing.complete / pt * 100) + '%';
+                    document.getElementById('pbar-progress').style.width = (s.packing.in_progress / pt * 100) + '%';
+
+                    // Warehouse categories
+                    const typeColors = {food: '#f59e0b', gift: '#a855f7', baby: '#ec4899', supply: '#3b82f6'};
+                    let catHtml = '';
+                    s.warehouse.categories.forEach(c => {
+                        const color = typeColors[c.type] || '#6b7280';
+                        catHtml += `<div class="flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full" style="background:${color}"></span>
+                                <span class="text-gray-300">${c.name}</span>
+                            </div>
+                            <span class="text-gray-500 font-mono">${c.count}</span>
+                        </div>`;
+                    });
+                    document.getElementById('stock-categories').innerHTML = catHtml || '<div class="text-gray-500 text-xs">No categories.</div>';
+                }
 
                 // Delivery mode
                 document.getElementById('delivery-pct').textContent = data.delivery.pct + '%';
@@ -442,9 +576,23 @@
                                 <div class="h-2 rounded-full transition-all" style="width:${r.pct}%;background:${r.color || '#3b82f6'}"></div>
                             </div>
                             ${headingHtml}
-                            <div class="flex items-center gap-2 mt-2">
-                                <button onclick="markRouteReturning(${r.id})"
-                                    class="text-xs text-indigo-400 hover:text-indigo-300 transition">Mark Returning</button>
+                            <div class="flex items-center gap-1.5 mt-2">
+                                <button onclick="copyRouteLink('${r.access_token || ''}')" title="Copy driver link"
+                                    class="p-1 text-gray-500 hover:text-gray-300 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+                                </button>
+                                <button onclick="markRouteReturning(${r.id})" title="Mark returning"
+                                    class="p-1 text-indigo-400 hover:text-indigo-300 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/></svg>
+                                </button>
+                                <button onclick="recalcRoute(${r.id}, this)" title="Recalculate route"
+                                    class="p-1 text-yellow-500 hover:text-yellow-300 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                </button>
+                                <button onclick="deleteRoute(${r.id})" title="Delete route"
+                                    class="p-1 text-red-500 hover:text-red-400 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
                             </div>
                         </div>
                     `;

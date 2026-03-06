@@ -3,12 +3,18 @@
 namespace Database\Seeders;
 
 use App\Enums\DeliveryStatus;
+use App\Enums\TransactionType;
 use App\Models\Child;
 use App\Models\DeliveryRoute;
 use App\Models\DeliveryTeam;
 use App\Models\Family;
+use App\Models\GroceryItem;
 use App\Models\Setting;
+use App\Models\ShoppingAssignment;
 use App\Models\User;
+use App\Models\WarehouseCategory;
+use App\Models\WarehouseItem;
+use App\Models\WarehouseTransaction;
 use App\Services\RoutePlanningService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -360,6 +366,7 @@ class TestDataSeeder extends Seeder
         $this->createDeliveryTeams();
         $this->createFamiliesWithChildren();
         $this->createSampleRoutes();
+        $this->seedWarehouseData();
     }
 
     private function createDeliveryTeams(): void
@@ -385,6 +392,7 @@ class TestDataSeeder extends Seeder
             [
                 'first_name' => 'Nick', 'last_name' => 'Claus',
                 'email' => 'santa@gfsd.test', 'password' => 'password', 'permission' => 9,
+                'position' => 'System Engineer', 'show_on_website' => true,
             ]
         );
 
@@ -393,6 +401,7 @@ class TestDataSeeder extends Seeder
             [
                 'first_name' => 'Mary', 'last_name' => 'Helper',
                 'email' => 'advisor@gfsd.test', 'password' => 'password', 'permission' => 7,
+                'school_source' => 'Mountain Way',
             ]
         );
 
@@ -401,6 +410,7 @@ class TestDataSeeder extends Seeder
             [
                 'first_name' => 'Pat', 'last_name' => 'Coordinator',
                 'email' => 'coordinator@gfsd.test', 'password' => 'password', 'permission' => 8,
+                'position' => 'Activities Coordinator', 'school_source' => 'GFHS', 'show_on_website' => true,
             ]
         );
 
@@ -437,21 +447,22 @@ class TestDataSeeder extends Seeder
 
         // Additional users
         $extraUsers = [
-            ['username' => 'santa_backup', 'first_name' => 'Holly', 'last_name' => 'Jolly', 'email' => 'santa2@gfsd.test', 'permission' => 9, 'role' => 'santa'],
-            ['username' => 'coord_02', 'first_name' => 'Jordan', 'last_name' => 'Bell', 'email' => 'coord2@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
-            ['username' => 'coord_03', 'first_name' => 'Casey', 'last_name' => 'Park', 'email' => 'coord3@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
-            ['username' => 'advisor_02', 'first_name' => 'Lisa', 'last_name' => 'Nguyen', 'email' => 'advisor2@gfsd.test', 'permission' => 7, 'role' => 'family'],
-            ['username' => 'advisor_03', 'first_name' => 'Tom', 'last_name' => 'Garcia', 'email' => 'advisor3@gfsd.test', 'permission' => 7, 'role' => 'family'],
-            ['username' => 'warehouse_01', 'first_name' => 'Sam', 'last_name' => 'Warehouse', 'email' => 'warehouse@gfsd.test', 'permission' => 8, 'role' => 'coordinator'],
+            ['username' => 'santa_backup', 'first_name' => 'Holly', 'last_name' => 'Jolly', 'email' => 'santa2@gfsd.test', 'permission' => 9, 'role' => 'santa', 'position' => 'Business Operator'],
+            ['username' => 'coord_02', 'first_name' => 'Jordan', 'last_name' => 'Bell', 'email' => 'coord2@gfsd.test', 'permission' => 8, 'role' => 'coordinator', 'position' => 'Giving Tree Coordinator', 'school_source' => 'GFMS'],
+            ['username' => 'coord_03', 'first_name' => 'Casey', 'last_name' => 'Park', 'email' => 'coord3@gfsd.test', 'permission' => 8, 'role' => 'coordinator', 'position' => 'Food Manager', 'school_source' => 'Monte Cristo'],
+            ['username' => 'advisor_02', 'first_name' => 'Lisa', 'last_name' => 'Nguyen', 'email' => 'advisor2@gfsd.test', 'permission' => 7, 'role' => 'family', 'school_source' => 'Crossroads'],
+            ['username' => 'advisor_03', 'first_name' => 'Tom', 'last_name' => 'Garcia', 'email' => 'advisor3@gfsd.test', 'permission' => 7, 'role' => 'family', 'school_source' => 'GFHS'],
+            ['username' => 'warehouse_01', 'first_name' => 'Sam', 'last_name' => 'Warehouse', 'email' => 'warehouse@gfsd.test', 'permission' => 8, 'role' => 'coordinator', 'position' => 'NINJA'],
         ];
 
         foreach ($extraUsers as $eu) {
             $user = User::firstOrCreate(
                 ['username' => $eu['username']],
-                [
+                array_filter([
                     'first_name' => $eu['first_name'], 'last_name' => $eu['last_name'],
                     'email' => $eu['email'], 'password' => 'password', 'permission' => $eu['permission'],
-                ]
+                    'position' => $eu['position'] ?? null, 'school_source' => $eu['school_source'] ?? null,
+                ], fn($v) => $v !== null)
             );
             if (class_exists(\Spatie\Permission\Models\Role::class) && method_exists($user, 'syncRoles')) {
                 $user->syncRoles([$eu['role']]);
@@ -725,5 +736,239 @@ class TestDataSeeder extends Seeder
         }
 
         $this->command->info('Created ' . $chunks->count() . ' delivery routes from ' . $eligible->count() . ' eligible families.');
+    }
+
+    // ---------------------------------------------------------------------------
+    // Warehouse data: items, stock, transactions, shopping assignments
+    // ---------------------------------------------------------------------------
+
+    private function seedWarehouseData(): void
+    {
+        // Ensure warehouse categories exist
+        $this->call(WarehouseCategorySeeder::class);
+
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
+        $santaUser = User::where('username', 'santa_admin')->first();
+
+        // Define warehouse items per category (keyed by category name from WarehouseCategorySeeder)
+        $itemsPerCategory = [
+            'Canned Goods' => [
+                ['name' => 'Canned Corn (15oz)', 'barcode' => 'CAN-001'],
+                ['name' => 'Canned Green Beans (14.5oz)', 'barcode' => 'CAN-002'],
+                ['name' => 'Canned Tomato Sauce (8oz)', 'barcode' => 'CAN-003'],
+                ['name' => 'Canned Chicken (12.5oz)', 'barcode' => 'CAN-004'],
+                ['name' => 'Canned Pears (15oz)', 'barcode' => 'CAN-005'],
+            ],
+            'Pasta/Rice/Grains' => [
+                ['name' => 'Spaghetti (16oz)', 'barcode' => 'PAS-001'],
+                ['name' => 'Macaroni (16oz)', 'barcode' => 'PAS-002'],
+                ['name' => 'White Rice (2lb)', 'barcode' => 'PAS-003'],
+                ['name' => 'Instant Oatmeal (10pk)', 'barcode' => 'PAS-004'],
+            ],
+            'Breakfast Items' => [
+                ['name' => 'Cheerios (12oz)', 'barcode' => 'BRK-001'],
+                ['name' => 'Frosted Flakes (13.5oz)', 'barcode' => 'BRK-002'],
+                ['name' => 'Pancake Mix (32oz)', 'barcode' => 'BRK-003'],
+                ['name' => 'Maple Syrup (12oz)', 'barcode' => 'BRK-004'],
+            ],
+            'Hygiene Bundle' => [
+                ['name' => 'Toothbrush 2-Pack', 'barcode' => 'HYG-001'],
+                ['name' => 'Toothpaste (6oz)', 'barcode' => 'HYG-002'],
+                ['name' => 'Bar Soap (3-Pack)', 'barcode' => 'HYG-003'],
+                ['name' => 'Shampoo (12oz)', 'barcode' => 'HYG-004'],
+                ['name' => 'Deodorant', 'barcode' => 'HYG-005'],
+            ],
+            'Dairy/Refrigerated' => [
+                ['name' => 'Whole Milk (1 gal)', 'barcode' => 'DAI-001'],
+                ['name' => 'Butter (1lb)', 'barcode' => 'DAI-002'],
+                ['name' => 'Cheddar Cheese Block (8oz)', 'barcode' => 'DAI-003'],
+            ],
+            'Diapers' => [
+                ['name' => 'Diapers Size 3 (27ct)', 'barcode' => 'DIAP-001'],
+                ['name' => 'Diapers Size 4 (22ct)', 'barcode' => 'DIAP-002'],
+                ['name' => 'Diapers Size 5 (19ct)', 'barcode' => 'DIAP-003'],
+            ],
+            'Formula' => [
+                ['name' => 'Infant Formula (12.5oz)', 'barcode' => 'FORM-001'],
+                ['name' => 'Toddler Formula (20oz)', 'barcode' => 'FORM-002'],
+            ],
+            'General Gifts' => [
+                ['name' => 'Coloring Book & Crayon Set', 'barcode' => 'GEN-001'],
+                ['name' => 'Board Game - Family', 'barcode' => 'GEN-002'],
+                ['name' => 'Stuffed Animal (Plush Bear)', 'barcode' => 'GEN-003'],
+                ['name' => 'LEGO Classic Set', 'barcode' => 'GEN-004'],
+                ['name' => 'Kids Book Bundle (3pk)', 'barcode' => 'GEN-005'],
+            ],
+            'Condiments/Sauces' => [
+                ['name' => 'Ketchup (20oz)', 'barcode' => 'COND-001'],
+                ['name' => 'Peanut Butter (16oz)', 'barcode' => 'COND-002'],
+                ['name' => 'Grape Jelly (18oz)', 'barcode' => 'COND-003'],
+            ],
+            'Snacks' => [
+                ['name' => 'Goldfish Crackers (6.6oz)', 'barcode' => 'SNK-001'],
+                ['name' => 'Granola Bars (6ct)', 'barcode' => 'SNK-002'],
+                ['name' => 'Fruit Snacks (10ct)', 'barcode' => 'SNK-003'],
+                ['name' => 'Pretzels (16oz)', 'barcode' => 'SNK-004'],
+            ],
+            'Personal Care' => [
+                ['name' => 'Tissues (160ct)', 'barcode' => 'CARE-001'],
+                ['name' => 'Hand Soap (7.5oz)', 'barcode' => 'CARE-002'],
+                ['name' => 'Band-Aids (20ct)', 'barcode' => 'CARE-003'],
+            ],
+        ];
+
+        $zones = ['A', 'B', 'C', 'D'];
+        $shelves = ['1', '2', '3'];
+        $bins = ['L', 'M', 'R'];
+
+        $createdItems = [];
+        $itemCounter = 0;
+
+        foreach ($itemsPerCategory as $categoryName => $items) {
+            $category = WarehouseCategory::where('name', $categoryName)->first();
+            if (!$category) {
+                continue;
+            }
+
+            foreach ($items as $itemDef) {
+                $warehouseItem = WarehouseItem::firstOrCreate(
+                    ['barcode' => $itemDef['barcode']],
+                    [
+                        'category_id' => $category->id,
+                        'name' => $itemDef['name'],
+                        'barcode' => $itemDef['barcode'],
+                        'is_generic' => false,
+                        'active' => true,
+                        'location_zone' => $zones[$itemCounter % count($zones)],
+                        'location_shelf' => $shelves[$itemCounter % count($shelves)],
+                        'location_bin' => $bins[$itemCounter % count($bins)],
+                    ]
+                );
+
+                $createdItems[] = ['item' => $warehouseItem, 'category' => $category];
+                $itemCounter++;
+            }
+        }
+
+        $this->command->info("Created {$itemCounter} warehouse items across " . count($itemsPerCategory) . " categories.");
+
+        // Create warehouse transactions (receipts and some distributions)
+        $txnCount = 0;
+        $sources = ['Costco Donation', 'Community Drive', 'Walmart Partnership', 'Individual Donor', 'Fred Meyer'];
+        $donorNames = ['Boeing Employees', 'Granite Falls Rotary', 'Mountain View PTA', 'Local Business Alliance', null];
+
+        foreach ($createdItems as $idx => $entry) {
+            $item = $entry['item'];
+            $category = $entry['category'];
+
+            // Receipt transaction: 10-50 items
+            $receiptQty = 10 + ($idx * 7) % 41;
+            WarehouseTransaction::create([
+                'season_year' => $seasonYear,
+                'item_id' => $item->id,
+                'category_id' => $category->id,
+                'transaction_type' => TransactionType::In,
+                'quantity' => $receiptQty,
+                'source' => $sources[$idx % count($sources)],
+                'donor_name' => $donorNames[$idx % count($donorNames)],
+                'notes' => 'Initial stock receipt',
+                'scanned_by' => $santaUser?->id,
+                'scanned_at' => now()->subDays(rand(1, 14)),
+            ]);
+            $txnCount++;
+
+            // Some items get a second receipt
+            if ($idx % 3 === 0) {
+                $addlQty = 5 + ($idx * 3) % 20;
+                WarehouseTransaction::create([
+                    'season_year' => $seasonYear,
+                    'item_id' => $item->id,
+                    'category_id' => $category->id,
+                    'transaction_type' => TransactionType::In,
+                    'quantity' => $addlQty,
+                    'source' => 'Additional Donation',
+                    'notes' => 'Second batch received',
+                    'scanned_by' => $santaUser?->id,
+                    'scanned_at' => now()->subDays(rand(1, 7)),
+                ]);
+                $txnCount++;
+            }
+
+            // Distribution transactions for ~40% of items
+            if ($idx % 5 < 2) {
+                $distQty = 2 + ($idx * 5) % 8;
+                $family = Family::whereNotNull('family_number')->inRandomOrder()->first();
+                WarehouseTransaction::create([
+                    'season_year' => $seasonYear,
+                    'item_id' => $item->id,
+                    'category_id' => $category->id,
+                    'family_id' => $family?->id,
+                    'transaction_type' => TransactionType::Out,
+                    'quantity' => $distQty,
+                    'notes' => 'Distributed to family',
+                    'scanned_by' => $santaUser?->id,
+                    'scanned_at' => now()->subDays(rand(0, 5)),
+                ]);
+                $txnCount++;
+            }
+        }
+
+        $this->command->info("Created {$txnCount} warehouse transactions (receipts & distributions).");
+
+        // Create shopping assignments with different split types
+        $families = Family::whereNotNull('family_number')->orderBy('family_number')->get();
+        $maxFamily = $families->max('family_number') ?? 100;
+
+        $assignmentDefs = [
+            [
+                'ninja_name' => 'Team Alpha',
+                'split_type' => 'family_range',
+                'family_start' => 1,
+                'family_end' => (int) ceil($maxFamily / 3),
+            ],
+            [
+                'ninja_name' => 'Team Beta',
+                'split_type' => 'family_range',
+                'family_start' => (int) ceil($maxFamily / 3) + 1,
+                'family_end' => (int) ceil($maxFamily * 2 / 3),
+            ],
+            [
+                'ninja_name' => 'Category Shopper',
+                'split_type' => 'category',
+                'categories' => ['canned', 'dry'],
+            ],
+            [
+                'ninja_name' => 'Deficit Buyer',
+                'split_type' => 'deficit',
+            ],
+        ];
+
+        // Add a subcategory assignment if grocery items exist
+        $sampleGroceryCategory = GroceryItem::select('category')->distinct()->first();
+        if ($sampleGroceryCategory) {
+            $sampleItems = GroceryItem::where('category', $sampleGroceryCategory->category)
+                ->limit(3)
+                ->pluck('id')
+                ->toArray();
+
+            if (!empty($sampleItems)) {
+                $assignmentDefs[] = [
+                    'ninja_name' => 'Subcategory Specialist',
+                    'split_type' => 'subcategory',
+                    'config' => [
+                        'category_name' => $sampleGroceryCategory->category,
+                        'item_ids' => $sampleItems,
+                    ],
+                ];
+            }
+        }
+
+        foreach ($assignmentDefs as $def) {
+            ShoppingAssignment::create(array_merge([
+                'notes' => 'Seeded test assignment',
+            ], $def));
+        }
+
+        $this->command->info('Created ' . count($assignmentDefs) . ' shopping assignments with various split types.');
     }
 }

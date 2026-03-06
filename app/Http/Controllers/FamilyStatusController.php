@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\DeliveryStatus;
 use App\Models\Family;
+use App\Models\PackingList;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,18 @@ class FamilyStatusController extends Controller
                     : 'Gift collection has not started yet.',
             ],
             [
+                'label' => 'Boxes Being Packed',
+                'complete' => $family->packingList && in_array($family->packingList->status->value, ['complete', 'verified']),
+                'description' => $family->packingList
+                    ? ($family->packingList->status->value === 'verified'
+                        ? 'Your box has been packed and verified!'
+                        : ($family->packingList->status->value === 'complete'
+                            ? 'Your box is packed and awaiting verification.'
+                            : 'Your box is being prepared.'))
+                    : 'Box packing has not started yet.',
+                'visible' => Setting::get('packing_system_enabled', '1') === '1',
+            ],
+            [
                 'label' => 'Delivery Scheduled',
                 'complete' => $family->delivery_date !== null,
                 'description' => $family->delivery_date !== null
@@ -68,11 +81,24 @@ class FamilyStatusController extends Controller
             ],
         ];
 
+        // Filter out hidden steps
+        $steps = array_values(array_filter($steps, fn ($s) => $s['visible'] ?? true));
+
         // Find the current step (last completed or first incomplete)
         $currentStepIndex = 0;
         foreach ($steps as $i => $step) {
             if ($step['complete']) {
                 $currentStepIndex = $i;
+            }
+        }
+
+        // Packing progress (only if packing system is enabled)
+        $packingProgress = null;
+        if (Setting::get('packing_system_enabled', '1') === '1') {
+            $packingList = $family->packingList;
+            if ($packingList) {
+                $packingProgress = $packingList->progressSummary();
+                $packingProgress['status'] = $packingList->status;
             }
         }
 
@@ -82,6 +108,7 @@ class FamilyStatusController extends Controller
             'currentStepIndex' => $currentStepIndex,
             'childrenWithGifts' => $childrenWithGifts,
             'totalChildren' => $totalChildren,
+            'packingProgress' => $packingProgress,
         ]);
     }
 

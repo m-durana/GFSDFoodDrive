@@ -9,4 +9,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('adopt:send-reminders')->daily()->at('09:00');
-Schedule::command('backup:database')->everyFourHours();
+Schedule::command('backup:database')->hourly()->when(function () {
+    $interval = (int) \App\Models\Setting::get('backup_interval_hours', 4);
+    return $interval > 0 && now()->hour % $interval === 0;
+});

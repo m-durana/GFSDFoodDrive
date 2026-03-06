@@ -162,23 +162,12 @@
             @endif
         </div>
 
-        <!-- Footer -->
-        <footer class="bg-gray-900 text-gray-400 mt-12 py-8">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
-                    <div class="flex items-center gap-4 text-sm">
-                        <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
-                        <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
-                    &copy; {{ date('Y') }} Granite Falls School District Food &amp; Gift Drive.
-                    <span class="mx-1">&middot;</span>
-                    <span>Made in &#x1F1E8;&#x1F1ED;</span>
-                </div>
-            </div>
-        </footer>
+        <x-site-footer variant="dark">
+            <x-slot name="links">
+                <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
+                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+            </x-slot>
+        </x-site-footer>
     </div>
 </body>
 </html>

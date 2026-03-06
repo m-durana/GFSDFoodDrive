@@ -268,10 +268,9 @@ class ExcelImportService
                     continue;
                 }
 
-                // Skip rows with family_number = 0 (invalid data)
-                if (isset($data['family_number']) && (int) $data['family_number'] === 0 && empty($data['family_name'])) {
-                    $skipped++;
-                    continue;
+                // Treat family_number = 0 as unassigned (legacy data often has 0 for unnumbered families)
+                if (isset($data['family_number']) && (int) $data['family_number'] === 0) {
+                    $data['family_number'] = null;
                 }
 
                 $data['season_year'] = $seasonYear;

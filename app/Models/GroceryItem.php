@@ -14,13 +14,56 @@ class GroceryItem extends Model
         'conditional',
         'condition_field',
         'sort_order',
+        'dietary_flags',
+        'dietary_tags',
     ];
 
     protected function casts(): array
     {
         return [
             'conditional' => 'boolean',
+            'dietary_flags' => 'array',
+            'dietary_tags' => 'array',
         ];
+    }
+
+    /**
+     * Check if this grocery item is compatible with a family's dietary restrictions.
+     * Returns false if any family restriction overlaps with this item's dietary flags.
+     *
+     * Restriction mapping:
+     * - nut_free → item has 'nuts' flag
+     * - halal → item has 'pork' or 'alcohol' flag
+     * - kosher → item has 'pork' or 'shellfish' flag
+     * - vegetarian → item has 'meat' flag
+     * - gluten_free → item has 'gluten' flag
+     * - dairy_free → item has 'dairy' flag
+     */
+    public function isCompatibleWith(array $familyRestrictions): bool
+    {
+        if (empty($familyRestrictions) || empty($this->dietary_flags)) {
+            return true;
+        }
+
+        $conflictMap = [
+            'nut_free' => ['nuts'],
+            'halal' => ['pork', 'alcohol'],
+            'kosher' => ['pork', 'shellfish'],
+            'vegetarian' => ['meat'],
+            'gluten_free' => ['gluten'],
+            'dairy_free' => ['dairy'],
+        ];
+
+        $itemFlags = $this->dietary_flags ?? [];
+
+        foreach ($familyRestrictions as $restriction) {
+            $conflictingFlags = $conflictMap[$restriction] ?? [];
+            if (array_intersect($conflictingFlags, $itemFlags)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

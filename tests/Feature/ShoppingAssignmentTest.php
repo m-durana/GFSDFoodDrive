@@ -6,6 +6,7 @@ use App\Models\Family;
 use App\Models\GroceryItem;
 use App\Models\ShoppingAssignment;
 use App\Models\User;
+use App\Services\PackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -49,6 +50,7 @@ class ShoppingAssignmentTest extends TestCase
     {
         $response = $this->actingAs($this->santa)->post('/santa/shopping-day/assignments', [
             'ninja_name' => 'Jake the NINJA',
+            'split_type' => 'family_range',
             'family_start' => 1,
             'family_end' => 50,
         ]);
@@ -66,6 +68,7 @@ class ShoppingAssignmentTest extends TestCase
     {
         $response = $this->actingAs($this->santa)->post('/santa/shopping-day/assignments', [
             'user_id' => $this->coordinator->id,
+            'split_type' => 'family_range',
             'family_start' => 1,
             'family_end' => 50,
         ]);
@@ -110,6 +113,8 @@ class ShoppingAssignmentTest extends TestCase
 
     public function test_family_range_assignment_calculates_items(): void
     {
+        $this->seed(\Database\Seeders\WarehouseCategorySeeder::class);
+
         // Create a family with a number
         $family = Family::create([
             'user_id' => $this->santa->id,
@@ -137,6 +142,9 @@ class ShoppingAssignmentTest extends TestCase
             'qty_5' => 5, 'qty_6' => 6, 'qty_7' => 7, 'qty_8' => 8,
             'sort_order' => 1,
         ]);
+
+        // Generate packing list (shopping deficits now come from packing items)
+        app(PackingService::class)->generatePackingList($family);
 
         $assignment = ShoppingAssignment::create([
             'user_id' => $this->coordinator->id,

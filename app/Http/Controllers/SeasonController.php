@@ -58,7 +58,7 @@ class SeasonController extends Controller
     {
         $currentYear = (int) Setting::get('season_year', date('Y'));
 
-        $stats = Season::computeStats($currentYear);
+        $stats = Season::computeDetailedStats($currentYear);
         Season::updateOrCreate(
             ['year' => $currentYear],
             array_merge($stats, [
@@ -244,8 +244,8 @@ class SeasonController extends Controller
         $seasonYear = (int) $request->input('season_year');
         $accessTable = $request->input('access_table');
 
-        // Background import via queue
-        if ($request->boolean('background')) {
+        // Run imports in background queue by default (use ?sync=true for synchronous)
+        if (!$request->boolean('sync')) {
             $importKey = Str::random(16);
             Cache::put("import:{$importKey}", [
                 'status' => 'queued',

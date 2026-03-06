@@ -19,6 +19,9 @@ yarn-error.log
 /.idea
 /.vscode
 database/*.sqlite
-storage/framework/views/*.php
-storage/logs/*.log
-storage/app/imports/
+/storage/framework/views/*.php
+/storage/logs/*.log
+/storage/app/imports/
+/storage/app/pdfs
+/storage/backups
+/storage/app/pdf-batches/

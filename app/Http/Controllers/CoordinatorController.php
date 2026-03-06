@@ -4,11 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Enums\GiftLevel;
 use App\Helpers\QrCodeHelper;
+use App\Jobs\GeneratePdfJob;
 use App\Models\Child;
 use App\Models\Family;
 use App\Models\SchoolRange;
 use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CoordinatorController extends Controller
@@ -36,13 +41,11 @@ class CoordinatorController extends Controller
             $q->whereNotNull('family_number');
         });
 
-        // Filter: unmerged only (default), all, or by family number range
         $filter = $request->get('filter', 'unmerged');
         if ($filter === 'unmerged') {
             $query->where('mail_merged', false);
         }
 
-        // Always exclude adopted children — their gifts come from adopters, not tags
         $query->whereNull('adoption_token');
 
         if ($request->filled('range_start') && $request->filled('range_end')) {
@@ -53,12 +56,10 @@ class CoordinatorController extends Controller
 
         $children = $query->get()->sortBy(fn($c) => $c->family->family_number);
 
-        // Mark as merged if requested
         if ($request->boolean('mark_merged')) {
             Child::whereIn('id', $children->pluck('id'))->update(['mail_merged' => true]);
         }
 
-        // Generate QR codes — link to adopt page so community members can claim digitally
         $adoptEnabled = Setting::get('adopt_a_tag_enabled', '0') === '1';
         $qrCodes = [];
         foreach ($children as $child) {
@@ -71,26 +72,28 @@ class CoordinatorController extends Controller
         $paperSize = Setting::get('paper_size', 'letter');
         $adoptDeadline = Setting::get('adopt_a_tag_deadline', '');
 
-        // Default deadline: first delivery date minus 9 days
         if (empty($adoptDeadline)) {
             $deliveryDate = Setting::get('delivery_date', '');
             if ($deliveryDate) {
                 try {
                     $adoptDeadline = \Carbon\Carbon::parse($deliveryDate)->subDays(9)->format('F j, Y');
                 } catch (\Exception $e) {
-                    // Ignore invalid dates
                 }
             }
         }
 
-        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return response()->view('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline'));
+        $viewData = compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline');
+
+        if ($request->boolean('sync')) {
+            if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+                return response()->view('documents.gift-tags', $viewData);
+            }
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', $viewData);
+            $pdf->setPaper($paperSize);
+            return $pdf->stream('gift-tags.pdf');
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.gift-tags', compact('children', 'filter', 'qrCodes', 'paperSize', 'adoptDeadline'));
-        $pdf->setPaper($paperSize);
-
-        return $pdf->stream('gift-tags.pdf');
+        return $this->dispatchPdfJob('documents.gift-tags', $viewData, 'gift-tags.pdf', $paperSize);
     }
 
     public function familySummary(Request $request)
@@ -101,18 +104,23 @@ class CoordinatorController extends Controller
             $query->whereBetween('family_number', [$request->range_start, $request->range_end]);
         }
 
-        $families = $query->whereNotNull('family_number')->orderBy('family_number')->get();
+        $families = $query->whereNotNull('family_number')->with('children')->orderBy('family_number')->get();
 
         $paperSize = Setting::get('paper_size', 'letter');
 
-        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return response()->view('documents.family-summary', compact('families'));
+        $viewData = compact('families');
+
+        if ($request->boolean('sync')) {
+            set_time_limit(120);
+            if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+                return response()->view('documents.family-summary', $viewData);
+            }
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.family-summary', $viewData);
+            $pdf->setPaper($paperSize);
+            return $pdf->stream('family-summary.pdf');
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.family-summary', compact('families'));
-        $pdf->setPaper($paperSize);
-
-        return $pdf->stream('family-summary.pdf');
+        return $this->dispatchPdfJob('documents.family-summary', $viewData, 'family-summary.pdf', $paperSize);
     }
 
     public function deliveryDay(Request $request)
@@ -120,24 +128,85 @@ class CoordinatorController extends Controller
         $query = Family::whereNotNull('family_number');
 
         if ($request->filled('delivery_date')) {
-            $query->where('delivery_date', $request->delivery_date);
+            try {
+                $parsed = \Carbon\Carbon::parse($request->delivery_date);
+                $query->whereDate('delivery_date', $parsed->toDateString());
+            } catch (\Exception $e) {
+                $query->where('delivery_date', $request->delivery_date);
+            }
         }
 
         if ($request->filled('delivery_team')) {
             $query->where('delivery_team', $request->delivery_team);
         }
 
-        $families = $query->orderBy('family_number')->get();
+        $families = $query->with('children')->orderBy('family_number')->get();
 
         $paperSize = Setting::get('paper_size', 'letter');
 
-        if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
-            return response()->view('documents.delivery-day', compact('families'));
+        $viewData = compact('families');
+
+        if ($request->boolean('sync')) {
+            set_time_limit(120);
+            if (!class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+                return response()->view('documents.delivery-day', $viewData);
+            }
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.delivery-day', $viewData);
+            $pdf->setPaper($paperSize);
+            return $pdf->stream('delivery-day.pdf');
         }
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('documents.delivery-day', compact('families'));
-        $pdf->setPaper($paperSize);
+        return $this->dispatchPdfJob('documents.delivery-day', $viewData, 'delivery-day.pdf', $paperSize);
+    }
 
-        return $pdf->stream('delivery-day.pdf');
+    /**
+     * Check the status of a background PDF generation job.
+     */
+    public function pdfStatus(string $jobKey): JsonResponse
+    {
+        $status = Cache::get("pdf:{$jobKey}", ['status' => 'unknown', 'message' => 'Job not found.']);
+
+        return response()->json($status);
+    }
+
+    /**
+     * Download a completed background PDF.
+     */
+    public function pdfDownload(string $jobKey)
+    {
+        $status = Cache::get("pdf:{$jobKey}");
+
+        if (!$status || $status['status'] !== 'complete' || !isset($status['path'])) {
+            abort(404, 'PDF not found or not ready yet.');
+        }
+
+        $path = $status['path'];
+        if (!Storage::disk('local')->exists($path)) {
+            abort(404, 'PDF file not found.');
+        }
+
+        return response()->download(
+            Storage::disk('local')->path($path),
+            $status['filename'] ?? 'document.pdf',
+            ['Content-Type' => 'application/pdf']
+        );
+    }
+
+    /**
+     * Dispatch a PDF generation job to run in the background.
+     */
+    private function dispatchPdfJob(string $view, array $data, string $filename, string $paperSize): JsonResponse
+    {
+        $jobKey = Str::random(16);
+
+        Cache::put("pdf:{$jobKey}", ['status' => 'queued', 'message' => 'PDF generation queued...'], 600);
+
+        GeneratePdfJob::dispatch($jobKey, $view, $data, $filename, $paperSize);
+
+        return response()->json([
+            'job_key' => $jobKey,
+            'status_url' => route('coordinator.pdfStatus', $jobKey),
+            'download_url' => route('coordinator.pdfDownload', $jobKey),
+        ]);
     }
 }

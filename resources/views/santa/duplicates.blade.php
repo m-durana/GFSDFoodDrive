@@ -92,21 +92,21 @@
                                 </button>
                             </form>
 
-                            <form method="POST" action="{{ route('santa.mergeFamilies') }}" onsubmit="return confirm('Merge into {{ $pair['family_a']->family_name }}? Children will be transferred and the other record deleted.')">
+                            <form method="POST" action="{{ route('santa.mergeFamilies') }}" onsubmit="return confirm('Keep {{ $pair['family_a']->family_name }} and delete {{ $pair['family_b']->family_name }}? Children will be transferred.')">
                                 @csrf
                                 <input type="hidden" name="keep_id" value="{{ $pair['family_a']->id }}">
                                 <input type="hidden" name="merge_id" value="{{ $pair['family_b']->id }}">
                                 <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
-                                    Keep {{ Str::limit($pair['family_a']->family_name, 15) }}, Merge Other
+                                    Keep Left
                                 </button>
                             </form>
 
-                            <form method="POST" action="{{ route('santa.mergeFamilies') }}" onsubmit="return confirm('Merge into {{ $pair['family_b']->family_name }}? Children will be transferred and the other record deleted.')">
+                            <form method="POST" action="{{ route('santa.mergeFamilies') }}" onsubmit="return confirm('Keep {{ $pair['family_b']->family_name }} and delete {{ $pair['family_a']->family_name }}? Children will be transferred.')">
                                 @csrf
                                 <input type="hidden" name="keep_id" value="{{ $pair['family_b']->id }}">
                                 <input type="hidden" name="merge_id" value="{{ $pair['family_a']->id }}">
                                 <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
-                                    Keep {{ Str::limit($pair['family_b']->family_name, 15) }}, Merge Other
+                                    Keep Right
                                 </button>
                             </form>
                         </div>

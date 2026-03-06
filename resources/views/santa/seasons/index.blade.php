@@ -203,19 +203,19 @@
 
             <!-- Past Seasons Table -->
             @if($seasons->count() > 0)
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
+                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden" x-data="sortTable()">
                     <div class="p-6">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Archived Seasons</h3>
                     </div>
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Year</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Families</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Children</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">People</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Delivered</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Archived</th>
+                                <x-sort-th key="year">Year</x-sort-th>
+                                <x-sort-th key="families">Families</x-sort-th>
+                                <x-sort-th key="children">Children</x-sort-th>
+                                <x-sort-th key="people">People</x-sort-th>
+                                <x-sort-th key="delivered">Delivered</x-sort-th>
+                                <x-sort-th key="archived">Archived</x-sort-th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"></th>
                             </tr>
                         </thead>

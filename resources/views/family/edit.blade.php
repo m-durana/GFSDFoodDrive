@@ -151,6 +151,42 @@
                                     <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Family needs baby supplies / baby food</span>
                                 </label>
                             </div>
+                            @if(auth()->user()->isSanta() || auth()->user()->permission >= 7)
+                            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="is_severe_need" value="1" {{ old('is_severe_need', $family->is_severe_need) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500"
+                                        id="is_severe_need_checkbox"
+                                        onchange="document.getElementById('severe_need_notes').classList.toggle('hidden', !this.checked)">
+                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need</span>
+                                </label>
+                                <textarea name="severe_need_notes" id="severe_need_notes" rows="2" placeholder="Optional: describe the severe need"
+                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ old('is_severe_need', $family->is_severe_need) ? '' : 'hidden' }}">{{ old('severe_need_notes', $family->severe_need_notes ?? $family->severe_need) }}</textarea>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dietary Restrictions -->
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Dietary Restrictions</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Select any dietary restrictions that apply to this family. These will be used to flag incompatible items during packing.</p>
+                        @php $restrictions = old('dietary_restrictions', $family->dietary_restrictions ?? []); @endphp
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+                            @foreach(['nut_free' => 'Nut Free', 'halal' => 'Halal', 'kosher' => 'Kosher', 'vegetarian' => 'Vegetarian', 'gluten_free' => 'Gluten Free', 'dairy_free' => 'Dairy Free'] as $key => $label)
+                                <label class="inline-flex items-center">
+                                    <input type="checkbox" name="dietary_restrictions[]" value="{{ $key }}" {{ in_array($key, $restrictions) ? 'checked' : '' }}
+                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
+                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                        <div>
+                            <label for="dietary_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dietary Notes</label>
+                            <textarea name="dietary_notes" id="dietary_notes" rows="2" placeholder="Any additional dietary info (e.g. specific allergies)"
+                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('dietary_notes', $family->dietary_notes) }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -212,11 +248,6 @@
                                 <label for="need_for_help" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reason for Needing Help</label>
                                 <textarea name="need_for_help" id="need_for_help" rows="3"
                                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('need_for_help', $family->need_for_help) }}</textarea>
-                            </div>
-                            <div>
-                                <label for="severe_need" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need Description</label>
-                                <textarea name="severe_need" id="severe_need" rows="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('severe_need', $family->severe_need) }}</textarea>
                             </div>
                             <div>
                                 <label for="other_questions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Questions / Comments</label>

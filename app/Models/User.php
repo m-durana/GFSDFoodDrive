@@ -27,7 +27,9 @@ class User extends Authenticatable
         'last_lng',
         'last_location_at',
         'show_on_website',
+        'force_show_on_website',
         'avatar_path',
+        'avatar_restricted',
     ];
 
     protected $hidden = [
@@ -45,6 +47,8 @@ class User extends Authenticatable
             'last_lng' => 'decimal:7',
             'last_location_at' => 'datetime',
             'show_on_website' => 'boolean',
+            'force_show_on_website' => 'boolean',
+            'avatar_restricted' => 'boolean',
         ];
     }
 
@@ -53,6 +57,11 @@ class User extends Authenticatable
     public function families(): HasMany
     {
         return $this->hasMany(Family::class);
+    }
+
+    public function packedItems(): HasMany
+    {
+        return $this->hasMany(PackingItem::class, 'packed_by');
     }
 
     // Role helpers - uses Spatie when available, falls back to legacy permission column

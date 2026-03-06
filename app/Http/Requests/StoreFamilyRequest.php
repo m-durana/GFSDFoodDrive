@@ -51,6 +51,9 @@ class StoreFamilyRequest extends FormRequest
             'is_severe_need' => ['boolean'],
             'severe_need_notes' => ['nullable', 'string', 'max:5000'],
             'preferred_language_other' => ['nullable', 'string', 'max:100'],
+            'dietary_restrictions' => ['nullable', 'array'],
+            'dietary_restrictions.*' => ['string', 'in:nut_free,halal,kosher,vegetarian,gluten_free,dairy_free'],
+            'dietary_notes' => ['nullable', 'string', 'max:1000'],
             'other_questions' => ['nullable', 'string', 'max:5000'],
             // Children (wizard fields)
             'children' => ['nullable', 'array'],

@@ -43,7 +43,7 @@
                 <input type="text" id="kiosk-barcode" autofocus autocomplete="off"
                     class="w-full text-center text-3xl py-6 rounded-xl bg-gray-800 border-2 border-gray-600 text-gray-100 placeholder-gray-500 focus:border-green-500 focus:ring-green-500 transition"
                     placeholder="Scan or type barcode...">
-                <p class="text-xs text-gray-600 mt-1 text-center">Press Enter to submit. Keys (1-9, Q-P) to quick-select categories.</p>
+                <p class="text-xs text-gray-600 mt-1 text-center">Press Enter to submit. Shortcut keys (a-z, 0-9) to quick-select categories.</p>
             </div>
 
             <!-- Feedback Area -->
@@ -51,20 +51,29 @@
 
             <!-- Category Quick-Select -->
             <div class="w-full max-w-2xl">
-                <p class="text-sm text-gray-500 mb-3 text-center">Select a category (or press number key):</p>
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <p class="text-sm text-gray-500">Select a category (or press shortcut key):</p>
+                    <button onclick="enterReassignMode()" id="reassign-btn" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Reassign Shortcuts</button>
+                    <button onclick="exportShortcuts()" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Export</button>
+                    <label class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600 cursor-pointer">
+                        Import
+                        <input type="file" accept=".json" onchange="importShortcuts(event)" class="hidden">
+                    </label>
+                </div>
+                <div id="reassign-banner" class="hidden mb-3 text-center text-sm text-yellow-400 bg-yellow-900/30 border border-yellow-700 rounded-lg px-4 py-2">
+                    Reassign mode: click a category, then press a key (a-z, 0-9). Press <kbd class="px-1 bg-gray-700 rounded">Esc</kbd> to finish.
+                </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kiosk-categories">
-                    @php $shortcutKeys = ['1','2','3','4','5','6','7','8','9','q','w','e','r','t','y','u','i','o','p']; @endphp
+                    @php $defaultKeys = array_merge(range('a','z'), array_map('strval', range(0,9))); @endphp
                     @foreach($categories as $i => $cat)
-                        <button data-category-id="{{ $cat->id }}" data-category-name="{{ $cat->name }}" data-shortcut="{{ $shortcutKeys[$i] ?? '' }}"
+                        <button data-category-id="{{ $cat->id }}" data-category-name="{{ $cat->name }}" data-default-shortcut="{{ $defaultKeys[$i] ?? '' }}"
                             class="kiosk-cat-btn p-4 rounded-xl text-center transition font-medium text-sm relative
                                 {{ $cat->type === 'food' ? 'bg-amber-900/40 border border-amber-700 hover:bg-amber-900/60 text-amber-200' : '' }}
                                 {{ $cat->type === 'gift' ? 'bg-purple-900/40 border border-purple-700 hover:bg-purple-900/60 text-purple-200' : '' }}
                                 {{ $cat->type === 'baby' ? 'bg-pink-900/40 border border-pink-700 hover:bg-pink-900/60 text-pink-200' : '' }}
                                 {{ $cat->type === 'supply' ? 'bg-blue-900/40 border border-blue-700 hover:bg-blue-900/60 text-blue-200' : '' }}
                             ">
-                            @if(isset($shortcutKeys[$i]))
-                                <span class="absolute top-1 left-2 text-xs opacity-50">{{ $shortcutKeys[$i] }}</span>
-                            @endif
+                            <span class="shortcut-label absolute top-1 left-2 text-xs opacity-50"></span>
                             {{ $cat->name }}
                         </button>
                     @endforeach
@@ -162,9 +171,23 @@
         });
         @endauth
 
+        // Shortcut system: localStorage-backed { key: categoryId } map
+        const SHORTCUT_STORAGE_KEY = 'kiosk_shortcuts';
+        let shortcutMap = {}; // key -> categoryId
+        let reassignMode = false;
+        let reassignTarget = null; // the category button being reassigned
+
         // Category button click
         document.querySelectorAll('.kiosk-cat-btn').forEach(btn => {
             btn.addEventListener('click', function() {
+                if (reassignMode) {
+                    // In reassign mode: select this category for key assignment
+                    document.querySelectorAll('.kiosk-cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-yellow-500'));
+                    this.classList.add('ring-2', 'ring-yellow-500');
+                    reassignTarget = this;
+                    showFeedback('Now press a key (a-z, 0-9) to assign to "' + this.dataset.categoryName + '"', 'yellow');
+                    return;
+                }
                 selectCategory(this);
                 submitReceipt(selectedCategoryId, this.dataset.categoryName, null);
             });
@@ -176,19 +199,136 @@
             btn.classList.add('ring-2', 'ring-green-500');
         }
 
-        // Keyboard shortcuts: 1-9 then q,w,e,r,t,y,u,i,o,p for categories
-        const shortcutKeys = ['1','2','3','4','5','6','7','8','9','q','w','e','r','t','y','u','i','o','p'];
+        function loadShortcuts() {
+            const stored = localStorage.getItem(SHORTCUT_STORAGE_KEY);
+            if (stored) {
+                try { shortcutMap = JSON.parse(stored); } catch(e) { shortcutMap = {}; }
+            }
+            if (!Object.keys(shortcutMap).length) {
+                // Build defaults from data-default-shortcut
+                document.querySelectorAll('.kiosk-cat-btn').forEach(btn => {
+                    const dk = btn.dataset.defaultShortcut;
+                    if (dk) shortcutMap[dk] = btn.dataset.categoryId;
+                });
+                saveShortcuts();
+            }
+            applyShortcutLabels();
+        }
+
+        function saveShortcuts() {
+            localStorage.setItem(SHORTCUT_STORAGE_KEY, JSON.stringify(shortcutMap));
+        }
+
+        function applyShortcutLabels() {
+            // Build reverse map: categoryId -> key
+            const reverse = {};
+            for (const [key, catId] of Object.entries(shortcutMap)) {
+                reverse[catId] = key;
+            }
+            document.querySelectorAll('.kiosk-cat-btn').forEach(btn => {
+                const label = btn.querySelector('.shortcut-label');
+                const key = reverse[btn.dataset.categoryId];
+                if (label) label.textContent = key || '';
+                btn.dataset.shortcut = key || '';
+            });
+        }
+
+        function enterReassignMode() {
+            reassignMode = true;
+            reassignTarget = null;
+            document.getElementById('reassign-banner').classList.remove('hidden');
+            document.getElementById('reassign-btn').textContent = 'Done';
+            document.getElementById('reassign-btn').onclick = exitReassignMode;
+        }
+
+        function exitReassignMode() {
+            reassignMode = false;
+            reassignTarget = null;
+            document.getElementById('reassign-banner').classList.add('hidden');
+            document.getElementById('reassign-btn').textContent = 'Reassign Shortcuts';
+            document.getElementById('reassign-btn').onclick = enterReassignMode;
+            document.querySelectorAll('.kiosk-cat-btn').forEach(b => b.classList.remove('ring-2', 'ring-yellow-500'));
+            input.focus();
+        }
+
+        function exportShortcuts() {
+            const blob = new Blob([JSON.stringify(shortcutMap, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'kiosk-shortcuts.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function importShortcuts(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (typeof imported === 'object' && !Array.isArray(imported)) {
+                        shortcutMap = imported;
+                        saveShortcuts();
+                        applyShortcutLabels();
+                        showFeedback('Shortcuts imported successfully.', 'green');
+                    } else {
+                        showFeedback('Invalid shortcuts file.', 'red');
+                    }
+                } catch(err) {
+                    showFeedback('Failed to parse shortcuts file.', 'red');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        loadShortcuts();
+
+        // Valid shortcut keys: a-z and 0-9
+        const validShortcutKeys = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
+
         document.addEventListener('keydown', function(e) {
-            // Only when barcode input is focused or no specific input is focused
-            if (document.activeElement && document.activeElement !== input && document.activeElement.tagName === 'INPUT') return;
             if (e.ctrlKey || e.metaKey || e.altKey) return;
             const key = e.key.toLowerCase();
-            if (shortcutKeys.includes(key)) {
-                const btn = document.querySelector(`.kiosk-cat-btn[data-shortcut="${key}"]`);
-                if (btn) {
-                    e.preventDefault();
-                    selectCategory(btn);
-                    submitReceipt(selectedCategoryId, btn.dataset.categoryName, null);
+
+            // Escape exits reassign mode
+            if (key === 'escape' && reassignMode) {
+                e.preventDefault();
+                exitReassignMode();
+                return;
+            }
+
+            // Reassign mode: assign pressed key to selected category
+            if (reassignMode && reassignTarget && validShortcutKeys.includes(key)) {
+                e.preventDefault();
+                // Remove this key from any previous assignment
+                for (const [k, v] of Object.entries(shortcutMap)) {
+                    if (k === key) delete shortcutMap[k];
+                }
+                // Remove any existing shortcut for this category
+                for (const [k, v] of Object.entries(shortcutMap)) {
+                    if (v === reassignTarget.dataset.categoryId) delete shortcutMap[k];
+                }
+                shortcutMap[key] = reassignTarget.dataset.categoryId;
+                saveShortcuts();
+                applyShortcutLabels();
+                reassignTarget.classList.remove('ring-2', 'ring-yellow-500');
+                reassignTarget = null;
+                showFeedback(`Shortcut "${key}" assigned.`, 'green');
+                return;
+            }
+
+            // Normal mode: trigger category by shortcut
+            if (!reassignMode) {
+                if (document.activeElement && document.activeElement !== input && document.activeElement.tagName === 'INPUT') return;
+                if (validShortcutKeys.includes(key) && shortcutMap[key]) {
+                    const btn = document.querySelector(`.kiosk-cat-btn[data-category-id="${shortcutMap[key]}"]`);
+                    if (btn) {
+                        e.preventDefault();
+                        selectCategory(btn);
+                        submitReceipt(selectedCategoryId, btn.dataset.categoryName, null);
+                    }
                 }
             }
         });

@@ -44,7 +44,7 @@
 
             <!-- Filters -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4">
-                <form method="GET" action="{{ route('warehouse.gift-bank') }}" class="flex flex-wrap items-center gap-4">
+                <form method="GET" action="{{ route('warehouse.gift-bank') }}" class="flex flex-wrap items-end gap-4">
                     <div>
                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
                         <select name="status" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
@@ -87,17 +87,17 @@
                     </h3>
 
                     @if($items->count() > 0)
-                        <div class="overflow-x-auto">
+                        <div class="overflow-x-auto" x-data="sortTable()">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Age Range</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gender</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Type</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Donor</th>
-                                        <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Qty</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                                        <x-sort-th key="description" class="px-3 py-2">Description</x-sort-th>
+                                        <x-sort-th key="age_range" class="px-3 py-2">Age Range</x-sort-th>
+                                        <x-sort-th key="gender" class="px-3 py-2">Gender</x-sort-th>
+                                        <x-sort-th key="type" class="px-3 py-2">Type</x-sort-th>
+                                        <x-sort-th key="donor" class="px-3 py-2">Donor</x-sort-th>
+                                        <x-sort-th key="qty" class="px-3 py-2">Qty</x-sort-th>
+                                        <x-sort-th key="status" class="px-3 py-2">Status</x-sort-th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Assigned To</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                                     </tr>
@@ -105,13 +105,13 @@
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($items as $item)
                                         <tr>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title="{{ $item->description }}">{{ $item->description }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $item->age_range ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ ucfirst($item->gender_suitability ?? '—') }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $item->gift_type ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $item->donor_name ?? '—' }}</td>
-                                            <td class="px-3 py-2 text-sm text-right text-gray-900 dark:text-gray-100">{{ $item->quantity }}</td>
-                                            <td class="px-3 py-2 text-sm">
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title="{{ $item->description }}" data-sort-value="{{ $item->description }}">{{ $item->description }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->age_range ?? '' }}">{{ $item->age_range ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->gender_suitability ?? '' }}">{{ ucfirst($item->gender_suitability ?? '—') }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->gift_type ?? '' }}">{{ $item->gift_type ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->donor_name ?? '' }}">{{ $item->donor_name ?? '—' }}</td>
+                                            <td class="px-3 py-2 text-sm text-right text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->quantity }}">{{ $item->quantity }}</td>
+                                            <td class="px-3 py-2 text-sm" data-sort-value="{{ $item->assigned_child_id ? 'assigned' : 'available' }}">
                                                 @if($item->assigned_child_id)
                                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">Assigned</span>
                                                 @else

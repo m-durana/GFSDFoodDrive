@@ -102,6 +102,43 @@
                     </dl>
                 </div>
 
+                <!-- Packing Status (coordinator+) -->
+                @if((auth()->user()->isCoordinator() || auth()->user()->isSanta()) && \App\Models\Setting::get('packing_system_enabled', '1') === '1' && $family->packingList)
+                    @php
+                        $pl = $family->packingList;
+                        $plProgress = $pl->progressSummary();
+                        $plStatusColors = [
+                            'pending' => 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-300',
+                            'in_progress' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+                            'complete' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+                            'verified' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+                        ];
+                    @endphp
+                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Packing Status</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $plStatusColors[$pl->status->value] ?? $plStatusColors['pending'] }}">
+                                    {{ $pl->status->label() }}
+                                </span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $plProgress['packed'] }}/{{ $plProgress['total'] }} items</span>
+                            </div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+                                <div class="bg-green-500 h-2.5 rounded-full transition-all" style="width: {{ $plProgress['percentage'] }}%"></div>
+                            </div>
+                            @if($pl->volunteer)
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Volunteer: {{ $pl->volunteer->first_name }} {{ $pl->volunteer->last_name }}</div>
+                            @endif
+                            @if($pl->verified_at)
+                                <div class="text-sm text-green-600 dark:text-green-400">Verified: {{ $pl->verified_at->format('M j, g:i A') }}</div>
+                            @endif
+                            <a href="{{ route('packing.show', $pl) }}" class="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                View Packing List &rarr;
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Needs -->
                 <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Needs & Notes</h3>
@@ -109,6 +146,17 @@
                         @if($family->need_for_help)<div><dt class="text-gray-500 dark:text-gray-400">Reason for help:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->need_for_help }}</dd></div>@endif
                         @if($family->severe_need)<div><dt class="text-red-500 dark:text-red-400 font-medium">Severe need:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->severe_need }}</dd></div>@endif
                         @if($family->pet_information)<div><dt class="text-gray-500 dark:text-gray-400">Pets (for pet food):</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->pet_information }}</dd></div>@endif
+                        @if(!empty($family->dietary_restrictions))
+                            <div>
+                                <dt class="text-gray-500 dark:text-gray-400 mb-1">Dietary Restrictions:</dt>
+                                <dd class="flex flex-wrap gap-1">
+                                    @foreach($family->dietary_restrictions as $restriction)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">{{ str_replace('_', ' ', ucwords($restriction, '_')) }}</span>
+                                    @endforeach
+                                </dd>
+                            </div>
+                        @endif
+                        @if($family->dietary_notes)<div><dt class="text-gray-500 dark:text-gray-400">Dietary Notes:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->dietary_notes }}</dd></div>@endif
                         @if($family->other_questions)<div><dt class="text-gray-500 dark:text-gray-400">Other:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->other_questions }}</dd></div>@endif
                         @if($family->family_done)
                             <div class="mt-2 inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs font-medium">Family Complete</div>
@@ -123,18 +171,18 @@
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Children ({{ $family->children->count() }})</h3>
 
                     @if($family->children->count() > 0)
-                        <div class="overflow-x-auto mb-6">
+                        <div class="overflow-x-auto mb-6" x-data="sortTable()">
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gender</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Age</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">School</th>
+                                        <x-sort-th key="gender" class="px-3 py-2">Gender</x-sort-th>
+                                        <x-sort-th key="age" class="px-3 py-2">Age</x-sort-th>
+                                        <x-sort-th key="school" class="px-3 py-2">School</x-sort-th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sizes</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Toy Ideas</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gift Level</th>
+                                        <x-sort-th key="gift_level" class="px-3 py-2">Gift Level</x-sort-th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gifts Received</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Adopter</th>
+                                        <x-sort-th key="adopter" class="px-3 py-2">Adopter</x-sort-th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tag</th>
                                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
                                     </tr>
@@ -142,12 +190,12 @@
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                     @foreach($family->children as $child)
                                         <tr>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->gender }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->age }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->school ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->gender }}">{{ $child->gender }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->age }}">{{ $child->age }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->school ?? '' }}">{{ $child->school ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate" title="{{ $child->all_sizes }}">{{ $child->all_sizes ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate" title="{{ $child->toy_ideas }}">{{ $child->toy_ideas ?? '-' }}</td>
-                                            <td class="px-3 py-2 text-sm">
+                                            <td class="px-3 py-2 text-sm" data-sort-value="{{ ($child->gift_level ?? \App\Enums\GiftLevel::None)->value }}">
                                                 @php $level = $child->gift_level ?? \App\Enums\GiftLevel::None; @endphp
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
                                                     {{ $level->color() === 'red' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' : '' }}
@@ -163,7 +211,7 @@
                                                     <span class="text-gray-400">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100">{{ $child->adopter_name ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->adopter_name ?? '' }}">{{ $child->adopter_name ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm">
                                                 @if($child->mail_merged)
                                                     <span class="text-green-600 dark:text-green-400" title="Printed">Printed</span>
