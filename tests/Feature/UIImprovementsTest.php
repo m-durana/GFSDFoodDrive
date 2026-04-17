@@ -428,7 +428,7 @@ class UIImprovementsTest extends TestCase
             'num_shoppers' => 3,
         ]);
 
-        $response->assertRedirect('/santa/shopping-day');
+        $response->assertRedirect('/santa/shopping?tab=assignments');
         // Smart split should create multiple assignments
         $this->assertGreaterThanOrEqual(1, ShoppingAssignment::where('split_type', 'smart_split')->count());
     }
@@ -447,7 +447,7 @@ class UIImprovementsTest extends TestCase
             'subcategory_items' => [$groceryItem->id],
         ]);
 
-        $response->assertRedirect('/santa/shopping-day');
+        $response->assertRedirect('/santa/shopping?tab=assignments');
         $this->assertDatabaseHas('shopping_assignments', [
             'ninja_name' => 'SubcatNinja',
             'split_type' => 'subcategory',
