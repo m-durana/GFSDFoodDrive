@@ -260,5 +260,9 @@
         });
 
         updateTotals();
+
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', function() { this.select(); });
+        });
     </script>
 </x-guest-layout>

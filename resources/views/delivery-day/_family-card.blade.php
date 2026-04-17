@@ -7,12 +7,12 @@
         'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     ];
 @endphp
-<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 {{ $isDone ? 'bg-green-50/50 dark:bg-green-900/10' : '' }}"
+<div class="px-3 py-2 {{ $isDone ? 'bg-green-50/50 dark:bg-green-900/10' : '' }}"
      data-family-id="{{ $family->id }}">
-    <div class="flex flex-wrap items-start justify-between gap-2">
+    <div class="flex items-start justify-between gap-2">
         <!-- Family info -->
         <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-1.5 flex-wrap">
                 @if($family->route_order)
                     <span class="inline-flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold {{ $isDone ? 'bg-green-500 text-white' : 'bg-red-700 text-white' }}">
                         {!! $isDone ? '&#10003;' : $family->route_order !!}
@@ -23,13 +23,12 @@
                 <span class="status-badge inline-flex px-2 py-0.5 text-xs font-medium rounded-full {{ $statusColors[$status] ?? '' }}">
                     {{ $family->delivery_status?->label() ?? 'Pending' }}
                 </span>
-                @if($family->deliveryRoute)
-                    <span class="text-xs text-gray-400 dark:text-gray-500">{{ $family->deliveryRoute->name }}</span>
-                @endif
             </div>
-            <div class="mt-1 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
+            <div class="mt-0.5 text-xs text-gray-600 dark:text-gray-300 space-y-0.5">
                 <div>{{ $family->address }}</div>
-                <div>{{ $family->phone1 }}@if($family->phone2) / {{ $family->phone2 }}@endif</div>
+                @if($family->phone1)
+                    <div>{{ $family->phone1 }}@if($family->phone2) / {{ $family->phone2 }}@endif</div>
+                @endif
                 @if($family->delivery_reason)
                     <div class="text-red-600 dark:text-red-400">{{ $family->delivery_reason }}</div>
                 @endif
@@ -41,10 +40,10 @@
                 @endif
             </div>
             @if($family->deliveryLogs && $family->deliveryLogs->count() > 0)
-                <div class="mt-1.5 space-y-0.5">
-                    @foreach($family->deliveryLogs->take(3) as $log)
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400">
-                            {{ $log->created_at->format('M j g:ia') }}
+                <div class="mt-1 space-y-0.5">
+                    @foreach($family->deliveryLogs->take(2) as $log)
+                        <div class="text-[10px] text-gray-500 dark:text-gray-400">
+                            {{ $log->created_at->format('g:ia') }}
                             — {{ ucfirst(str_replace('_', ' ', $log->status)) }}
                             @if($log->user) by {{ $log->user->first_name }}@endif
                             @if($log->notes) — {{ $log->notes }}@endif

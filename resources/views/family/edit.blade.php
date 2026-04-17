@@ -297,5 +297,10 @@
 
         // Initialize totals on page load
         updateTotals();
+
+        // Number inputs: select all on focus so typing replaces the value
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', function() { this.select(); });
+        });
     </script>
 </x-app-layout>

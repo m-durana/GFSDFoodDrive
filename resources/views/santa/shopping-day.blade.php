@@ -134,7 +134,7 @@
 
             <!-- Add Assignment -->
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6" x-data="{
-                splitType: '{{ old('split_type', 'family_range') }}',
+                splitType: '{{ old('split_type', 'smart_split') }}',
                 subcatCategory: '{{ old('subcategory_category', '') }}',
                 groceryItemsByCategory: @js($groceryItemsByCategory ?? []),
                 get subcatItems() {
@@ -151,7 +151,7 @@
                             <input type="text" name="ninja_name" id="ninja_name" placeholder="e.g. Jake, Sarah, Team Alpha"
                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
                                 value="{{ old('ninja_name') }}">
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">For NINJAs who don't have accounts</p>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">For volunteers who don't have accounts</p>
                         </div>
 
                         <div>
@@ -171,6 +171,11 @@
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assignment Type</label>
                         <div class="flex flex-wrap gap-3">
                             <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="split_type" value="smart_split" x-model="splitType"
+                                    class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
+                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Smart Split</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="split_type" value="family_range" x-model="splitType"
                                     class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">By Family Range</span>
@@ -186,18 +191,13 @@
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Full Deficit Buy</span>
                             </label>
                             <label class="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="split_type" value="smart_split" x-model="splitType"
-                                    class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Smart Split</span>
-                            </label>
-                            <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="split_type" value="subcategory" x-model="splitType"
                                     class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
                                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">By Subcategory</span>
                             </label>
                         </div>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'deficit'">This shopper will see all items that still need to be purchased.</p>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'smart_split'">Auto-divide all families so each shopper gets roughly equal item counts.</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'smart_split'">Auto-divide unassigned families so each shopper gets roughly equal item counts. Families already covered by existing assignments are excluded.</p>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'subcategory'">Select specific items within a category for this shopper.</p>
                     </div>
 
@@ -308,7 +308,7 @@
             @if(!empty($reconciliation))
             <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Reconciliation</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Comparing what NINJAs checked off vs what was received at the kiosk.</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Comparing what volunteers checked off vs what was received at the kiosk.</p>
 
                 @php
                     $hasDiscrepancies = collect($reconciliation)->where('discrepancy', '!=', 0)->count();

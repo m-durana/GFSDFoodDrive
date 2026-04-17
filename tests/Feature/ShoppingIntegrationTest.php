@@ -161,7 +161,7 @@ class ShoppingIntegrationTest extends TestCase
         $this->assertEquals(2, $totalTuna); // 2 families × qty_1(1)
     }
 
-    public function test_shopping_day_page_shows_deficit_panel(): void
+    public function test_shopping_hub_page_shows_deficit_panel(): void
     {
 
         $this->seedWarehouseCategories();
@@ -170,7 +170,7 @@ class ShoppingIntegrationTest extends TestCase
         $family = $this->createFamily();
         $this->packingService->generatePackingList($family);
 
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingDay'));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping'));
         $response->assertOk();
         $response->assertSee('What Needs to be Purchased');
     }
@@ -186,7 +186,7 @@ class ShoppingIntegrationTest extends TestCase
             'split_type' => 'deficit',
         ]);
 
-        $response->assertRedirect(route('santa.shoppingDay'));
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
         $this->assertDatabaseHas('shopping_assignments', [
             'ninja_name' => 'Deficit Shopper',
             'split_type' => 'deficit',
@@ -228,7 +228,7 @@ class ShoppingIntegrationTest extends TestCase
             'categories' => ['canned', 'dry'],
         ]);
 
-        $response->assertRedirect(route('santa.shoppingDay'));
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
         $this->assertDatabaseHas('shopping_assignments', [
             'ninja_name' => 'Category Shopper',
             'split_type' => 'category',
@@ -259,7 +259,7 @@ class ShoppingIntegrationTest extends TestCase
             'checked_at' => now(),
         ]);
 
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingDay'));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping', ['tab' => 'assignments']));
         $response->assertOk();
     }
 }

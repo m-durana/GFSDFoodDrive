@@ -85,13 +85,23 @@ Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')
     Route::get('/gifts', [SantaController::class, 'gifts'])->name('gifts');
     Route::get('/reports', [SantaController::class, 'reports'])->name('reports');
     Route::get('/export', [SantaController::class, 'exportFamilies'])->name('export');
-    Route::get('/shopping-list', [SantaController::class, 'shoppingList'])->name('shoppingList');
+    // Shopping Hub (consolidated view)
+    Route::get('/shopping', [SantaController::class, 'shopping'])->name('shopping');
+
+    // Old routes → redirects (preserves bookmarks)
+    Route::get('/shopping-list', fn(\Illuminate\Http\Request $r) =>
+        redirect()->route('santa.shopping', array_merge($r->query(), ['tab' => 'formulas']))
+    )->name('shoppingList');
+    Route::get('/shopping-day', fn() =>
+        redirect()->route('santa.shopping', ['tab' => 'assignments'])
+    )->name('shoppingDay');
+
+    // Shopping item management (POST/PUT/DELETE unchanged)
     Route::post('/shopping-list/items', [SantaController::class, 'storeGroceryItem'])->name('storeGroceryItem');
     Route::put('/shopping-list/items/{groceryItem}', [SantaController::class, 'updateGroceryItem'])->name('updateGroceryItem');
     Route::delete('/shopping-list/items/{groceryItem}', [SantaController::class, 'destroyGroceryItem'])->name('destroyGroceryItem');
     Route::post('/shopping-list/import', [SantaController::class, 'importGroceryItems'])->name('importGroceryItems');
     Route::get('/shopping-list/export-formula', [SantaController::class, 'exportGroceryFormula'])->name('exportGroceryFormula');
-    Route::get('/shopping-day', [SantaController::class, 'shoppingDay'])->name('shoppingDay');
     Route::post('/shopping-day/assignments', [SantaController::class, 'createAssignment'])->name('createAssignment');
     Route::delete('/shopping-day/assignments/{assignment}', [SantaController::class, 'deleteAssignment'])->name('deleteAssignment');
     Route::get('/settings', [SantaController::class, 'settings'])->name('settings');
@@ -265,6 +275,7 @@ Route::middleware(['auth', 'permission:coordinator,santa', \App\Http\Middleware\
     Route::get('/summary', [PackingController::class, 'summary'])->name('summary');
     Route::post('/generate', [PackingController::class, 'generate'])->name('generate');
     Route::post('/print-batch', [PackingController::class, 'printBatch'])->name('printBatch');
+    Route::get('/verify-station', [PackingController::class, 'verifyStation'])->name('verifyStation');
     Route::get('/{packingList}', [PackingController::class, 'show'])->name('show');
     Route::get('/{packingList}/print', [PackingController::class, 'print'])->name('print');
     Route::post('/{packingList}/refresh', [PackingController::class, 'refreshList'])->name('refresh');

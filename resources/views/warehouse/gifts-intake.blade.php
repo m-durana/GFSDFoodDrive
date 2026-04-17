@@ -66,12 +66,21 @@
                     <div id="general-donation-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50">
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">General Gift Donation</h3>
-                            <form method="POST" action="{{ route('warehouse.gift-bank.store') }}">
+                            <form method="POST" action="{{ route('warehouse.gift-bank.store') }}" id="general-donation-form">
                                 @csrf
                                 <div class="space-y-3">
                                     <div>
+                                        <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Barcode (optional)</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" id="general-barcode" placeholder="Scan or type barcode..."
+                                                class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
+                                            <button type="button" onclick="lookupGeneralBarcode()" class="px-3 py-1.5 bg-purple-600 text-white rounded-md text-xs font-medium hover:bg-purple-500">Lookup</button>
+                                        </div>
+                                        <p id="general-barcode-status" class="text-xs mt-1 hidden"></p>
+                                    </div>
+                                    <div>
                                         <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Description <span class="text-red-500">*</span></label>
-                                        <input type="text" name="description" required placeholder="e.g., Assorted toys, Board games..."
+                                        <input type="text" name="description" id="general-description" required placeholder="e.g., Assorted toys, Board games..."
                                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm">
                                     </div>
                                     <div class="grid grid-cols-2 gap-3">
@@ -465,9 +474,48 @@
         // General donation functions
         function openGeneralDonation() {
             document.getElementById('general-donation-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('general-barcode')?.focus(), 100);
         }
         function closeGeneralDonation() {
             document.getElementById('general-donation-modal').classList.add('hidden');
+        }
+
+        // General donation barcode lookup
+        document.getElementById('general-barcode')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); lookupGeneralBarcode(); }
+        });
+
+        function lookupGeneralBarcode() {
+            const barcode = document.getElementById('general-barcode').value.trim();
+            if (!barcode) return;
+            const status = document.getElementById('general-barcode-status');
+            status.classList.remove('hidden');
+            status.className = 'text-xs mt-1 text-blue-600 dark:text-blue-400';
+            status.textContent = 'Looking up...';
+
+            fetch(`{{ url('/warehouse/barcode') }}/${barcode}`, { headers: { 'Accept': 'application/json' } })
+                .then(r => r.json())
+                .then(data => {
+                    const desc = document.getElementById('general-description');
+                    if (data.found && data.item) {
+                        desc.value = data.item.name;
+                        status.className = 'text-xs mt-1 text-green-600 dark:text-green-400';
+                        status.textContent = `Found: ${data.item.name}`;
+                    } else if (data.external) {
+                        desc.value = data.external.name || '';
+                        status.className = 'text-xs mt-1 text-green-600 dark:text-green-400';
+                        status.textContent = `Found (OFF): ${data.external.name || 'Unknown'}`;
+                    } else {
+                        status.className = 'text-xs mt-1 text-yellow-600 dark:text-yellow-400';
+                        status.textContent = 'Not found. Enter description manually.';
+                    }
+                    setTimeout(() => status.classList.add('hidden'), 4000);
+                })
+                .catch(() => {
+                    status.className = 'text-xs mt-1 text-red-600 dark:text-red-400';
+                    status.textContent = 'Lookup failed.';
+                    setTimeout(() => status.classList.add('hidden'), 3000);
+                });
         }
 
         // Auto-select first child if search matches exactly one on Enter

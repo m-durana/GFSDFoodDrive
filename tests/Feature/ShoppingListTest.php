@@ -48,13 +48,18 @@ class ShoppingListTest extends TestCase
         ]);
     }
 
-    public function test_shopping_list_page_loads(): void
+    public function test_shopping_hub_page_loads(): void
     {
         $this->seedGroceryItems();
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList'));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping'));
         $response->assertOk();
-        $response->assertSee('Shopping Lists');
-        $response->assertSee('4 grocery items configured');
+        $response->assertSee('Shopping Hub');
+    }
+
+    public function test_old_shopping_list_route_redirects_to_hub(): void
+    {
+        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList'));
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'formulas']));
     }
 
     public function test_shopping_list_generates_for_family(): void
@@ -66,7 +71,7 @@ class ShoppingListTest extends TestCase
             'number_of_children' => 1, 'address' => '123 Test St', 'phone1' => '555-1234',
         ]);
 
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList', ['family_id' => $family->id]));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping', ['tab' => 'formulas', 'family_id' => $family->id]));
         $response->assertOk();
         $response->assertSee('Test Family');
         $response->assertSee('Tuna');
@@ -114,7 +119,7 @@ class ShoppingListTest extends TestCase
             'number_of_children' => 1, 'address' => '789 Test St', 'phone1' => '555-9012',
         ]);
 
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList', ['format' => 'csv']));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping', ['format' => 'csv']));
         $response->assertOk();
         $this->assertStringStartsWith('text/csv', $response->headers->get('content-type'));
         $content = $response->streamedContent();
@@ -126,7 +131,7 @@ class ShoppingListTest extends TestCase
     public function test_manage_page_loads(): void
     {
         $this->seedGroceryItems();
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList', ['manage' => '1']));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping', ['manage' => '1']));
         $response->assertOk();
         $response->assertSee('Manage Grocery Items');
         $response->assertSee('Tuna');
@@ -199,7 +204,8 @@ class ShoppingListTest extends TestCase
             'number_of_children' => 2, 'address' => 'Y', 'phone1' => '2',
         ]);
 
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingList', [
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping', [
+            'tab' => 'formulas',
             'family_number_start' => 1,
             'family_number_end' => 99,
         ]));

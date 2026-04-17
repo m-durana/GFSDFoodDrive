@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Alpine.js x-cloak: hide elements until Alpine initializes (prevents dropdown flash) */
+[x-cloak] { display: none !important; }
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {

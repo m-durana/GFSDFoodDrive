@@ -385,6 +385,14 @@ class WarehouseService
     {
         try {
             $normalized = $this->normalizeBarcode($barcode);
+
+            // Check local cache first (avoids hitting OFF API for previously seen barcodes)
+            $cacheKey = 'off_barcode_' . $normalized;
+            $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+            if ($cached !== null) {
+                return $cached === false ? null : $cached;
+            }
+
             $response = Http::withoutVerifying()->withHeaders([
                 'User-Agent' => 'GFSDFoodDrive/1.0',
             ])->timeout(5)->get("https://world.openfoodfacts.org/api/v0/product/{$normalized}.json");
@@ -392,9 +400,13 @@ class WarehouseService
             if ($response->successful()) {
                 $data = $response->json();
                 if (($data['status'] ?? 0) === 1) {
-                    return $this->formatOffProduct($data['product'] ?? [], $normalized);
+                    $result = $this->formatOffProduct($data['product'] ?? [], $normalized);
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addDays(30));
+                    return $result;
                 }
                 if (($data['status'] ?? 0) === 0) {
+                    // Product not found — cache the miss for 7 days
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, false, now()->addDays(7));
                     return null;
                 }
             }
@@ -407,7 +419,9 @@ class WarehouseService
             if ($v2->successful()) {
                 $data = $v2->json();
                 if (($data['status'] ?? 0) === 1) {
-                    return $this->formatOffProduct($data['product'] ?? [], $normalized);
+                    $result = $this->formatOffProduct($data['product'] ?? [], $normalized);
+                    \Illuminate\Support\Facades\Cache::put($cacheKey, $result, now()->addDays(30));
+                    return $result;
                 }
             }
 

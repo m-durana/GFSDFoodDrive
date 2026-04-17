@@ -576,7 +576,7 @@ class UIImprovementsTest extends TestCase
 
     public function test_shopping_day_page_loads(): void
     {
-        $response = $this->actingAs($this->santa)->get(route('santa.shoppingDay'));
+        $response = $this->actingAs($this->santa)->get(route('santa.shopping'));
         $response->assertOk();
     }
 

@@ -50,35 +50,99 @@
     <div class="flex-1 overflow-hidden p-4">
 
         <!-- OVERVIEW MODE -->
-        <div id="mode-overview" class="hidden h-full grid grid-cols-4 grid-rows-3 gap-4">
-            <!-- Top stats row -->
+        <div id="mode-overview" class="hidden h-full grid grid-cols-6 grid-rows-3 gap-3">
+            <!-- Top stats row - 6 key metrics -->
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
-                <div class="text-2xl font-bold text-white" id="stat-families">—</div>
-                <div class="text-sm text-gray-400 mt-1">Families</div>
+                <div class="text-3xl font-bold text-white" id="stat-families">—</div>
+                <div class="text-xs text-gray-400 mt-1">Families</div>
             </div>
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
-                <div class="text-2xl font-bold text-white" id="stat-children">—</div>
-                <div class="text-sm text-gray-400 mt-1">Children</div>
+                <div class="text-3xl font-bold text-white" id="stat-children">—</div>
+                <div class="text-xs text-gray-400 mt-1">Children</div>
             </div>
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
-                <div class="text-2xl font-bold text-white" id="stat-members">—</div>
-                <div class="text-sm text-gray-400 mt-1">Total People</div>
+                <div class="text-3xl font-bold text-white" id="stat-members">—</div>
+                <div class="text-xs text-gray-400 mt-1">Total People</div>
             </div>
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
-                <div class="text-2xl font-bold" id="stat-gifts-pct">—</div>
-                <div class="text-sm text-gray-400 mt-1">Gifts Covered</div>
+                <div class="text-3xl font-bold" id="stat-gifts-pct">—</div>
+                <div class="text-xs text-gray-400 mt-1">Gifts Covered</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-3xl font-bold text-pink-400" id="stat-adoption-pct">—</div>
+                <div class="text-xs text-gray-400 mt-1">Adopted</div>
+                <div class="text-[10px] text-gray-600"><span id="stat-adopted-count">0</span> children</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
+                <div class="text-3xl font-bold text-red-400" id="stat-severe">—</div>
+                <div class="text-xs text-gray-400 mt-1">Severe Need</div>
+                <div class="text-[10px] text-gray-600"><span id="stat-pickup">0</span> pickups</div>
             </div>
 
-            <!-- Gift levels chart -->
+            <!-- Row 2: Charts + Delivery summary -->
             <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
                 <h3 class="text-sm font-medium text-gray-400 mb-2 shrink-0">Gift Level Distribution</h3>
                 <div class="flex-1 min-h-0 relative"><canvas id="gift-chart"></canvas></div>
             </div>
-
-            <!-- Delivery progress -->
             <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
                 <h3 class="text-sm font-medium text-gray-400 mb-2 shrink-0">Delivery Progress</h3>
                 <div class="flex-1 min-h-0 relative"><canvas id="delivery-chart"></canvas></div>
+            </div>
+
+            <!-- Row 2-3 right: Delivery + Operations at-a-glance -->
+            <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
+                <h3 class="text-sm font-medium text-gray-400 mb-3 shrink-0">Operations Snapshot</h3>
+                <div class="space-y-3 flex-1 overflow-y-auto">
+                    <!-- Delivery metrics -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                            <div class="text-lg font-bold text-green-400" id="ov-delivered">0</div>
+                            <div class="text-[10px] text-gray-500">Delivered</div>
+                        </div>
+                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                            <div class="text-lg font-bold text-blue-400" id="ov-in-transit">0</div>
+                            <div class="text-[10px] text-gray-500">In Transit</div>
+                        </div>
+                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                            <div class="text-lg font-bold text-amber-400" id="ov-per-hour">0</div>
+                            <div class="text-[10px] text-gray-500">Delivered/hr</div>
+                        </div>
+                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                            <div class="text-lg font-bold text-purple-400" id="ov-active-drivers">0</div>
+                            <div class="text-[10px] text-gray-500">Active Drivers</div>
+                        </div>
+                    </div>
+                    <!-- Shopping summary -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Shopping</span>
+                            <span class="text-gray-500" id="ov-shopping-label">0/0</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full transition-all" id="ov-shopping-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <!-- Packing summary -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Packing</span>
+                            <span class="text-gray-500" id="ov-packing-label">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full transition-all" id="ov-packing-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                    <!-- Gifts intake -->
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Gifts Received</span>
+                            <span class="text-gray-500" id="ov-gifts-label">0/0</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full transition-all" id="ov-gifts-bar" style="width:0%"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -167,7 +231,7 @@
 
             <!-- Row 3: NINJA progress bars -->
             <div class="bg-gray-800 rounded-lg p-3 col-span-6 overflow-y-auto">
-                <h3 class="text-xs font-medium text-gray-400 mb-2">NINJA Shopping Progress</h3>
+                <h3 class="text-xs font-medium text-gray-400 mb-2">Volunteer Shopping Progress</h3>
                 <div id="ninja-bars" class="space-y-2">
                     <div class="text-gray-500 text-xs">Loading...</div>
                 </div>
@@ -177,30 +241,38 @@
         <!-- DELIVERY MODE -->
         <div id="mode-delivery" class="hidden h-full grid grid-cols-12 grid-rows-[auto_1fr] gap-4">
             <!-- Top stats row -->
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
                 <div class="relative">
-                    <svg class="w-24 h-24 transform -rotate-90">
-                        <circle cx="48" cy="48" r="40" stroke="#374151" stroke-width="7" fill="none"/>
-                        <circle id="delivery-ring" cx="48" cy="48" r="40" stroke="#3b82f6" stroke-width="7" fill="none"
-                            stroke-dasharray="251.33" stroke-dashoffset="251.33" class="progress-ring" stroke-linecap="round"/>
+                    <svg class="w-20 h-20 transform -rotate-90">
+                        <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
+                        <circle id="delivery-ring" cx="40" cy="40" r="34" stroke="#3b82f6" stroke-width="6" fill="none"
+                            stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <span id="delivery-pct" class="text-xl font-bold">0%</span>
+                        <span id="delivery-pct" class="text-lg font-bold">0%</span>
                     </div>
                 </div>
                 <div class="text-xs text-gray-400 mt-1">Delivered</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
                 <div class="text-3xl font-bold text-blue-400 pulse" id="delivery-in-transit">0</div>
-                <div class="text-sm text-gray-400 mt-1">In Transit</div>
+                <div class="text-xs text-gray-400 mt-1">In Transit</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
                 <div class="text-3xl font-bold text-gray-400" id="delivery-pending">0</div>
-                <div class="text-sm text-gray-400 mt-1">Pending</div>
+                <div class="text-xs text-gray-400 mt-1">Pending</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 flex flex-col justify-center items-center col-span-3">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
                 <div class="text-3xl font-bold text-green-400" id="delivery-done">0</div>
-                <div class="text-sm text-gray-400 mt-1">Complete</div>
+                <div class="text-xs text-gray-400 mt-1">Complete</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
+                <div class="text-3xl font-bold text-amber-400" id="delivery-per-hour">0</div>
+                <div class="text-xs text-gray-400 mt-1">Delivered/hr</div>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
+                <div class="text-3xl font-bold text-purple-400" id="delivery-active-drivers">0</div>
+                <div class="text-xs text-gray-400 mt-1">Active Drivers</div>
             </div>
 
             <div class="col-span-8 grid grid-rows-[1fr_auto] gap-4 min-h-0">
@@ -258,6 +330,7 @@
         let deliveryChart = null;
         let routeSort = localStorage.getItem('cc_route_sort') || 'name';
         let lastFetchTime = Date.now();
+        let cachedData = null; // Cache for instant re-sorts
 
         // Relative time updater for LIVE indicator
         function updateLiveAge() {
@@ -275,7 +348,8 @@
             routeSort = sort;
             localStorage.setItem('cc_route_sort', sort);
             updateSortButtons();
-            refresh();
+            if (cachedData) rerenderRoutes(cachedData);
+            else refresh();
         }
         function updateSortButtons() {
             ['name', 'progress', 'stops'].forEach(s => {
@@ -320,7 +394,17 @@
             }).addTo(map);
         }
 
-        const carSvg = `<svg viewBox="0 0 24 24" fill="white" width="16" height="16"><path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>`;
+        // 3D-style car icon (top-down perspective with shadow)
+        const carSvg = `<svg viewBox="0 0 40 40" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="20" cy="22" rx="12" ry="6" fill="rgba(0,0,0,0.25)"/>
+            <rect x="10" y="6" width="20" height="26" rx="8" fill="white"/>
+            <rect x="12" y="8" width="16" height="10" rx="4" fill="rgba(255,255,255,0.3)"/>
+            <rect x="12" y="24" width="16" height="5" rx="2" fill="rgba(255,255,255,0.2)"/>
+            <circle cx="13" cy="9" r="2" fill="#facc15"/>
+            <circle cx="27" cy="9" r="2" fill="#facc15"/>
+            <circle cx="13" cy="29" r="2" fill="#ef4444"/>
+            <circle cx="27" cy="29" r="2" fill="#ef4444"/>
+        </svg>`;
 
         function updateMap(mapData) {
             if (!map) return;
@@ -472,6 +556,7 @@
                 const data = await res.json();
 
                 lastFetchTime = Date.now();
+                cachedData = data;
                 updateLiveAge();
 
                 // Overview
@@ -479,8 +564,31 @@
                 document.getElementById('stat-children').textContent = data.overview.total_children;
                 document.getElementById('stat-members').textContent = data.overview.total_members;
                 document.getElementById('stat-gifts-pct').textContent = data.gifts.pct_covered + '%';
-                document.getElementById('stat-gifts-pct').className = 'text-4xl font-bold ' +
+                document.getElementById('stat-gifts-pct').className = 'text-3xl font-bold ' +
                     (data.gifts.pct_covered >= 80 ? 'text-green-400' : data.gifts.pct_covered >= 50 ? 'text-yellow-400' : 'text-red-400');
+                document.getElementById('stat-adoption-pct').textContent = data.overview.adoption_pct + '%';
+                document.getElementById('stat-adopted-count').textContent = data.overview.adopted;
+                document.getElementById('stat-severe').textContent = data.overview.severe_need;
+                document.getElementById('stat-pickup').textContent = data.overview.pickup;
+
+                // Overview — Operations snapshot
+                document.getElementById('ov-delivered').textContent = data.delivery.delivered;
+                document.getElementById('ov-in-transit').textContent = data.delivery.in_transit;
+                document.getElementById('ov-per-hour').textContent = data.delivery.delivered_last_hour;
+                document.getElementById('ov-active-drivers').textContent = data.delivery.active_drivers;
+
+                const shopPct = data.shopping.pct || 0;
+                document.getElementById('ov-shopping-label').textContent = data.shopping.checked_items + '/' + data.shopping.total_items;
+                document.getElementById('ov-shopping-bar').style.width = shopPct + '%';
+
+                if (data.stock) {
+                    document.getElementById('ov-packing-label').textContent = data.stock.packing.pct + '%';
+                    document.getElementById('ov-packing-bar').style.width = data.stock.packing.pct + '%';
+                    const gTotal = data.stock.gifts.total_children || 1;
+                    const gPct = Math.round((data.stock.gifts.received / gTotal) * 100);
+                    document.getElementById('ov-gifts-label').textContent = data.stock.gifts.received + '/' + data.stock.gifts.total_children;
+                    document.getElementById('ov-gifts-bar').style.width = gPct + '%';
+                }
 
                 // Gift chart
                 updateGiftChart(data.gifts);
@@ -499,7 +607,7 @@
                 data.shopping.ninjas.forEach(n => {
                     ninjaBars += progressBar(n.name + ' — ' + n.description, n.pct, n.checked_items, n.total_items, 'green');
                 });
-                document.getElementById('ninja-bars').innerHTML = ninjaBars || '<div class="text-gray-500 text-xs">No NINJA assignments yet.</div>';
+                document.getElementById('ninja-bars').innerHTML = ninjaBars || '<div class="text-gray-500 text-xs">No volunteer assignments yet.</div>';
 
                 // Stock mode — Warehouse & Packing
                 if (data.stock) {
@@ -545,7 +653,49 @@
                 document.getElementById('delivery-in-transit').textContent = data.delivery.in_transit;
                 document.getElementById('delivery-pending').textContent = data.delivery.pending;
                 document.getElementById('delivery-done').textContent = data.delivery.done;
+                document.getElementById('delivery-per-hour').textContent = data.delivery.delivered_last_hour;
+                document.getElementById('delivery-active-drivers').textContent = data.delivery.active_drivers;
 
+                rerenderRoutes(data);
+
+                const queue = (data.delivery.dispatch_queue || []).map(f => `
+                    <div class="border border-gray-700 rounded-lg p-3">
+                        <div class="text-sm font-medium text-gray-200">#${f.number} ${f.name}</div>
+                        <div class="text-xs text-gray-500 mt-1">${f.address}</div>
+                        <div class="text-xs text-gray-400 mt-1">${f.distance_hint}</div>
+                    </div>
+                `).join('');
+                document.getElementById('dispatch-queue').innerHTML = queue || '<div class="text-gray-500 text-sm">No unrouted delivery families.</div>';
+
+                // Activity feed
+                let activityHtml = '';
+                (data.recent_activity || []).forEach(a => {
+                    const statusColors = {
+                        'Delivered': 'text-green-400', 'In transit': 'text-blue-400',
+                        'Attempted': 'text-yellow-400', 'Left at door': 'text-green-300',
+                        'No answer': 'text-red-400',
+                    };
+                    const color = statusColors[a.status] || 'text-gray-400';
+                    activityHtml += `<div class="text-xs border-b border-gray-700 pb-2">
+                        <div class="flex justify-between">
+                            <span class="${color} font-medium">${a.status}</span>
+                            <span class="text-gray-600">${a.time}</span>
+                        </div>
+                        <div class="text-gray-400">${a.family}</div>
+                        ${a.notes ? `<div class="text-gray-600 italic">${a.notes}</div>` : ''}
+                    </div>`;
+                });
+                document.getElementById('activity-feed').innerHTML = activityHtml || '<div class="text-gray-500 text-sm">No activity yet.</div>';
+
+                // Map
+                updateMap(data.delivery_map || {});
+
+            } catch (e) {
+                console.error('Refresh failed:', e);
+            }
+        }
+
+        function rerenderRoutes(data) {
                 let routeBars = '';
                 const sortedRoutes = [...data.delivery.routes].sort((a, b) => {
                     if (routeSort === 'progress') return b.pct - a.pct;
@@ -576,64 +726,22 @@
                                 <div class="h-2 rounded-full transition-all" style="width:${r.pct}%;background:${r.color || '#3b82f6'}"></div>
                             </div>
                             ${headingHtml}
-                            <div class="flex items-center gap-1.5 mt-2">
-                                <button onclick="copyRouteLink('${r.access_token || ''}')" title="Copy driver link"
-                                    class="p-1 text-gray-500 hover:text-gray-300 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
-                                </button>
-                                <button onclick="markRouteReturning(${r.id})" title="Mark returning"
-                                    class="p-1 text-indigo-400 hover:text-indigo-300 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"/></svg>
-                                </button>
-                                <button onclick="recalcRoute(${r.id}, this)" title="Recalculate route"
-                                    class="p-1 text-yellow-500 hover:text-yellow-300 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                </button>
-                                <button onclick="deleteRoute(${r.id})" title="Delete route"
-                                    class="p-1 text-red-500 hover:text-red-400 transition">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                </button>
+                            <div class="flex items-center gap-2 mt-2 text-[10px]">
+                                ${r.access_token ? `<a href="/delivery/route/${r.access_token}" target="_blank"
+                                    class="text-green-500 hover:text-green-300 transition">Driver</a>` : ''}
+                                <button onclick="copyRouteLink('${r.access_token || ''}')"
+                                    class="text-gray-500 hover:text-gray-300 transition">Copy</button>
+                                <button onclick="markRouteReturning(${r.id})"
+                                    class="text-indigo-400 hover:text-indigo-300 transition">Return</button>
+                                <button onclick="recalcRoute(${r.id}, this)"
+                                    class="text-yellow-500 hover:text-yellow-300 transition">Recalc</button>
+                                <button onclick="deleteRoute(${r.id})"
+                                    class="text-red-500 hover:text-red-400 transition">Delete</button>
                             </div>
                         </div>
                     `;
                 });
                 document.getElementById('route-bars').innerHTML = routeBars || '<div class="text-gray-500 text-sm">No routes created.</div>';
-
-                const queue = (data.delivery.dispatch_queue || []).map(f => `
-                    <div class="border border-gray-700 rounded-lg p-3">
-                        <div class="text-sm font-medium text-gray-200">#${f.number} ${f.name}</div>
-                        <div class="text-xs text-gray-500 mt-1">${f.address}</div>
-                        <div class="text-xs text-gray-400 mt-1">${f.distance_hint}</div>
-                    </div>
-                `).join('');
-                document.getElementById('dispatch-queue').innerHTML = queue || '<div class="text-gray-500 text-sm">No unrouted delivery families.</div>';
-
-                // Activity feed
-                let activityHtml = '';
-                data.recent_activity.forEach(a => {
-                    const statusColors = {
-                        'Delivered': 'text-green-400', 'In transit': 'text-blue-400',
-                        'Attempted': 'text-yellow-400', 'Left at door': 'text-green-300',
-                        'No answer': 'text-red-400',
-                    };
-                    const color = statusColors[a.status] || 'text-gray-400';
-                    activityHtml += `<div class="text-xs border-b border-gray-700 pb-2">
-                        <div class="flex justify-between">
-                            <span class="${color} font-medium">${a.status}</span>
-                            <span class="text-gray-600">${a.time}</span>
-                        </div>
-                        <div class="text-gray-400">${a.family}</div>
-                        ${a.notes ? `<div class="text-gray-600 italic">${a.notes}</div>` : ''}
-                    </div>`;
-                });
-                document.getElementById('activity-feed').innerHTML = activityHtml || '<div class="text-gray-500 text-sm">No activity yet.</div>';
-
-                // Map
-                updateMap(data.delivery_map || {});
-
-            } catch (e) {
-                console.error('Refresh failed:', e);
-            }
         }
 
         function updateGiftChart(gifts) {

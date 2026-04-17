@@ -57,10 +57,21 @@ class CommandCenterController extends Controller
         $totalChildren = Child::whereHas('family', fn($q) => $q->whereNotNull('family_number'))->count();
         $totalMembers = Family::whereNotNull('family_number')->sum('number_of_family_members');
 
+        $severeNeed = Family::whereNotNull('family_number')->where('severe_need', true)->count();
+        $adopted = Child::whereHas('family', fn($q) => $q->whereNotNull('family_number'))
+            ->whereNotNull('adopter_name')->count();
+        $adoptionPct = $totalChildren > 0 ? round(($adopted / $totalChildren) * 100) : 0;
+        $pickup = Family::whereNotNull('family_number')
+            ->where('delivery_preference', 'like', '%pickup%')->count();
+
         return [
             'total_families' => $totalFamilies,
             'total_children' => $totalChildren,
             'total_members' => $totalMembers,
+            'severe_need' => $severeNeed,
+            'adopted' => $adopted,
+            'adoption_pct' => $adoptionPct,
+            'pickup' => $pickup,
         ];
     }
 
@@ -109,6 +120,13 @@ class CommandCenterController extends Controller
         $total = $delivered + $inTransit + $pending;
         $done = $delivered;
         $pct = $total > 0 ? round(($done / $total) * 100) : 0;
+
+        // Time-based metrics
+        $deliveredLastHour = DeliveryLog::where('status', 'delivered')
+            ->where('created_at', '>=', now()->subHour())->count();
+        $activeDrivers = DeliveryRoute::whereHas('families', function ($q) {
+            $q->where('delivery_status', DeliveryStatus::InTransit);
+        })->count();
 
         // Routes summary
         $palette = ['#dc2626', '#2563eb', '#16a34a', '#9333ea', '#f97316', '#0ea5e9', '#22c55e', '#a855f7'];
@@ -161,6 +179,8 @@ class CommandCenterController extends Controller
             'done' => $done,
             'total' => $total,
             'pct' => $pct,
+            'delivered_last_hour' => $deliveredLastHour,
+            'active_drivers' => $activeDrivers,
             'routes' => $routes,
             'dispatch_queue' => $dispatchQueue,
         ];

@@ -137,6 +137,19 @@
         </div>
     </div>
 
+    <!-- PDF Generation Modal -->
+    <div id="pdf-modal" class="fixed inset-0 z-50 hidden">
+        <div class="fixed inset-0 bg-black/50"></div>
+        <div class="fixed inset-0 flex items-center justify-center p-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6 text-center">
+                <div id="pdf-spinner" class="inline-block w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4"></div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1" id="pdf-modal-title">Generating PDF...</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400" id="pdf-modal-message">This may take a moment for large batches.</p>
+                <button onclick="closePdfModal()" class="mt-4 hidden px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium" id="pdf-close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.querySelectorAll('.js-school-select').forEach(function(select) {
             select.addEventListener('change', function() {
@@ -147,5 +160,91 @@
                 document.getElementById(endId).value = opt.dataset.end || '';
             });
         });
+
+        // Intercept PDF forms to handle async generation
+        document.querySelectorAll('form[target="_blank"]').forEach(function(form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const url = new URL(form.action);
+                const formData = new FormData(form);
+                formData.forEach((v, k) => { if (v) url.searchParams.set(k, v); });
+
+                showPdfModal('Generating PDF...', 'This may take a moment for large batches.');
+
+                fetch(url.toString(), {
+                    headers: { 'Accept': 'application/json' }
+                })
+                .then(r => {
+                    const ct = r.headers.get('content-type') || '';
+                    if (ct.includes('application/json')) return r.json();
+                    // Sync response (direct PDF or HTML) — open in new tab
+                    window.open(url.toString(), '_blank');
+                    closePdfModal();
+                    return null;
+                })
+                .then(data => {
+                    if (!data) return;
+                    if (data.status_url) {
+                        pollPdfStatus(data.status_url, data.download_url);
+                    } else {
+                        updatePdfModal('Error', data.message || 'Unexpected response.', true);
+                    }
+                })
+                .catch(() => {
+                    updatePdfModal('Error', 'Failed to start PDF generation.', true);
+                });
+            });
+        });
+
+        function showPdfModal(title, msg) {
+            document.getElementById('pdf-modal').classList.remove('hidden');
+            document.getElementById('pdf-spinner').classList.remove('hidden');
+            document.getElementById('pdf-close-btn').classList.add('hidden');
+            document.getElementById('pdf-modal-title').textContent = title;
+            document.getElementById('pdf-modal-message').textContent = msg;
+        }
+
+        function updatePdfModal(title, msg, showClose) {
+            document.getElementById('pdf-modal-title').textContent = title;
+            document.getElementById('pdf-modal-message').textContent = msg;
+            if (showClose) {
+                document.getElementById('pdf-spinner').classList.add('hidden');
+                document.getElementById('pdf-close-btn').classList.remove('hidden');
+            }
+        }
+
+        function closePdfModal() {
+            document.getElementById('pdf-modal').classList.add('hidden');
+        }
+
+        function pollPdfStatus(statusUrl, downloadUrl) {
+            let attempts = 0;
+            const maxAttempts = 120; // 2 minutes max
+            const interval = setInterval(() => {
+                attempts++;
+                fetch(statusUrl)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'complete') {
+                            clearInterval(interval);
+                            updatePdfModal('PDF Ready!', 'Opening download...', true);
+                            window.open(downloadUrl, '_blank');
+                            setTimeout(closePdfModal, 1500);
+                        } else if (data.status === 'failed') {
+                            clearInterval(interval);
+                            updatePdfModal('Generation Failed', data.message || 'The PDF could not be generated.', true);
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(interval);
+                            updatePdfModal('Timeout', 'PDF generation took too long. Please try again.', true);
+                        } else {
+                            updatePdfModal('Generating PDF...', data.message || 'Working...');
+                        }
+                    })
+                    .catch(() => {
+                        clearInterval(interval);
+                        updatePdfModal('Error', 'Lost connection to server.', true);
+                    });
+            }, 1000);
+        }
     </script>
 </x-app-layout>

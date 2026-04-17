@@ -38,12 +38,18 @@ class ShoppingAssignmentTest extends TestCase
         ]);
     }
 
-    public function test_santa_can_view_shopping_day_page(): void
+    public function test_santa_can_view_shopping_hub_page(): void
     {
-        $response = $this->actingAs($this->santa)->get('/santa/shopping-day');
+        $response = $this->actingAs($this->santa)->get('/santa/shopping');
 
         $response->assertStatus(200);
-        $response->assertSee('Shopping Day');
+        $response->assertSee('Shopping Hub');
+    }
+
+    public function test_old_shopping_day_route_redirects(): void
+    {
+        $response = $this->actingAs($this->santa)->get('/santa/shopping-day');
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
     }
 
     public function test_santa_can_create_ninja_assignment(): void
@@ -55,7 +61,7 @@ class ShoppingAssignmentTest extends TestCase
             'family_end' => 50,
         ]);
 
-        $response->assertRedirect('/santa/shopping-day');
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
         $this->assertDatabaseHas('shopping_assignments', [
             'ninja_name' => 'Jake the NINJA',
             'split_type' => 'family_range',
@@ -73,7 +79,7 @@ class ShoppingAssignmentTest extends TestCase
             'family_end' => 50,
         ]);
 
-        $response->assertRedirect('/santa/shopping-day');
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
         $this->assertDatabaseHas('shopping_assignments', [
             'user_id' => $this->coordinator->id,
             'split_type' => 'family_range',
@@ -92,7 +98,7 @@ class ShoppingAssignmentTest extends TestCase
 
         $response = $this->actingAs($this->santa)->delete("/santa/shopping-day/assignments/{$assignment->id}");
 
-        $response->assertRedirect('/santa/shopping-day');
+        $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
         $this->assertDatabaseMissing('shopping_assignments', ['id' => $assignment->id]);
     }
 

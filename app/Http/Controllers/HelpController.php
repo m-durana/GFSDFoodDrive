@@ -8,31 +8,41 @@ class HelpController extends Controller
 {
     public function index(): View
     {
+        return view('help.index');
+    }
+
+    public static function faqsByCategory(): array
+    {
         $faqs = self::faqs();
-        return view('help.index', compact('faqs'));
+        $grouped = [];
+        foreach ($faqs as $faq) {
+            $cat = $faq['category'] ?? 'getting-started';
+            $grouped[$cat][] = $faq;
+        }
+        return $grouped;
     }
 
     public static function faqs(): array
     {
         return [
-            ['q' => 'How do I register my family for the food drive?', 'a' => 'If online self-registration is open, visit the homepage and click "Register Your Family." Fill out the form with your family details and children\'s information. If registration is closed, contact your school\'s advisor or email the food drive team directly.'],
-            ['q' => 'What is Adopt-a-Tag?', 'a' => 'Adopt-a-Tag lets community members "adopt" a child\'s gift tag and purchase a gift for them. You can browse available tags online (when the portal is open) or pick up a physical tag from the Giving Tree at Granite Falls High School.'],
-            ['q' => 'How do I check my family\'s status?', 'a' => 'When your family is registered, you receive a unique status link (looks like: yoursite.com/family-status/abc123...). Use this link to check your registration status, delivery updates, and gift adoption progress.'],
-            ['q' => 'Who are NINJAs?', 'a' => 'NINJAs are our amazing general volunteers! The name stands for "Neighbors In Need of Joining the Action." Everyone — NINJAs, coordinators, and staff — participates in shopping and delivery activities.'],
-            ['q' => 'When is delivery day?', 'a' => 'Delivery dates are set by the Santa (administrator) in the system settings. Check the homepage or ask your coordinator for the specific dates. Typically deliveries happen in mid-December.'],
-            ['q' => 'How does the warehouse barcode scanner work?', 'a' => 'The kiosk page has a barcode scanner input. Scan any food item barcode — the system looks it up in its local database first, then checks OpenFoodFacts for product info and auto-categorizes it. You can also type barcodes manually.'],
-            ['q' => 'What are the different user roles?', 'a' => 'There are four roles: Family/Advisor (register families, manage their own entries), Self-Service (families who self-registered), Coordinator (manage families, warehouse, shopping, delivery operations), and Santa (full admin access including settings, user management, and system configuration).'],
-            ['q' => 'How do gift tags work?', 'a' => 'Each child in a registered family gets a gift tag with their age, gender, sizes, and gift preferences. Tags can be printed (Coordinator > Gift Tags) and placed on the Giving Tree, or made available online through the Adopt-a-Tag portal.'],
-            ['q' => 'Can I adopt more than one tag?', 'a' => 'Yes! You can adopt as many tags as you\'d like — individual children or even an entire family. Each adoption is tracked separately so you\'ll get reminders for each one.'],
-            ['q' => 'Where do I drop off donations?', 'a' => 'Food, toiletries, and gifts should be dropped off at Granite Falls High School (GFHS). Check the homepage for the current address and any special drop-off instructions.'],
-            ['q' => 'How does the shopping list work?', 'a' => 'The Santa sets up a grocery formula (e.g., 2 cans of soup per family member). The system automatically calculates quantities based on registered families. On shopping day, NINJAs and coordinators are assigned items to purchase.'],
-            ['q' => 'What is the Command Center?', 'a' => 'The Command Center is a full-screen, auto-refreshing dashboard designed for display on TVs during operations. It has three modes: Overview (stats and charts), Shopping (NINJA progress tracking), and Delivery (live map with driver locations).'],
-            ['q' => 'How do delivery routes work?', 'a' => 'Santa or coordinators can create optimized delivery routes using the Quick Assign feature, which groups nearby families and calculates efficient driving routes. Drivers get a mobile-friendly view with turn-by-turn navigation links.'],
-            ['q' => 'What happens if I can\'t deliver a gift I adopted?', 'a' => 'Contact the food drive team as soon as possible. An administrator can release your tag back to the available pool so someone else can adopt it. Don\'t worry — the important thing is that every child gets a gift.'],
-            ['q' => 'Is my family\'s information kept confidential?', 'a' => 'Yes. All family information is kept strictly confidential. Only authorized coordinators and administrators can see family details. Gift tag adopters only see the child\'s age, gender, and gift preferences — never names or addresses.'],
-            ['q' => 'How do I volunteer?', 'a' => 'Contact the food drive team via the email on the homepage, or speak to a coordinator at your school. Volunteers help with sorting donations, wrapping gifts, shopping for groceries, and delivering on delivery day.'],
-            ['q' => 'What does "severe need" mean?', 'a' => 'Some families are flagged as having severe or urgent needs by advisors or Santa. These families are silently prioritized in the Adopt-a-Tag portal to ensure they get adopted first, but no special indicator is shown to adopters.'],
-            ['q' => 'Can I use the system on my phone?', 'a' => 'Yes! The entire system is mobile-responsive. The driver view, shopping companion, and Adopt-a-Tag portal are specifically optimized for mobile use. The warehouse kiosk works well on tablets too.'],
+            ['q' => 'How do I register my family for the food drive?', 'a' => 'If online self-registration is open, visit the homepage and click "Register Your Family." Fill out the form with your family details and children\'s information. If registration is closed, contact your school\'s advisor or email the food drive team directly.', 'category' => 'family-management'],
+            ['q' => 'What is Adopt-a-Tag?', 'a' => 'Adopt-a-Tag lets community members "adopt" a child\'s gift tag and purchase a gift for them. You can browse available tags online (when the portal is open) or pick up a physical tag from the Giving Tree at Granite Falls High School.', 'category' => 'gift-tags'],
+            ['q' => 'How do I check my family\'s status?', 'a' => 'When your family is registered, you receive a unique status link (looks like: yoursite.com/family-status/abc123...). Use this link to check your registration status, delivery updates, and gift adoption progress.', 'category' => 'family-management'],
+            ['q' => 'Who are NINJAs?', 'a' => 'NINJAs are our amazing general volunteers! The name stands for "Neighbors In Need of Joining the Action." Everyone — volunteers, coordinators, and staff — participates in shopping and delivery activities.', 'category' => 'getting-started'],
+            ['q' => 'When is delivery day?', 'a' => 'Delivery dates are set by the Santa (administrator) in the system settings. Check the homepage or ask your coordinator for the specific dates. Typically deliveries happen in mid-December.', 'category' => 'delivery-day'],
+            ['q' => 'How does the warehouse barcode scanner work?', 'a' => 'The kiosk page has a barcode scanner input. Scan any food item barcode — the system looks it up in its local database first, then checks OpenFoodFacts for product info and auto-categorizes it. You can also type barcodes manually.', 'category' => 'warehouse'],
+            ['q' => 'What are the different user roles?', 'a' => 'There are four roles: Family/Advisor (register families, manage their own entries), Self-Service (families who self-registered), Coordinator (manage families, warehouse, shopping, delivery operations), and Santa (full admin access including settings, user management, and system configuration).', 'category' => 'getting-started'],
+            ['q' => 'How do gift tags work?', 'a' => 'Each child in a registered family gets a gift tag with their age, gender, sizes, and gift preferences. Tags can be printed (Coordinator > Gift Tags) and placed on the Giving Tree, or made available online through the Adopt-a-Tag portal.', 'category' => 'gift-tags'],
+            ['q' => 'Can I adopt more than one tag?', 'a' => 'Yes! You can adopt as many tags as you\'d like — individual children or even an entire family. Each adoption is tracked separately so you\'ll get reminders for each one.', 'category' => 'gift-tags'],
+            ['q' => 'Where do I drop off donations?', 'a' => 'Food, toiletries, and gifts should be dropped off at Granite Falls High School (GFHS). Check the homepage for the current address and any special drop-off instructions.', 'category' => 'warehouse'],
+            ['q' => 'How does the shopping list work?', 'a' => 'The Santa sets up a grocery formula (e.g., 2 cans of soup per family member). The system automatically calculates quantities based on registered families. On shopping day, volunteers and coordinators are assigned items to purchase.', 'category' => 'shopping'],
+            ['q' => 'What is the Command Center?', 'a' => 'The Command Center is a full-screen, auto-refreshing dashboard designed for display on TVs during operations. It has three modes: Overview (stats and charts), Shopping (volunteer progress tracking), and Delivery (live map with driver locations).', 'category' => 'command-center'],
+            ['q' => 'How do delivery routes work?', 'a' => 'Santa or coordinators can create optimized delivery routes using the Quick Assign feature, which groups nearby families and calculates efficient driving routes. Drivers get a mobile-friendly view with turn-by-turn navigation links.', 'category' => 'delivery-day'],
+            ['q' => 'What happens if I can\'t deliver a gift I adopted?', 'a' => 'Contact the food drive team as soon as possible. An administrator can release your tag back to the available pool so someone else can adopt it. Don\'t worry — the important thing is that every child gets a gift.', 'category' => 'gift-tags'],
+            ['q' => 'Is my family\'s information kept confidential?', 'a' => 'Yes. All family information is kept strictly confidential. Only authorized coordinators and administrators can see family details. Gift tag adopters only see the child\'s age, gender, and gift preferences — never names or addresses.', 'category' => 'family-management'],
+            ['q' => 'How do I volunteer?', 'a' => 'Contact the food drive team via the email on the homepage, or speak to a coordinator at your school. Volunteers help with sorting donations, wrapping gifts, shopping for groceries, and delivering on delivery day.', 'category' => 'getting-started'],
+            ['q' => 'What does "severe need" mean?', 'a' => 'Some families are flagged as having severe or urgent needs by advisors or Santa. These families are silently prioritized in the Adopt-a-Tag portal to ensure they get adopted first, but no special indicator is shown to adopters.', 'category' => 'family-management'],
+            ['q' => 'Can I use the system on my phone?', 'a' => 'Yes! The entire system is mobile-responsive. The driver view, shopping companion, and Adopt-a-Tag portal are specifically optimized for mobile use. The warehouse kiosk works well on tablets too.', 'category' => 'getting-started'],
         ];
     }
 
@@ -45,7 +55,10 @@ class HelpController extends Controller
             abort(404);
         }
 
-        return view('help.show', compact('current', 'topics'));
+        $allFaqs = self::faqsByCategory();
+        $faqs = $allFaqs[$topic] ?? [];
+
+        return view('help.show', compact('current', 'topics', 'faqs'));
     }
 
     public static function topics(): array

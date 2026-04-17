@@ -9,10 +9,12 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\AccessRequest;
 use App\Services\GeocodingService;
+use App\Services\PackingService;
 use App\Models\Child;
 use App\Models\DismissedDuplicate;
 use App\Models\Family;
 use App\Models\GroceryItem;
+use App\Models\PackingList;
 use App\Models\SchoolRange;
 use App\Models\Setting;
 use App\Models\ShoppingAssignment;
@@ -182,7 +184,7 @@ class SantaController extends Controller
             'notificationsEnabled' => Setting::get('notifications_enabled', '0') === '1',
             'familyStatusEnabled' => Setting::get('family_status_enabled', '0') === '1',
             'deliveryDates' => Setting::get('delivery_dates', 'December 18th,December 19th'),
-            'coordinatorPositions' => Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'),
+            'coordinatorPositions' => Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,Marketing Director'),
             'packingSystemEnabled' => Setting::get('packing_system_enabled', '1') === '1',
             'packingFulfillmentThreshold' => Setting::get('packing_fulfillment_alert_threshold', '80'),
         ]);
@@ -582,6 +584,134 @@ class SantaController extends Controller
         ));
     }
 
+    public function shopping(Request $request)
+    {
+        // Handle manage redirect (formula editor is a separate view)
+        if ($request->get('manage') === '1') {
+            $groceryItems = GroceryItem::orderBy('sort_order')->get();
+            return view('santa.shopping-manage', compact('groceryItems'));
+        }
+
+        $tab = $request->get('tab', 'overview');
+        $groceryItems = GroceryItem::orderBy('sort_order')->get();
+        $schoolRanges = SchoolRange::orderBy('sort_order')->get();
+
+        // --- Overview data ---
+        $deficits = app(PackingService::class)->getShoppingDeficits();
+
+        // Staleness: compare latest GroceryItem change vs latest packing list generation
+        $lastFormulaChange = GroceryItem::max('updated_at');
+        $lastPackingGen = PackingList::max('created_at');
+        $formulaStale = $lastFormulaChange && $lastPackingGen && $lastFormulaChange > $lastPackingGen;
+
+        // --- Formulas & Lists data (per-family breakdowns) ---
+        $families = collect();
+        $shoppingLists = [];
+        $totals = [];
+
+        if ($request->anyFilled(['family_id', 'family_number_start'])) {
+            $query = Family::whereNotNull('family_number')->with('children')->orderBy('family_number');
+
+            if ($request->filled('family_number_start') && $request->filled('family_number_end')) {
+                $query->whereBetween('family_number', [$request->family_number_start, $request->family_number_end]);
+            } elseif ($request->filled('family_id')) {
+                $query->where('id', $request->family_id);
+            }
+
+            $families = $query->get();
+            foreach ($families as $family) {
+                $list = GroceryItem::calculateForFamily($family);
+                $shoppingLists[$family->id] = $list;
+                foreach ($list as $itemName => $info) {
+                    $totals[$itemName] = ($totals[$itemName] ?? 0) + $info['quantity'];
+                }
+            }
+        }
+
+        // CSV export
+        if ($request->get('format') === 'csv') {
+            // If no families loaded yet for CSV, load all
+            if ($families instanceof \Illuminate\Support\Collection && $families->isEmpty()) {
+                $families = Family::whereNotNull('family_number')->with('children')->orderBy('family_number')->get();
+                foreach ($families as $family) {
+                    $list = GroceryItem::calculateForFamily($family);
+                    $shoppingLists[$family->id] = $list;
+                    foreach ($list as $itemName => $info) {
+                        $totals[$itemName] = ($totals[$itemName] ?? 0) + $info['quantity'];
+                    }
+                }
+            }
+
+            $filename = 'shopping-list-' . date('Y-m-d') . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            ];
+
+            $callback = function () use ($families, $shoppingLists, $groceryItems, $totals) {
+                $out = fopen('php://output', 'w');
+                $headerRow = ['Family Number', 'Family Name', 'Members'];
+                foreach ($groceryItems as $item) {
+                    $headerRow[] = $item->name;
+                }
+                $headerRow[] = 'Total';
+                fputcsv($out, $headerRow);
+
+                foreach ($families as $family) {
+                    $row = [$family->family_number, $family->family_name, $family->number_of_family_members];
+                    $familyTotal = 0;
+                    foreach ($groceryItems as $item) {
+                        $qty = $shoppingLists[$family->id][$item->name]['quantity'] ?? 0;
+                        $row[] = $qty;
+                        $familyTotal += $qty;
+                    }
+                    $row[] = $familyTotal;
+                    fputcsv($out, $row);
+                }
+
+                $totalRow = ['', 'TOTALS', ''];
+                $grandTotal = 0;
+                foreach ($groceryItems as $item) {
+                    $qty = $totals[$item->name] ?? 0;
+                    $totalRow[] = $qty;
+                    $grandTotal += $qty;
+                }
+                $totalRow[] = $grandTotal;
+                fputcsv($out, $totalRow);
+                fclose($out);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        }
+
+        // --- Assignments data ---
+        $assignments = ShoppingAssignment::with('user')->get();
+        $coordinators = User::where('permission', '>=', 8)->orderBy('first_name')->get();
+        $assignedRanges = [];
+        foreach ($assignments as $a) {
+            if ($a->family_start && $a->family_end) {
+                $assignedRanges[] = ['start' => $a->family_start, 'end' => $a->family_end];
+            }
+        }
+        $maxFamilyNumber = Family::max('family_number') ?? 0;
+        $groceryCategories = GroceryItem::select('category')->distinct()->pluck('category')->toArray();
+        $groceryItemsByCategory = GroceryItem::orderBy('category')->orderBy('sort_order')->orderBy('name')
+            ->get()->groupBy('category')
+            ->map(fn($items) => $items->map(fn($item) => ['id' => $item->id, 'name' => $item->name]))
+            ->toArray();
+        $reconciliation = app(PackingService::class)->getShoppingReconciliation();
+
+        $allFamilies = Family::whereNotNull('family_number')->orderBy('family_number')
+            ->select('id', 'family_number', 'family_name', 'number_of_family_members')->get();
+
+        return view('santa.shopping', compact(
+            'tab', 'groceryItems', 'schoolRanges', 'deficits', 'formulaStale',
+            'families', 'shoppingLists', 'totals', 'allFamilies',
+            'assignments', 'coordinators', 'assignedRanges', 'maxFamilyNumber',
+            'groceryCategories', 'groceryItemsByCategory', 'reconciliation'
+        ));
+    }
+
     public function shoppingList(Request $request)
     {
         $groceryItems = GroceryItem::orderBy('sort_order')->get();
@@ -695,7 +825,7 @@ class SantaController extends Controller
             'qty_5', 'qty_6', 'qty_7', 'qty_8',
         ]));
 
-        return redirect()->route('santa.shoppingList', ['manage' => '1'])
+        return redirect()->route('santa.shopping', ['manage' => '1'])
             ->with('success', "Item '{$groceryItem->name}' updated.");
     }
 
@@ -722,7 +852,7 @@ class SantaController extends Controller
             'sort_order' => $maxOrder + 1,
         ]);
 
-        return redirect()->route('santa.shoppingList', ['manage' => '1'])
+        return redirect()->route('santa.shopping', ['manage' => '1'])
             ->with('success', "Item '{$request->name}' added.");
     }
 
@@ -731,7 +861,7 @@ class SantaController extends Controller
         $name = $groceryItem->name;
         $groceryItem->delete();
 
-        return redirect()->route('santa.shoppingList', ['manage' => '1'])
+        return redirect()->route('santa.shopping', ['manage' => '1'])
             ->with('success', "Item '{$name}' removed.");
     }
 
@@ -745,7 +875,7 @@ class SantaController extends Controller
         $handle = fopen($file->getRealPath(), 'r');
 
         if (!$handle) {
-            return redirect()->route('santa.shoppingList', ['manage' => '1'])
+            return redirect()->route('santa.shopping', ['manage' => '1'])
                 ->with('error', 'Could not open CSV file.');
         }
 
@@ -753,7 +883,7 @@ class SantaController extends Controller
         $header = fgetcsv($handle);
         if (!$header || count($header) < 12) {
             fclose($handle);
-            return redirect()->route('santa.shoppingList', ['manage' => '1'])
+            return redirect()->route('santa.shopping', ['manage' => '1'])
                 ->with('error', 'Invalid CSV format. Expected header with Family Number, demographics, and item columns.');
         }
 
@@ -826,7 +956,7 @@ class SantaController extends Controller
             }
         }
 
-        return redirect()->route('santa.shoppingList', ['manage' => '1'])
+        return redirect()->route('santa.shopping', ['manage' => '1'])
             ->with('success', "Imported: {$updated} items updated, {$created} new items created from " . count($dataBySize) . " family size groups.");
     }
 
@@ -1089,7 +1219,7 @@ class SantaController extends Controller
 
         ShoppingAssignment::create($data);
 
-        return redirect()->route('santa.shoppingDay')
+        return redirect()->route('santa.shopping', ['tab' => 'assignments'])
             ->with('success', 'Shopping assignment created. Share the link with the shopper!');
     }
 
@@ -1102,8 +1232,24 @@ class SantaController extends Controller
     {
         $numShoppers = (int) $request->num_shoppers;
 
+        // Exclude families already covered by existing assignments
+        $existingAssignments = ShoppingAssignment::all();
+        $alreadyAssignedFamilyIds = collect();
+        foreach ($existingAssignments as $existing) {
+            if ($existing->split_type === 'family_range' && $existing->family_start && $existing->family_end) {
+                $coveredIds = Family::whereNotNull('family_number')
+                    ->whereBetween('family_number', [$existing->family_start, $existing->family_end])
+                    ->pluck('id');
+                $alreadyAssignedFamilyIds = $alreadyAssignedFamilyIds->merge($coveredIds);
+            } elseif ($existing->split_type === 'smart_split' && isset($existing->config['family_ids'])) {
+                $alreadyAssignedFamilyIds = $alreadyAssignedFamilyIds->merge($existing->config['family_ids']);
+            }
+        }
+        $alreadyAssignedFamilyIds = $alreadyAssignedFamilyIds->unique()->toArray();
+
         // Get all families in the current season with their item counts
         $families = Family::whereNotNull('family_number')
+            ->when(!empty($alreadyAssignedFamilyIds), fn ($q) => $q->whereNotIn('id', $alreadyAssignedFamilyIds))
             ->with('children')
             ->get()
             ->map(function ($family) {
@@ -1120,7 +1266,7 @@ class SantaController extends Controller
             ->values();
 
         if ($families->isEmpty()) {
-            return redirect()->route('santa.shoppingDay')
+            return redirect()->route('santa.shopping', ['tab' => 'assignments'])
                 ->with('success', 'No families with items found for smart split.');
         }
 
@@ -1165,7 +1311,7 @@ class SantaController extends Controller
             $created++;
         }
 
-        return redirect()->route('santa.shoppingDay')
+        return redirect()->route('santa.shopping', ['tab' => 'assignments'])
             ->with('success', "{$created} smart-split assignments created. Share the links with shoppers!");
     }
 
@@ -1173,13 +1319,13 @@ class SantaController extends Controller
     {
         $assignment->delete();
 
-        return redirect()->route('santa.shoppingDay')
+        return redirect()->route('santa.shopping', ['tab' => 'assignments'])
             ->with('success', 'Shopping assignment removed.');
     }
 
     public function users(): View
     {
-        $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'))));
+        $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,Marketing Director'))));
 
         return view('santa.users', [
             'users' => User::orderBy('first_name')->get(),

@@ -9,9 +9,9 @@
                    class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded-md hover:bg-green-500 text-xs font-medium transition">
                     Export Formula CSV
                 </a>
-                <a href="{{ route('santa.shoppingList') }}"
+                <a href="{{ route('santa.shopping') }}"
                    class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-500 text-xs font-medium transition">
-                    Back to Shopping Lists
+                    Back to Shopping Hub
                 </a>
             </div>
         </div>

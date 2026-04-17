@@ -56,28 +56,12 @@
                 @endforeach
             </div>
 
-            {{-- FAQ Accordion --}}
-            @if(!empty($faqs))
-                <div class="mt-12">
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Frequently Asked Questions</h2>
-                    <div class="space-y-2">
-                        @foreach($faqs as $i => $faq)
-                            <div x-data="{ open: false }" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                                <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                    <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $faq['q'] }}</span>
-                                    <svg :class="open && 'rotate-180'" class="w-5 h-5 text-gray-400 shrink-0 ml-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                                    </svg>
-                                </button>
-                                <div x-show="open" x-collapse>
-                                    <div class="px-5 pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-3">
-                                        {{ $faq['a'] }}
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
+            {{-- FAQ counts per category --}}
+            @php $faqCounts = \App\Http\Controllers\HelpController::faqsByCategory(); @endphp
+            @if(array_sum(array_map('count', $faqCounts)) > 0)
+                <p class="mt-8 text-sm text-gray-500 dark:text-gray-400">
+                    FAQs are available within each topic page above.
+                </p>
             @endif
         </div>
     </div>

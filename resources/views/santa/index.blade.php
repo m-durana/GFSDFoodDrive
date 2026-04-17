@@ -13,10 +13,6 @@
             <div>
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 px-1">Families & People</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <a href="{{ route('santa.numberAssignment') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Number Assignment</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Assign family numbers by school</p>
-                    </a>
                     <a href="{{ route('santa.duplicates') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Duplicate Detection</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Find and merge duplicate families</p>
@@ -36,13 +32,9 @@
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Adopt-a-Tag</h4>
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Public tag adoption portal & tracking</p>
                     </a>
-                    <a href="{{ route('santa.shoppingList') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Lists</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Grocery lists by family size</p>
-                    </a>
-                    <a href="{{ route('santa.shoppingDay') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
-                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Day</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">NINJA assignments & live checklists</p>
+                    <a href="{{ route('santa.shopping') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Shopping Hub</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Deficits, assignments, formulas & lists</p>
                     </a>
                 </div>
             </div>
@@ -51,10 +43,14 @@
             <!-- Data & Reports -->
             <div>
                 <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3 px-1">Data & Reports</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <a href="{{ route('santa.analytics') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
+                        <h4 class="font-medium text-gray-900 dark:text-gray-100">Analytics</h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Charts, trends, and deep insights</p>
+                    </a>
                     <a href="{{ route('santa.reports') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Reports</h4>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Stats, progress, and analytics</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Stats, progress, and summaries</p>
                     </a>
                     <a href="{{ route('santa.export') }}" class="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition border border-gray-200 dark:border-gray-700">
                         <h4 class="font-medium text-gray-900 dark:text-gray-100">Filter & Export</h4>

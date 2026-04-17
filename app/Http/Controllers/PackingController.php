@@ -187,6 +187,39 @@ class PackingController extends Controller
             ->with('error', 'Cannot verify — not all items are packed.');
     }
 
+    public function verifyStation(): View
+    {
+        $counts = [
+            'total' => PackingList::count(),
+            'complete' => PackingList::where('status', PackingStatus::Complete)->count(),
+            'verified' => PackingList::where('status', PackingStatus::Verified)->count(),
+            'remaining' => PackingList::whereIn('status', [PackingStatus::Pending, PackingStatus::InProgress])->count(),
+        ];
+
+        $awaitingVerification = PackingList::with('family')
+            ->where('status', PackingStatus::Complete)
+            ->orderBy('completed_at', 'asc')
+            ->get();
+
+        $recentlyVerified = PackingList::with(['family', 'verifier'])
+            ->where('status', PackingStatus::Verified)
+            ->whereDate('verified_at', Carbon::today())
+            ->orderBy('verified_at', 'desc')
+            ->limit(10)
+            ->get();
+
+        $verifiedTodayCount = PackingList::where('status', PackingStatus::Verified)
+            ->whereDate('verified_at', Carbon::today())
+            ->count();
+
+        return view('santa.packing.verify-station', compact(
+            'counts',
+            'awaitingVerification',
+            'recentlyVerified',
+            'verifiedTodayCount'
+        ));
+    }
+
     public function summary(Request $request): View
     {
         try {

@@ -25,3 +25,5 @@ database/*.sqlite
 /storage/app/pdfs
 /storage/backups
 /storage/app/pdf-batches/
+/.claude/*
+ROADMAP.md

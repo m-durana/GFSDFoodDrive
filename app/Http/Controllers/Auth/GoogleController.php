@@ -127,7 +127,7 @@ class GoogleController extends Controller
         }
 
         $schools = \App\Models\SchoolRange::orderBy('sort_order')->pluck('school_name')->toArray();
-        $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,NINJA,Marketing Director'))));
+        $positions = array_filter(array_map('trim', explode(',', Setting::get('coordinator_positions', 'System Engineer,Activities Coordinator,Giving Tree Coordinator,Food Manager,Business Operator,Video Producer,Marketing Director'))));
 
         return view('auth.request-access', compact('googleUser', 'schools', 'positions'));
     }

@@ -24,13 +24,13 @@
         }
     </script>
 
-    <!-- Prevent FOUC: hide until CSS loads -->
-    <style>body { visibility: hidden; }</style>
+    <!-- Prevent FOUC: hide body until Vite CSS loads, then reveal via the loaded stylesheet -->
+    <style id="fouc-guard">body { opacity: 0; }</style>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <style>body { visibility: visible; }</style>
+    <script>document.getElementById('fouc-guard').remove();</script>
 </head>
 <body class="font-sans antialiased pb-safe">
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -55,39 +55,45 @@
     @include('partials.hints')
     @include('partials.guided-tour')
 
-    <!-- Sortable table Alpine component -->
+    <!-- Sortable table Alpine component — global function for Object.assign/spread usage -->
     <script>
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('sortTable', () => ({
-            sortKey: '',
-            sortAsc: true,
-            sort(key) {
-                if (this.sortKey === key) {
-                    this.sortAsc = !this.sortAsc;
-                } else {
-                    this.sortKey = key;
-                    this.sortAsc = true;
-                }
-                const tbody = this.$el.querySelector('tbody');
-                if (!tbody) return;
-                const rows = Array.from(tbody.querySelectorAll(':scope > tr'));
-                const idx = Array.from(this.$el.querySelectorAll('th[data-sort-key]'))
-                    .findIndex(th => th.dataset.sortKey === key);
-                if (idx < 0) return;
-                rows.sort((a, b) => {
-                    // Prefer data-col attribute lookup, fall back to positional index
-                    const aCell = Array.from(a.querySelectorAll('td')).find(td => td.dataset.col === key) ?? a.querySelectorAll('td')[idx];
-                    const bCell = Array.from(b.querySelectorAll('td')).find(td => td.dataset.col === key) ?? b.querySelectorAll('td')[idx];
-                    if (!aCell || !bCell) return 0;
-                    let aVal = (aCell.dataset.sortValue ?? aCell.textContent).trim();
-                    let bVal = (bCell.dataset.sortValue ?? bCell.textContent).trim();
-                    const aNum = parseFloat(aVal), bNum = parseFloat(bVal);
-                    if (!isNaN(aNum) && !isNaN(bNum)) return this.sortAsc ? aNum - bNum : bNum - aNum;
-                    return this.sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-                });
-                rows.forEach(r => tbody.appendChild(r));
+    window.sortTable = () => ({
+        sortKey: '',
+        sortAsc: true,
+        sort(key) {
+            if (this.sortKey === key) {
+                this.sortAsc = !this.sortAsc;
+            } else {
+                this.sortKey = key;
+                this.sortAsc = true;
             }
-        }));
+            // Find table: either $el IS the table or it contains one
+            const el = this.$el;
+            const table = el.tagName === 'TABLE' ? el : el.querySelector('table');
+            if (!table) return;
+            const tbody = table.querySelector('tbody');
+            if (!tbody) return;
+            const rows = Array.from(tbody.children).filter(r => r.tagName === 'TR');
+            const headers = Array.from(table.querySelectorAll('th[data-sort-key]'));
+            const idx = headers.findIndex(th => th.dataset.sortKey === key);
+            if (idx < 0) return;
+            rows.sort((a, b) => {
+                const aTds = a.querySelectorAll(':scope > td');
+                const bTds = b.querySelectorAll(':scope > td');
+                const aCell = Array.from(aTds).find(td => td.dataset.col === key) || aTds[idx];
+                const bCell = Array.from(bTds).find(td => td.dataset.col === key) || bTds[idx];
+                if (!aCell || !bCell) return 0;
+                let aVal = (aCell.dataset.sortValue !== undefined ? aCell.dataset.sortValue : aCell.textContent).trim();
+                let bVal = (bCell.dataset.sortValue !== undefined ? bCell.dataset.sortValue : bCell.textContent).trim();
+                const aNum = parseFloat(aVal), bNum = parseFloat(bVal);
+                if (!isNaN(aNum) && !isNaN(bNum)) return this.sortAsc ? aNum - bNum : bNum - aNum;
+                return this.sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            });
+            rows.forEach(r => tbody.appendChild(r));
+        }
+    });
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('sortTable', window.sortTable);
     });
     </script>
     @stack('scripts')
