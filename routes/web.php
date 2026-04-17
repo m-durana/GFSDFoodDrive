@@ -32,6 +32,8 @@ if (! app()->environment('production')) {
         if ($request->header('X-E2E-Token') !== $expected) {
             abort(403, 'Bad E2E token');
         }
+        @set_time_limit(300);
+        @ini_set('memory_limit', '512M');
         \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
             '--seed' => true,
             '--force' => true,

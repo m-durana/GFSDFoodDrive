@@ -26,8 +26,8 @@ export default defineConfig({
   webServer: process.env.E2E_NO_SERVER
     ? undefined
     : {
-        command: 'php artisan serve --host=127.0.0.1 --port=8000 --env=e2e',
-        url: baseURL,
+        command: 'php -d max_execution_time=300 artisan serve --host=127.0.0.1 --port=8000 --env=e2e',
+        url: `${baseURL}/up`,
         reuseExistingServer: !process.env.CI,
         timeout: 60_000,
       },

@@ -15,7 +15,7 @@ test.describe('Suite A — Family Intake', () => {
     await expect(page).not.toHaveURL(/\/login/);
     // Form should expose at least one input — exact selector is intentionally loose
     // so the test does not break on harmless template changes.
-    await expect(page.locator('form input').first()).toBeVisible();
+    await expect(page.locator('form input:not([type="hidden"])').first()).toBeVisible();
   });
 
   // TODO: full create-with-children + duplicate-detection flow once form selectors stabilize.

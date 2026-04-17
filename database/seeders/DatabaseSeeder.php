@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             SchoolRangeSeeder::class,
         ]);
 
-        if (app()->environment('local')) {
+        if (app()->environment('local', 'e2e')) {
             $this->call([
                 TestDataSeeder::class,
             ]);
