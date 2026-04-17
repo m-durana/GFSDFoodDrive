@@ -23,6 +23,28 @@ use App\Http\Controllers\PackingController;
 use App\Http\Controllers\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
+// E2E test harness: reset DB to a known seeded state. Guarded to non-prod
+// + requires X-E2E-Token header. Loaded by routes/web.php so it shares session
+// middleware, but the env guard prevents accidental prod exposure.
+if (! app()->environment('production')) {
+    Route::post('/__e2e/reset', function (\Illuminate\Http\Request $request) {
+        $expected = env('E2E_RESET_TOKEN', 'e2e-local-token');
+        if ($request->header('X-E2E-Token') !== $expected) {
+            abort(403, 'Bad E2E token');
+        }
+        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+            '--seed' => true,
+            '--force' => true,
+        ]);
+        return response()->json([
+            'ok' => true,
+            'output' => \Illuminate\Support\Facades\Artisan::output(),
+        ]);
+    })->withoutMiddleware([
+        \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+    ]);
+}
+
 // Root route: show public homepage for everyone
 Route::get('/', function () {
     $selfRegistrationEnabled = \App\Models\Setting::get('self_registration_enabled', false);
