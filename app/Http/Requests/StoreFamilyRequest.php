@@ -18,7 +18,20 @@ class StoreFamilyRequest extends FormRequest
             return false;
         }
 
-        return $this->user()->isFamily() || $this->user()->isCoordinator() || $this->user()->isSanta();
+        if (!($this->user()->isFamily() || $this->user()->isCoordinator() || $this->user()->isSanta())) {
+            return false;
+        }
+
+        // For update (a Family is route-bound), enforce per-family ownership:
+        // Advisors may only edit families they own; Coordinator/Santa may edit any.
+        $family = $this->route('family');
+        if ($family instanceof \App\Models\Family
+            && !($this->user()->isCoordinator() || $this->user()->isSanta())
+            && $family->user_id !== $this->user()->id) {
+            return false;
+        }
+
+        return true;
     }
 
     public function rules(): array
