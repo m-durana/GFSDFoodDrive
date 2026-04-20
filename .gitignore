@@ -60,3 +60,11 @@ desktop.ini
 *.swp
 *.swo
 *~
+
+# Workflow-doc tooling and intermediate extracts (regeneratable)
+/.bug_chunks/
+/.bugs_raw.md
+/.bugs_raw.json
+/.extract_bugs.py
+/.split_bugs.py
+/.fix_links.py

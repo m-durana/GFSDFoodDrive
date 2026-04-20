@@ -12,6 +12,29 @@ use Illuminate\View\View;
 
 class FamilyController extends Controller
 {
+    /**
+     * Abort 403 unless the current user owns the family or has a staff role.
+     * Advisors (`family` role) may only touch families where `user_id` matches
+     * their own id; Coordinator and Santa can touch any family.
+     */
+    private function authorizeFamilyAccess(Request $request, Family $family): void
+    {
+        $user = $request->user();
+        if ($user->isCoordinator() || $user->isSanta()) {
+            return;
+        }
+        abort_if($family->user_id !== $user->id, 403, 'You do not have access to this family.');
+    }
+
+    /**
+     * Abort 404 if $child does not belong to $family. 404 rather than 403 so
+     * we do not leak the existence of another family's child via URL probing.
+     */
+    private function authorizeChildBinding(Family $family, Child $child): void
+    {
+        abort_if($child->family_id !== $family->id, 404);
+    }
+
     public function index(Request $request): View
     {
         $user = $request->user();
@@ -81,20 +104,24 @@ class FamilyController extends Controller
             ->with('success', "Family '{$family->family_name}' created successfully (#{$family->family_number}).");
     }
 
-    public function show(Family $family): View
+    public function show(Request $request, Family $family): View
     {
+        $this->authorizeFamilyAccess($request, $family);
         $family->load(['children', 'packingList.volunteer']);
 
         return view('family.show', compact('family'));
     }
 
-    public function edit(Family $family): View
+    public function edit(Request $request, Family $family): View
     {
+        $this->authorizeFamilyAccess($request, $family);
+
         return view('family.edit', compact('family'));
     }
 
     public function update(StoreFamilyRequest $request, Family $family): RedirectResponse
     {
+        $this->authorizeFamilyAccess($request, $family);
         $data = $request->validated();
 
         // Compute totals
@@ -116,6 +143,7 @@ class FamilyController extends Controller
 
     public function storeChild(Request $request, Family $family): RedirectResponse
     {
+        $this->authorizeFamilyAccess($request, $family);
         $validated = $request->validate([
             'gender' => ['required', 'string', 'in:Male,Female,Other'],
             'age' => ['required', 'string', 'max:50'],
@@ -145,6 +173,8 @@ class FamilyController extends Controller
 
     public function updateChild(Request $request, Family $family, Child $child): RedirectResponse
     {
+        $this->authorizeFamilyAccess($request, $family);
+        $this->authorizeChildBinding($family, $child);
         $validated = $request->validate([
             'gender' => ['required', 'string', 'in:Male,Female,Other'],
             'age' => ['required', 'string', 'max:50'],
@@ -169,16 +199,27 @@ class FamilyController extends Controller
             ->with('success', 'Child updated successfully.');
     }
 
-    public function destroyChild(Family $family, Child $child): RedirectResponse
+    public function destroyChild(Request $request, Family $family, Child $child): RedirectResponse
     {
+        $this->authorizeFamilyAccess($request, $family);
+        $this->authorizeChildBinding($family, $child);
+
+        // Guard against silently breaking an adopter's confirmation link.
+        // Santa must first release the adoption (S-81) before the child can be removed.
+        if ($child->adoption_token !== null) {
+            return redirect()->route('family.show', $family)
+                ->with('error', 'Cannot remove an adopted child. Release the adoption first.');
+        }
+
         $child->delete();
 
         return redirect()->route('family.show', $family)
             ->with('success', 'Child removed.');
     }
 
-    public function toggleDone(Family $family): RedirectResponse
+    public function toggleDone(Request $request, Family $family): RedirectResponse
     {
+        $this->authorizeFamilyAccess($request, $family);
         $family->update(['family_done' => !$family->family_done]);
 
         $status = $family->family_done ? 'marked as complete' : 'marked as incomplete';
