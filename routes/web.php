@@ -66,7 +66,9 @@ Route::middleware('auth')->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->middleware('throttle:30,1')
+        ->name('profile.update');
 
     // Dashboard redirect: sends user to their role-appropriate page
     Route::get('/dashboard', function () {

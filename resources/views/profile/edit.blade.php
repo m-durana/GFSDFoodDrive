@@ -12,6 +12,12 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="mb-4 p-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-lg text-sm">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
@@ -25,28 +31,40 @@
                             <img id="avatar-preview" src="{{ $user->avatar_url }}" alt="Avatar"
                                 class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600">
                             <div class="space-y-2">
-                                <div>
-                                    <label class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                                        Upload Photo
-                                        <input type="file" name="avatar" accept="image/*" class="hidden"
-                                            onchange="document.getElementById('avatar-action').value='upload'; previewAvatar(this)">
-                                    </label>
-                                </div>
-                                <button type="button" onclick="document.getElementById('avatar-action').value='randomize'; document.getElementById('avatar-seed').value=Math.random().toString(36).substring(2,10); this.form.submit()"
-                                    class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                                    Randomize Avatar
-                                </button>
-                                @if($user->avatar_path)
-                                    <button type="button" onclick="document.getElementById('avatar-action').value='remove'; this.form.submit()"
-                                        class="block text-sm text-red-600 dark:text-red-400 hover:underline">
-                                        Remove Photo
+                                @if($user->avatar_restricted)
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                        Your avatar has been locked by an administrator.
+                                    </p>
+                                @else
+                                    <div>
+                                        <label class="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded-md cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                                            Upload Photo
+                                            <input type="file" name="avatar" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" class="hidden"
+                                                onchange="document.getElementById('avatar-action').value='upload'; previewAvatar(this)">
+                                        </label>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('avatar-action').value='randomize'; document.getElementById('avatar-seed').value=Math.random().toString(36).substring(2,10); this.form.submit()"
+                                        class="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+                                        Randomize Avatar
                                     </button>
+                                    @if($user->avatar_path)
+                                        <button type="button" onclick="document.getElementById('avatar-action').value='remove'; this.form.submit()"
+                                            class="block text-sm text-red-600 dark:text-red-400 hover:underline">
+                                            Remove Photo
+                                        </button>
+                                    @endif
                                 @endif
                             </div>
                         </div>
                         <input type="hidden" name="avatar_action" id="avatar-action" value="">
                         <input type="hidden" name="avatar_seed" id="avatar-seed" value="">
                         @error('avatar')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('avatar_action')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        @error('avatar_seed')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -66,6 +84,9 @@
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-8">
                             When enabled, your name, position, and avatar appear on the public homepage.
                         </p>
+                        @error('show_on_website')
+                            <p class="mt-1 text-sm text-red-600 ml-8">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     {{-- Account Info (read-only) --}}
