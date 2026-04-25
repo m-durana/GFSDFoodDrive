@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\View\View;
 
 class HelpController extends Controller
@@ -9,6 +10,30 @@ class HelpController extends Controller
     public function index(): View
     {
         return view('help.index');
+    }
+
+    public static function userCanAccessTopic(?User $user, array $topic): bool
+    {
+        $role = $topic['role'] ?? 'all';
+        if ($role === 'all') {
+            return true;
+        }
+        if (!$user) {
+            return false;
+        }
+        return match ($role) {
+            'coordinator' => $user->isCoordinator() || $user->isSanta(),
+            'santa' => $user->isSanta(),
+            default => false,
+        };
+    }
+
+    public static function topicsFor(?User $user): array
+    {
+        return array_values(array_filter(
+            self::topics(),
+            fn (array $t) => self::userCanAccessTopic($user, $t)
+        ));
     }
 
     public static function faqsByCategory(): array
@@ -48,13 +73,17 @@ class HelpController extends Controller
 
     public function show(string $topic): View
     {
-        $topics = self::topics();
-        $current = collect($topics)->firstWhere('slug', $topic);
+        $current = collect(self::topics())->firstWhere('slug', $topic);
 
         if (!$current) {
             abort(404);
         }
 
+        if (!self::userCanAccessTopic(auth()->user(), $current)) {
+            abort(403);
+        }
+
+        $topics = self::topicsFor(auth()->user());
         $allFaqs = self::faqsByCategory();
         $faqs = $allFaqs[$topic] ?? [];
 

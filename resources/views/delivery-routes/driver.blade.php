@@ -84,7 +84,7 @@
                 $status = $family->delivery_status?->value ?? 'pending';
                 $isDone = $status === 'delivered';
             @endphp
-            <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 {{ $isDone ? 'stop-delivered' : '' }}" data-stop-id="{{ $family->id }}">
+            <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 {{ $isDone ? 'stop-delivered' : '' }}" data-stop-id="{{ $family->route_order }}">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex-1">
                         <div class="flex items-center space-x-2">
@@ -93,18 +93,10 @@
                                 {!! $isDone ? '&#10003;' : $family->route_order !!}
                             </span>
                             <div>
-                                <div class="font-semibold text-slate-900">#{{ $family->family_number }} {{ $family->family_name }}</div>
+                                <div class="font-semibold text-slate-900">Stop {{ $family->route_order }}</div>
                                 <div class="text-xs text-slate-500">{{ $family->address }}</div>
                             </div>
                         </div>
-                        @if($family->phone1)
-                            <p class="text-sm text-slate-500 ml-9">
-                                <a href="tel:{{ $family->phone1 }}" class="text-blue-600 font-medium">{{ $family->phone1 }}</a>
-                            </p>
-                        @endif
-                        @if($family->delivery_reason)
-                            <p class="text-xs text-amber-600 mt-1 ml-9">Note: {{ $family->delivery_reason }}</p>
-                        @endif
                     </div>
                     <span class="stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium
                         {{ $status === 'delivered' ? 'bg-emerald-100 text-emerald-800' : '' }}
@@ -118,21 +110,21 @@
                 <div class="flex flex-wrap items-center gap-2 mt-3 ml-9">
                     <a href="https://www.google.com/maps/dir/?api=1&destination={{ urlencode($family->address) }}"
                         target="_blank"
-                        onclick="markHeading('{{ $route->access_token }}', {{ $family->id }})"
+                        onclick="markHeading('{{ $route->access_token }}', {{ $family->route_order }})"
                         class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold">
                         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
                         Navigate
                     </a>
 
                     <button type="button" class="deliver-btn inline-flex items-center px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold {{ $isDone ? 'hidden' : '' }}"
-                        onclick="markStopDelivered('{{ $route->access_token }}', {{ $family->id }}, this)">
+                        onclick="markStopDelivered('{{ $route->access_token }}', {{ $family->route_order }}, this)">
                         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                         Delivered
                     </button>
 
                     {{-- Fallback form for no-JS --}}
                     <noscript>
-                        <form method="POST" action="{{ route('delivery.completeStop', [$route->access_token, $family]) }}">
+                        <form method="POST" action="{{ route('delivery.completeStop', [$route->access_token, $family->route_order]) }}">
                             @csrf
                             <button type="submit" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold">
                                 Delivered
@@ -168,12 +160,12 @@
         }
 
         // ── Mark delivered via fetch ────────────────────────────
-        function markStopDelivered(token, familyId, btn) {
+        function markStopDelivered(token, stopOrder, btn) {
             if (!confirm('Mark as delivered?')) return;
             btn.disabled = true;
             btn.textContent = '...';
 
-            fetch(`/delivery/route/${token}/complete/${familyId}`, {
+            fetch(`/delivery/route/${token}/complete/${stopOrder}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +181,7 @@
             })
             .then(data => {
                 showToast('Marked delivered!');
-                applyStopDelivered(familyId);
+                applyStopDelivered(stopOrder);
             })
             .catch(err => {
                 btn.disabled = false;
@@ -199,8 +191,8 @@
         }
 
         // ── Mark heading (in transit) ───────────────────────────
-        function markHeading(token, familyId) {
-            fetch(`/delivery/route/${token}/heading/${familyId}`, {
+        function markHeading(token, stopOrder) {
+            fetch(`/delivery/route/${token}/heading/${stopOrder}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -211,7 +203,7 @@
                 credentials: 'same-origin',
             })
             .then(() => {
-                const card = document.querySelector(`[data-stop-id="${familyId}"]`);
+                const card = document.querySelector(`[data-stop-id="${stopOrder}"]`);
                 // Remove heading-to from all other cards
                 document.querySelectorAll('.heading-to').forEach(c => c.classList.remove('heading-to'));
                 if (card) {
@@ -222,15 +214,15 @@
                         badge.textContent = 'In transit';
                     }
                     // Update "heading to" text in header
-                    const name = card.querySelector('.font-semibold.text-slate-900')?.textContent || '';
-                    document.getElementById('heading-to-text').textContent = 'Heading to ' + name;
+                    const label = card.querySelector('.font-semibold.text-slate-900')?.textContent || '';
+                    document.getElementById('heading-to-text').textContent = 'Heading to ' + label;
                 }
             })
             .catch(() => {});
         }
 
-        function applyStopDelivered(familyId) {
-            const card = document.querySelector(`[data-stop-id="${familyId}"]`);
+        function applyStopDelivered(stopOrder) {
+            const card = document.querySelector(`[data-stop-id="${stopOrder}"]`);
             if (!card) return;
             card.classList.add('stop-delivered');
             const list = document.getElementById('stops-list');
@@ -259,11 +251,11 @@
                 .then(r => r.json())
                 .then(data => {
                     data.stops.forEach(stop => {
-                        const card = document.querySelector(`[data-stop-id="${stop.id}"]`);
+                    const card = document.querySelector(`[data-stop-id="${stop.order}"]`);
                         if (!card) return;
                         const isDone = stop.status === 'delivered';
                         if (isDone && !card.classList.contains('stop-delivered')) {
-                            applyStopDelivered(stop.id);
+                            applyStopDelivered(stop.order);
                         }
                     });
                     // Update map markers
@@ -338,12 +330,9 @@
         @php
             $stopsData = $route->families->map(function($f) {
                 return [
-                    'id' => $f->id,
                     'lat' => (float) $f->latitude,
                     'lng' => (float) $f->longitude,
                     'order' => $f->route_order,
-                    'number' => $f->family_number,
-                    'name' => $f->family_name,
                     'status' => $f->delivery_status?->value ?? 'pending',
                 ];
             })->filter(fn($s) => $s['lat'] && $s['lng'])->values();
@@ -384,8 +373,8 @@
                         html: `<div style="background:${color};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;${isDone ? 'opacity:0.6;' : ''}">${isDone ? '&#10003;' : s.order}</div>`,
                         iconSize: [24, 24], iconAnchor: [12, 12],
                     })
-                }).addTo(map).bindPopup(`#${s.number} ${s.name}`);
-                mapMarkers[s.id] = marker;
+                }).addTo(map).bindPopup(`Stop ${s.order}`);
+                mapMarkers[s.order] = marker;
                 bounds.push([s.lat, s.lng]);
                 polyline.push([s.lat, s.lng]);
             });
@@ -410,10 +399,10 @@
 
         function updateMapMarkers(stops) {
             stops.forEach(s => {
-                if (!mapMarkers[s.id]) return;
+                if (!mapMarkers[s.order]) return;
                 const isDone = s.status === 'delivered';
                 const color = isDone ? '#22c55e' : '#dc2626';
-                mapMarkers[s.id].setIcon(L.divIcon({
+                mapMarkers[s.order].setIcon(L.divIcon({
                     className: '',
                     html: `<div style="background:${color};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;${isDone ? 'opacity:0.6;' : ''}">${isDone ? '&#10003;' : s.order}</div>`,
                     iconSize: [24, 24], iconAnchor: [12, 12],

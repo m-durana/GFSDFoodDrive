@@ -17,7 +17,7 @@
                 </button>
             </div>
 
-            @php $topics = \App\Http\Controllers\HelpController::topics(); @endphp
+            @php $topics = \App\Http\Controllers\HelpController::topicsFor(auth()->user()); @endphp
 
             @php
                 $iconMap = [

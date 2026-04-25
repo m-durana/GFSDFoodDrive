@@ -3,14 +3,20 @@
 namespace Tests\Feature;
 
 use App\Enums\GiftLevel;
+use App\Enums\PackingItemStatus;
+use App\Enums\PackingStatus;
 use App\Enums\TransactionType;
 use App\Models\Child;
 use App\Models\Family;
+use App\Models\PackingItem;
+use App\Models\PackingList;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\WarehouseCategory;
+use App\Models\WarehouseItem;
 use App\Models\WarehouseTransaction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class WarehouseExtendedTest extends TestCase
@@ -139,5 +145,54 @@ class WarehouseExtendedTest extends TestCase
         $response = $this->actingAs($this->coordinator)->get(route('warehouse.inventory'));
         $response->assertOk();
         $response->assertSee('Canned Food');
+    }
+
+    public function test_remove_item_rolls_back_packing_changes_when_deactivation_fails(): void
+    {
+        $category = WarehouseCategory::create(['name' => 'Canned Goods', 'type' => 'food', 'unit' => 'can']);
+        $item = WarehouseItem::create([
+            'category_id' => $category->id,
+            'name' => 'Only Beans',
+            'active' => true,
+        ]);
+        $family = Family::create([
+            'family_name' => 'Rollback Inv Test', 'family_number' => 2,
+            'number_of_family_members' => 3, 'number_of_adults' => 2,
+            'number_of_children' => 1, 'phone1' => '555-5678', 'address' => '2 Main St',
+        ]);
+        $list = PackingList::create(['family_id' => $family->id, 'status' => PackingStatus::Pending]);
+        $packingItem = PackingItem::create([
+            'packing_list_id' => $list->id,
+            'category_id' => $category->id,
+            'item_id' => $item->id,
+            'description' => 'Only Beans',
+            'quantity_needed' => 1,
+            'status' => PackingItemStatus::Pending,
+        ]);
+
+        DB::unprepared("
+            CREATE TRIGGER fail_warehouse_item_deactivation
+            BEFORE UPDATE ON warehouse_items
+            WHEN NEW.active = 0
+            BEGIN
+                SELECT RAISE(ABORT, 'forced warehouse item failure');
+            END;
+        ");
+
+        try {
+            $response = $this->actingAs($this->coordinator)
+                ->delete(route('warehouse.item.remove', $item));
+        } finally {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_warehouse_item_deactivation');
+        }
+
+        $response->assertServerError();
+        $packingItem->refresh();
+        $item->refresh();
+
+        $this->assertTrue($item->active);
+        $this->assertEquals(PackingItemStatus::Pending, $packingItem->status);
+        $this->assertSame('Only Beans', $packingItem->description);
+        $this->assertNull($packingItem->packed_by);
     }
 }

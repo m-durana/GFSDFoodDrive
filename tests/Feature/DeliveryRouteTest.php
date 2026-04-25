@@ -132,7 +132,35 @@ class DeliveryRouteTest extends TestCase
 
         $response = $this->get(route('delivery.driverView', $route->access_token));
         $response->assertOk();
+        $response->assertSee('Route PIN');
+        $response->assertDontSee('1 Main St');
+    }
+
+    public function test_driver_pin_unlocks_route_without_household_identifiers(): void
+    {
+        $route = DeliveryRoute::create(['name' => 'Driver Route']);
+        $family = $this->createFamilyWithCoords(42, 47.85, -121.97);
+        $family->update([
+            'family_name' => 'Sensitive Household',
+            'phone1' => '360-555-4242',
+            'delivery_reason' => 'Private need note',
+            'delivery_route_id' => $route->id,
+            'route_order' => 1,
+        ]);
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect(route('delivery.driverView', $route->access_token));
+
+        $response = $this->get(route('delivery.driverView', $route->access_token));
+        $response->assertOk();
         $response->assertSee('Driver Route');
+        $response->assertSee('Stop 1');
+        $response->assertSee('42 Main St');
+        $response->assertDontSee('Sensitive Household');
+        $response->assertDontSee('360-555-4242');
+        $response->assertDontSee('Private need note');
+        $response->assertDontSee('#42');
     }
 
     public function test_driver_view_404s_with_invalid_token(): void
@@ -148,10 +176,19 @@ class DeliveryRouteTest extends TestCase
         $family->update(['delivery_route_id' => $route->id, 'route_order' => 1]);
 
         $response = $this->postJson(
-            route('delivery.completeStop', [$route->access_token, $family]),
+            route('delivery.completeStop', [$route->access_token, $family->route_order]),
+        );
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
+
+        $response = $this->postJson(
+            route('delivery.completeStop', [$route->access_token, $family->route_order]),
         );
         $response->assertOk();
-        $response->assertJson(['ok' => true, 'status' => 'delivered']);
+        $response->assertJson(['ok' => true, 'status' => 'delivered', 'stop_order' => 1]);
 
         $this->assertEquals(DeliveryStatus::Delivered, $family->fresh()->delivery_status);
         $this->assertDatabaseHas('delivery_logs', [
@@ -167,8 +204,12 @@ class DeliveryRouteTest extends TestCase
         $family = $this->createFamilyWithCoords(1, 47.85, -121.97);
         $family->update(['delivery_route_id' => $route2->id, 'route_order' => 1]);
 
+        $this->post(route('delivery.verifyDriverPin', $route1->access_token), [
+            'pin' => $route1->driver_pin,
+        ])->assertRedirect();
+
         $response = $this->postJson(
-            route('delivery.completeStop', [$route1->access_token, $family]),
+            route('delivery.completeStop', [$route1->access_token, $family->route_order]),
         );
         $response->assertForbidden();
     }
@@ -180,16 +221,34 @@ class DeliveryRouteTest extends TestCase
         $family->update(['delivery_route_id' => $route->id, 'route_order' => 1]);
 
         $response = $this->postJson(
-            route('delivery.markHeading', [$route->access_token, $family]),
+            route('delivery.markHeading', [$route->access_token, $family->route_order]),
+        );
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
+
+        $response = $this->postJson(
+            route('delivery.markHeading', [$route->access_token, $family->route_order]),
         );
         $response->assertOk();
-        $response->assertJson(['ok' => true, 'status' => 'in_transit']);
+        $response->assertJson(['ok' => true, 'status' => 'in_transit', 'stop_order' => 1]);
         $this->assertEquals(DeliveryStatus::InTransit, $family->fresh()->delivery_status);
     }
 
     public function test_mark_returning_sets_returning_at(): void
     {
         $route = DeliveryRoute::create(['name' => 'Return Test']);
+
+        $response = $this->postJson(
+            route('delivery.markReturning', $route->access_token),
+        );
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
 
         $response = $this->postJson(
             route('delivery.markReturning', $route->access_token),
@@ -202,6 +261,16 @@ class DeliveryRouteTest extends TestCase
     public function test_update_driver_location_stores_coordinates(): void
     {
         $route = DeliveryRoute::create(['name' => 'Location Test']);
+
+        $response = $this->postJson(
+            route('delivery.updateDriverLocation', $route->access_token),
+            ['latitude' => 47.85, 'longitude' => -121.97]
+        );
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
 
         $response = $this->postJson(
             route('delivery.updateDriverLocation', $route->access_token),
@@ -221,6 +290,16 @@ class DeliveryRouteTest extends TestCase
             route('delivery.updateDriverLocation', $route->access_token),
             ['latitude' => 999, 'longitude' => -121.97]
         );
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
+
+        $response = $this->postJson(
+            route('delivery.updateDriverLocation', $route->access_token),
+            ['latitude' => 999, 'longitude' => -121.97]
+        );
         $response->assertUnprocessable();
     }
 
@@ -231,11 +310,21 @@ class DeliveryRouteTest extends TestCase
         $family->update(['delivery_route_id' => $route->id, 'route_order' => 1]);
 
         $response = $this->getJson(route('delivery.routeData', $route->access_token));
+        $response->assertForbidden();
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect();
+
+        $response = $this->getJson(route('delivery.routeData', $route->access_token));
         $response->assertOk();
         $response->assertJsonStructure([
             'route' => ['name', 'distance', 'duration', 'stop_count', 'start_lat', 'start_lng', 'polyline'],
-            'stops' => [['id', 'number', 'name', 'address', 'lat', 'lng', 'order', 'status', 'nav_url']],
+            'stops' => [['address', 'lat', 'lng', 'order', 'status', 'nav_url']],
         ]);
+        $response->assertJsonMissingPath('stops.0.id');
+        $response->assertJsonMissingPath('stops.0.number');
+        $response->assertJsonMissingPath('stops.0.name');
     }
 
     // ── Optimize requires ORS key ──────────────────────────────────

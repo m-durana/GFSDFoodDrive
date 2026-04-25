@@ -13,6 +13,7 @@ use App\Models\WarehouseTransaction;
 use App\Services\WarehouseService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class WarehouseController extends Controller
@@ -260,8 +261,12 @@ class WarehouseController extends Controller
         $packingService = app(\App\Services\PackingService::class);
         $coordinator = auth()->user();
 
-        $affected = $packingService->autoSubstituteRemovedItem($item, $coordinator);
-        $item->update(['active' => false]);
+        $affected = DB::transaction(function () use ($packingService, $item, $coordinator) {
+            $affected = $packingService->autoSubstituteRemovedItem($item, $coordinator);
+            $item->update(['active' => false]);
+
+            return $affected;
+        });
 
         $message = "Item '{$item->name}' deactivated.";
         if ($affected > 0) {

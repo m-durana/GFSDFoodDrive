@@ -112,7 +112,7 @@ class PackingEdgeCaseTest extends TestCase
         $family = $this->createFamily(['number_of_family_members' => 1]);
         $list = app(PackingService::class)->generatePackingList($family);
 
-        $response = $this->postJson("/api/packing/{$list->id}/scan", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/scan", [
             'barcode' => '012345678901',
         ]);
 
@@ -150,7 +150,7 @@ class PackingEdgeCaseTest extends TestCase
         }
 
         // Now scan a canned item — should say already fulfilled
-        $response = $this->postJson("/api/packing/{$list->id}/scan", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/scan", [
             'barcode' => 'EXTRA-TUNA',
         ]);
 
@@ -164,19 +164,19 @@ class PackingEdgeCaseTest extends TestCase
 
     public function test_api_quick_pack_on_nonexistent_list_returns_404(): void
     {
-        $response = $this->postJson("/api/packing/99999/item/1/pack");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/99999/item/1/pack");
         $response->assertNotFound();
     }
 
     public function test_api_scan_on_nonexistent_list_returns_404(): void
     {
-        $response = $this->postJson("/api/packing/99999/scan", ['barcode' => 'TEST']);
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/99999/scan", ['barcode' => 'TEST']);
         $response->assertNotFound();
     }
 
     public function test_api_complete_on_nonexistent_list_returns_404(): void
     {
-        $response = $this->postJson("/api/packing/99999/complete");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/99999/complete");
         $response->assertNotFound();
     }
 
@@ -233,6 +233,86 @@ class PackingEdgeCaseTest extends TestCase
         $response->assertStatus(422);
     }
 
+    // ==========================================
+    // Regression: P-12 / SYS-09 / W-16 — Missing auth middleware theme.
+    // Before the fix, these endpoints accepted anonymous writes / PII reads.
+    // ==========================================
+
+    public function test_api_scan_requires_auth(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily();
+        $list = app(PackingService::class)->generatePackingList($family);
+
+        $response = $this->postJson("/api/packing/{$list->id}/scan", ['barcode' => '012345678901']);
+        $response->assertUnauthorized();
+    }
+
+    public function test_api_quick_pack_requires_auth(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily();
+        $list = app(PackingService::class)->generatePackingList($family);
+        $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
+
+        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
+        $response->assertUnauthorized();
+    }
+
+    public function test_api_substitute_requires_auth(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily();
+        $list = app(PackingService::class)->generatePackingList($family);
+        $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
+
+        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", ['notes' => 'x']);
+        $response->assertUnauthorized();
+    }
+
+    public function test_api_complete_requires_auth(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily();
+        $list = app(PackingService::class)->generatePackingList($family);
+
+        $response = $this->postJson("/api/packing/{$list->id}/complete");
+        $response->assertUnauthorized();
+    }
+
+    public function test_api_stats_requires_auth(): void
+    {
+        $response = $this->getJson('/api/packing/stats');
+        $response->assertUnauthorized();
+    }
+
+    public function test_warehouse_mobile_scan_404_when_packing_disabled(): void
+    {
+        Setting::set('packing_system_enabled', '0');
+        Setting::clearCache();
+
+        $response = $this->get('/warehouse/mobile-scan');
+        $response->assertNotFound();
+    }
+
+    public function test_api_scan_404_when_packing_disabled(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily();
+        $list = app(PackingService::class)->generatePackingList($family);
+
+        Setting::set('packing_system_enabled', '0');
+        Setting::clearCache();
+
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/scan", ['barcode' => 'X']);
+        $response->assertNotFound();
+    }
+
     public function test_api_clock_in_requires_auth(): void
     {
         $response = $this->postJson('/api/packing/sessions/clock-in');
@@ -264,12 +344,12 @@ class PackingEdgeCaseTest extends TestCase
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
         // First substitution
-        $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => 'First',
         ]);
 
         // Second substitution — should still work
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => 'Second replacement',
         ]);
         $response->assertOk();
@@ -401,9 +481,9 @@ class PackingEdgeCaseTest extends TestCase
         $this->assertNotEmpty($list->items);
     }
 
-    public function test_api_pack_works_when_system_disabled(): void
+    public function test_api_pack_is_blocked_when_system_disabled(): void
     {
-        // API endpoints (except stats) are NOT protected by PackingSystemEnabled middleware
+        // API pack endpoints are now gated by PackingSystemEnabled middleware (SYS-04/W-16 fix).
         $this->seedWarehouseCategories();
         $this->seedGroceryItems();
         $family = $this->createFamily(['number_of_family_members' => 1]);
@@ -413,10 +493,8 @@ class PackingEdgeCaseTest extends TestCase
         Setting::set('packing_system_enabled', '0');
         Setting::clearCache();
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
-        // This should still work — API pack endpoints are not behind the middleware
-        $response->assertOk();
-        $response->assertJsonFragment(['success' => true]);
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
+        $response->assertNotFound();
     }
 
     // ==========================================
@@ -514,10 +592,10 @@ class PackingEdgeCaseTest extends TestCase
         $this->packAllItems($list);
 
         // First complete
-        $this->postJson("/api/packing/{$list->id}/complete");
+        $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/complete");
 
         // Second complete — should still succeed
-        $response = $this->postJson("/api/packing/{$list->id}/complete");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/complete");
         $response->assertOk();
         $response->assertJsonFragment(['success' => true]);
     }
@@ -555,7 +633,7 @@ class PackingEdgeCaseTest extends TestCase
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
         // 501 chars — should fail validation (max:500)
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => str_repeat('x', 501),
         ]);
         $response->assertUnprocessable();
@@ -569,7 +647,7 @@ class PackingEdgeCaseTest extends TestCase
         $list = app(PackingService::class)->generatePackingList($family);
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => str_repeat('x', 500),
         ]);
         $response->assertOk();

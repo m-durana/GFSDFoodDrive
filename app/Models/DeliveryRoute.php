@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class DeliveryRoute extends Model
@@ -21,6 +23,11 @@ class DeliveryRoute extends Model
         static::creating(function (DeliveryRoute $route) {
             if (empty($route->access_token)) {
                 $route->access_token = Str::random(32);
+            }
+            if (empty($route->driver_pin_hash)) {
+                $pin = (string) random_int(100000, 999999);
+                $route->driver_pin_hash = Hash::make($pin);
+                $route->driver_pin_encrypted = Crypt::encryptString($pin);
             }
             if (empty($route->season_year)) {
                 $route->season_year = Setting::get('season_year', date('Y'));
@@ -79,6 +86,20 @@ class DeliveryRoute extends Model
     public function getDisplayNameAttribute(): string
     {
         return preg_replace('/^\s*seeded\s*/i', '', $this->name);
+    }
+
+    public function getDriverPinAttribute(): ?string
+    {
+        if (! $this->driver_pin_encrypted) {
+            return null;
+        }
+
+        return Crypt::decryptString($this->driver_pin_encrypted);
+    }
+
+    public function verifyDriverPin(string $pin): bool
+    {
+        return Hash::check($pin, $this->driver_pin_hash);
     }
 
     public function formattedDistance(): string

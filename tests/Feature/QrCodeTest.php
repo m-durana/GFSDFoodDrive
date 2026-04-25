@@ -100,6 +100,32 @@ class QrCodeTest extends TestCase
         $this->assertEquals('Jane Doe', $this->child->adopter_name);
     }
 
+    public function test_scan_update_rejects_unsigned_request(): void
+    {
+        // Regression: G-12 / SYS-03. Before the fix, PUT /scan/{child} accepted
+        // unsigned writes — anyone with a CSRF token could mutate any child.
+        $response = $this->put('/scan/' . $this->child->id, [
+            'gift_level' => 3,
+            'gifts_received' => 'Forged',
+            'adopter_name' => 'Attacker',
+        ]);
+
+        $response->assertStatus(403);
+
+        $this->child->refresh();
+        $this->assertNotEquals(3, $this->child->gift_level->value);
+        $this->assertNull($this->child->gifts_received);
+        $this->assertNull($this->child->adopter_name);
+    }
+
+    public function test_scan_update_rejects_tampered_signature(): void
+    {
+        $response = $this->put('/scan/' . $this->child->id . '?signature=invalid', [
+            'gift_level' => 3,
+        ]);
+        $response->assertStatus(403);
+    }
+
     public function test_gift_tags_generate_successfully_with_qr(): void
     {
         $response = $this->actingAs($this->santa)->get('/coordinator/gift-tags?filter=all');

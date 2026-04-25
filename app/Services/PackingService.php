@@ -136,30 +136,34 @@ class PackingService
      */
     public function markItemPacked(PackingItem $item, User $packer): array
     {
-        $newQuantity = min($item->quantity_needed, $item->quantity_packed + 1);
-        $newStatus = $newQuantity >= $item->quantity_needed
-            ? PackingItemStatus::Packed
-            : PackingItemStatus::Pending;
+        return DB::transaction(function () use ($item, $packer) {
+            $item = PackingItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
 
-        $item->update([
-            'quantity_packed' => $newQuantity,
-            'packed_by' => $packer->id,
-            'packed_at' => now(),
-            'status' => $newStatus,
-        ]);
+            $newQuantity = min($item->quantity_needed, $item->quantity_packed + 1);
+            $newStatus = $newQuantity >= $item->quantity_needed
+                ? PackingItemStatus::Packed
+                : PackingItemStatus::Pending;
 
-        $activeSession = PackingSession::activeFor($packer);
-        if ($activeSession) {
-            $activeSession->increment('items_packed');
-        }
+            $item->update([
+                'quantity_packed' => $newQuantity,
+                'packed_by' => $packer->id,
+                'packed_at' => now(),
+                'status' => $newStatus,
+            ]);
 
-        $this->syncListStatus($item->packingList);
+            $activeSession = PackingSession::activeFor($packer);
+            if ($activeSession) {
+                $activeSession->increment('items_packed');
+            }
 
-        return [
-            'success' => true,
-            'item' => $item->fresh(),
-            'message' => 'Item packed successfully.',
-        ];
+            $this->syncListStatus($item->packingList);
+
+            return [
+                'success' => true,
+                'item' => $item->fresh(),
+                'message' => 'Item packed successfully.',
+            ];
+        });
     }
 
     /**

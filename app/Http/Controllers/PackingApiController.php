@@ -6,8 +6,6 @@ use App\Enums\PackingItemStatus;
 use App\Enums\PackingStatus;
 use App\Models\PackingItem;
 use App\Models\PackingList;
-use App\Models\Setting;
-use App\Models\User;
 use App\Services\PackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -71,8 +69,7 @@ class PackingApiController extends Controller
 
         $request->validate(['barcode' => 'required|string']);
 
-        $packer = auth()->user();
-        $result = $this->packingService->scanItemIntoPack($list, $request->barcode, $packer);
+        $result = $this->packingService->scanItemIntoPack($list, $request->barcode, auth()->user());
 
         return response()->json($result);
     }
@@ -107,8 +104,7 @@ class PackingApiController extends Controller
             ]);
         }
 
-        $packer = auth()->user() ?? new User();
-        $result = $this->packingService->markItemPacked($packingItem, $packer);
+        $result = $this->packingService->markItemPacked($packingItem, auth()->user());
 
         return response()->json($result);
     }
@@ -148,8 +144,7 @@ class PackingApiController extends Controller
             $newItem = \App\Models\WarehouseItem::find($request->new_item_id);
         }
 
-        $packer = auth()->user() ?? new User();
-        $this->packingService->substituteItem($packingItem, $newItem, $request->notes, $packer);
+        $this->packingService->substituteItem($packingItem, $newItem, $request->notes, auth()->user());
 
         return response()->json([
             'success' => true,
@@ -228,10 +223,6 @@ class PackingApiController extends Controller
      */
     public function stats(): JsonResponse
     {
-        if (Setting::get('packing_system_enabled', '1') !== '1') {
-            return response()->json(['enabled' => false]);
-        }
-
         return response()->json($this->packingService->getDashboardStats());
     }
 

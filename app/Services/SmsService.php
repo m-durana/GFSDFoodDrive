@@ -44,12 +44,22 @@ class SmsService
                 'body' => $message,
             ]);
 
-            Log::info("SMS sent to {$to}");
+            Log::info('SMS sent', static::phoneLogContext($to));
             return true;
         } catch (\Exception $e) {
-            Log::error("SMS failed to {$to}: " . $e->getMessage());
+            Log::error('SMS failed', static::phoneLogContext($to) + [
+                'error' => $e->getMessage(),
+            ]);
             return false;
         }
+    }
+
+    private static function phoneLogContext(string $normalizedPhone): array
+    {
+        return [
+            'recipient_hash' => hash('sha256', $normalizedPhone),
+            'recipient_last4' => substr($normalizedPhone, -4),
+        ];
     }
 
     /**

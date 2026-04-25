@@ -52,6 +52,8 @@ class DeliveryMapTest extends TestCase
             'families' => [['id', 'number', 'name', 'lat', 'lng', 'status']],
             'volunteers',
         ]);
+        $response->assertJsonMissingPath('families.0.phone');
+        $response->assertDontSee('360-555-0001');
     }
 
     public function test_update_location_stores_coordinates(): void

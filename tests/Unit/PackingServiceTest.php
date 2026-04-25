@@ -19,6 +19,7 @@ use App\Models\WarehouseCategory;
 use App\Models\WarehouseItem;
 use App\Services\PackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class PackingServiceTest extends TestCase
@@ -534,6 +535,45 @@ class PackingServiceTest extends TestCase
         $list->refresh();
         $this->assertEquals(PackingStatus::InProgress, $list->status);
         $this->assertNotNull($list->started_at);
+    }
+
+    public function test_mark_item_packed_rolls_back_item_and_session_when_list_sync_fails(): void
+    {
+        $this->seedWarehouseCategories();
+        $this->seedGroceryItems();
+        $family = $this->createFamily(['number_of_family_members' => 1]);
+        $list = $this->service->generatePackingList($family);
+        $session = $this->service->clockIn($this->packer);
+        $item = $list->items()->first();
+
+        DB::unprepared("
+            CREATE TRIGGER fail_packing_list_update
+            BEFORE UPDATE ON packing_lists
+            BEGIN
+                SELECT RAISE(ABORT, 'forced packing list failure');
+            END;
+        ");
+
+        $thrown = false;
+        try {
+            $this->service->markItemPacked($item, $this->packer);
+        } catch (\Illuminate\Database\QueryException) {
+            $thrown = true;
+        } finally {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_packing_list_update');
+        }
+
+        $this->assertTrue($thrown);
+
+        $item->refresh();
+        $session->refresh();
+        $list->refresh();
+
+        $this->assertEquals(0, $item->quantity_packed);
+        $this->assertNull($item->packed_by);
+        $this->assertEquals(PackingItemStatus::Pending, $item->status);
+        $this->assertEquals(0, $session->items_packed);
+        $this->assertEquals(PackingStatus::Pending, $list->status);
     }
 
     public function test_packing_all_items_transitions_list_to_complete(): void

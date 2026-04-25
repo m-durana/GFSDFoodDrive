@@ -135,6 +135,7 @@
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:underline px-1" title="Open driver view">Driver</a>
                                         <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => showToast('Link copied!'))"
                                             class="text-xs text-gray-400 hover:text-gray-600 px-1" title="Copy driver link">Copy</button>
+                                        <span class="text-xs font-mono text-gray-500 dark:text-gray-400 px-1" title="Driver PIN">PIN {{ $route->driver_pin }}</span>
                                         <form method="POST" action="{{ route('delivery.markRouteReturning', $route) }}" class="inline" onsubmit="return confirm('Mark as returning?')">
                                             @csrf
                                             <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline px-1" title="Mark returning">Return</button>
@@ -278,6 +279,10 @@
                         <div class="flex justify-between text-sm">
                             <span class="text-gray-500 dark:text-gray-400">Families</span>
                             <span class="font-medium text-gray-900 dark:text-gray-100" id="qa-result-stops"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 dark:text-gray-400">Driver PIN</span>
+                            <span class="font-mono font-medium text-gray-900 dark:text-gray-100" id="qa-result-pin"></span>
                         </div>
                     </div>
 
@@ -637,6 +642,7 @@
                     if (ok && data.ok) {
                         document.getElementById('qa-result-name').textContent = data.route.name;
                         document.getElementById('qa-result-stops').textContent = data.route.stop_count + ' families';
+                        document.getElementById('qa-result-pin').textContent = data.route.driver_pin;
                         document.getElementById('qa-result-url').value = data.route.driver_url;
                         document.getElementById('qa-result-link').href = data.route.driver_url;
                         window.qaRouteId = data.route.id;

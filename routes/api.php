@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PackingApiController;
 use App\Http\Controllers\ShoppingApiController;
+use App\Http\Middleware\PackingSystemEnabled;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('shopping/{token}')->group(function () {
@@ -9,22 +10,26 @@ Route::prefix('shopping/{token}')->group(function () {
     Route::post('/check', [ShoppingApiController::class, 'toggle']);
 });
 
-// Packing API — QR token provides access (no auth required for most endpoints)
-Route::prefix('packing')->group(function () {
-    Route::get('/stats', [PackingApiController::class, 'stats'])->name('api.packing.stats');
+// Packing API — authenticated staff + feature flag on.
+// QR-token "bearer" access is limited to the read-only /{qrToken} show endpoint.
+Route::prefix('packing')->middleware(PackingSystemEnabled::class)->group(function () {
+    // Authenticated endpoints (session-based). Defined before /{qrToken} so the
+    // static segments ("stats", "sessions") are not captured as tokens.
+    Route::middleware(['web', 'auth'])->group(function () {
+        Route::get('/stats', [PackingApiController::class, 'stats'])->name('api.packing.stats');
 
-    // Session endpoints (require auth via web session)
-    Route::middleware('web', 'auth')->group(function () {
         Route::post('/sessions/clock-in', [PackingApiController::class, 'clockIn'])->name('api.packing.clockIn');
         Route::post('/sessions/clock-out', [PackingApiController::class, 'clockOut'])->name('api.packing.clockOut');
         Route::get('/sessions/active', [PackingApiController::class, 'activeSession'])->name('api.packing.activeSession');
+
+        Route::post('/{list}/scan', [PackingApiController::class, 'scan'])->name('api.packing.scan');
+        Route::post('/{list}/item/{packingItem}/pack', [PackingApiController::class, 'quickPack'])->name('api.packing.quickPack');
+        Route::get('/{list}/item/{packingItem}/substitutes', [PackingApiController::class, 'substitutes'])->name('api.packing.substitutes');
+        Route::post('/{list}/item/{packingItem}/substitute', [PackingApiController::class, 'substitute'])->name('api.packing.substitute');
+        Route::post('/{list}/complete', [PackingApiController::class, 'complete'])->name('api.packing.complete');
+        Route::post('/{list}/verify', [PackingApiController::class, 'verify'])->name('api.packing.verify');
     });
 
+    // Read-only load by QR token — the token itself is the credential.
     Route::get('/{qrToken}', [PackingApiController::class, 'show'])->name('api.packing.show');
-    Route::post('/{list}/scan', [PackingApiController::class, 'scan'])->name('api.packing.scan');
-    Route::post('/{list}/item/{packingItem}/pack', [PackingApiController::class, 'quickPack'])->name('api.packing.quickPack');
-    Route::get('/{list}/item/{packingItem}/substitutes', [PackingApiController::class, 'substitutes'])->name('api.packing.substitutes');
-    Route::post('/{list}/item/{packingItem}/substitute', [PackingApiController::class, 'substitute'])->name('api.packing.substitute');
-    Route::post('/{list}/complete', [PackingApiController::class, 'complete'])->name('api.packing.complete');
-    Route::post('/{list}/verify', [PackingApiController::class, 'verify'])->name('api.packing.verify');
 });

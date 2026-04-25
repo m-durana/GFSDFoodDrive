@@ -593,7 +593,8 @@
                                     </div>
                                     <div>
                                         <label for="google_client_secret" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Client Secret</label>
-                                        <input type="password" name="google_client_secret" id="google_client_secret" value="{{ \App\Models\Setting::get('google_client_secret', '') }}"
+                                        <input type="password" name="google_client_secret" id="google_client_secret" value=""
+                                            placeholder="{{ \App\Models\Setting::get('google_client_secret', '') ? 'Leave blank to keep current secret' : '' }}"
                                             class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                     </div>
                                     <p class="text-xs text-gray-500 dark:text-gray-400"><strong>Callback URL:</strong> <code>{{ url('/auth/google/callback') }}</code></p>

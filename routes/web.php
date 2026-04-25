@@ -204,8 +204,10 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('coordinator
 });
 
 // QR Code scan routes (public, secured by signed URLs)
-Route::get('/scan/{child}', [ScanController::class, 'show'])->name('scan.show')->middleware('signed');
-Route::put('/scan/{child}', [ScanController::class, 'update'])->name('scan.update');
+Route::middleware('signed')->group(function () {
+    Route::get('/scan/{child}', [ScanController::class, 'show'])->name('scan.show');
+    Route::put('/scan/{child}', [ScanController::class, 'update'])->name('scan.update')->middleware('throttle:30,1');
+});
 
 // Mobile shopping companion (public routes for volunteers/NINJAs)
 Route::get('/shopping/a/{token}', [ShoppingController::class, 'assignmentByToken'])->name('shopping.assignment');
@@ -229,10 +231,13 @@ Route::post('/adopt/{child}/claim', [AdoptionController::class, 'claim'])->name(
 
 // Driver route view (public, token-secured)
 Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverView'])->name('delivery.driverView');
-Route::post('/delivery/route/{token}/complete/{family}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
+Route::post('/delivery/route/{token}/verify', [DeliveryRouteController::class, 'verifyDriverPin'])
+    ->middleware('throttle:5,1')
+    ->name('delivery.verifyDriverPin');
+Route::post('/delivery/route/{token}/complete/{stopOrder}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
 Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
 Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');
-Route::post('/delivery/route/{token}/heading/{family}', [DeliveryRouteController::class, 'markHeading'])->name('delivery.markHeading');
+Route::post('/delivery/route/{token}/heading/{stopOrder}', [DeliveryRouteController::class, 'markHeading'])->name('delivery.markHeading');
 Route::post('/delivery/route/{token}/returning', [DeliveryRouteController::class, 'markReturning'])->name('delivery.markReturning');
 
 // Self-service family registration (public when enabled by admin)
@@ -268,12 +273,21 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')
 });
 
 // Mobile scanner (public — QR token on packing list provides access)
-Route::get('/warehouse/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('warehouse.mobile-scan');
+Route::middleware(\App\Http\Middleware\PackingSystemEnabled::class)->group(function () {
+    Route::get('/warehouse/mobile-scan', [WarehouseController::class, 'mobileScan'])->name('warehouse.mobile-scan');
+});
 
 // Help/Wiki routes (accessible by all authenticated users)
 Route::middleware('auth')->group(function () {
     Route::get('/help', [HelpController::class, 'index'])->name('help.index');
     Route::get('/help/{topic}', [HelpController::class, 'show'])->name('help.show');
+});
+
+// Delivery Day map & location: Coordinator field-leads + Santa (C-06)
+Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('delivery-day')->name('delivery.')->group(function () {
+    Route::get('/map', [DeliveryDayController::class, 'map'])->name('map');
+    Route::get('/map-data', [DeliveryDayController::class, 'mapData'])->name('mapData');
+    Route::post('/location', [DeliveryDayController::class, 'updateLocation'])->name('updateLocation');
 });
 
 // Delivery Day routes: accessible by Santa role
@@ -285,9 +299,6 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::post('/bulk-assign-team', [DeliveryDayController::class, 'bulkAssignTeam'])->name('bulkAssignTeam');
     Route::post('/{family}/log', [DeliveryDayController::class, 'addLog'])->name('addLog');
     Route::get('/logs', [DeliveryDayController::class, 'logs'])->name('logs');
-    Route::get('/map', [DeliveryDayController::class, 'map'])->name('map');
-    Route::get('/map-data', [DeliveryDayController::class, 'mapData'])->name('mapData');
-    Route::post('/location', [DeliveryDayController::class, 'updateLocation'])->name('updateLocation');
     Route::get('/track', [DeliveryDayController::class, 'track'])->name('track');
     Route::post('/quick-assign', [DeliveryDayController::class, 'quickAssign'])->name('quickAssign');
     Route::post('/routes/{deliveryRoute}/add-families', [DeliveryDayController::class, 'addFamiliesToRoute'])->name('addFamiliesToRoute');

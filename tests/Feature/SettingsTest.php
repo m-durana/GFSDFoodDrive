@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Setting;
+use App\Models\SettingAuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,6 +17,7 @@ class SettingsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Setting::clearCache();
 
         $this->santa = User::create([
             'username' => 'santa_test',
@@ -63,6 +65,61 @@ class SettingsTest extends TestCase
 
         $response->assertRedirect();
         $this->assertEquals('2027', Setting::get('season_year'));
+    }
+
+    public function test_settings_update_writes_audit_log(): void
+    {
+        $response = $this->actingAs($this->santa)->post('/santa/settings', [
+            'season_year' => '2028',
+            'google_client_id' => 'client-id',
+            'google_client_secret' => 'super-secret',
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('setting_audit_logs', [
+            'user_id' => $this->santa->id,
+            'key' => 'season_year',
+            'action' => 'set',
+            'old_value' => null,
+            'new_value' => '2028',
+        ]);
+        $this->assertDatabaseHas('setting_audit_logs', [
+            'user_id' => $this->santa->id,
+            'key' => 'google_client_secret',
+            'action' => 'set',
+            'old_value' => null,
+            'new_value' => '[redacted]',
+        ]);
+    }
+
+    public function test_settings_delete_writes_audit_log(): void
+    {
+        Setting::set('google_client_id', 'client-id');
+        Setting::set('google_client_secret', 'super-secret');
+        SettingAuditLog::query()->delete();
+
+        $response = $this->actingAs($this->santa)->post('/santa/settings', [
+            'season_year' => '2026',
+            'google_client_id' => '',
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('setting_audit_logs', [
+            'user_id' => $this->santa->id,
+            'key' => 'google_client_id',
+            'action' => 'delete',
+            'old_value' => 'client-id',
+            'new_value' => null,
+        ]);
+        $this->assertDatabaseHas('setting_audit_logs', [
+            'user_id' => $this->santa->id,
+            'key' => 'google_client_secret',
+            'action' => 'delete',
+            'old_value' => '[redacted]',
+            'new_value' => null,
+        ]);
     }
 
     public function test_setting_model_get_returns_default(): void
