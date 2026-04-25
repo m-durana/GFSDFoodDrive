@@ -231,7 +231,9 @@ Route::post('/adopt/{child}/claim', [AdoptionController::class, 'claim'])->name(
 
 // Driver route view (public, token-secured)
 Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverView'])->name('delivery.driverView');
-Route::post('/delivery/route/{token}/verify', [DeliveryRouteController::class, 'verifyDriverPin'])->name('delivery.verifyDriverPin');
+Route::post('/delivery/route/{token}/verify', [DeliveryRouteController::class, 'verifyDriverPin'])
+    ->middleware('throttle:5,1')
+    ->name('delivery.verifyDriverPin');
 Route::post('/delivery/route/{token}/complete/{stopOrder}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
 Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
 Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');

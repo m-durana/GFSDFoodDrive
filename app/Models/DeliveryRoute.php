@@ -52,8 +52,6 @@ class DeliveryRoute extends Model
         'total_duration_seconds',
         'stop_count',
         'access_token',
-        'driver_pin_hash',
-        'driver_pin_encrypted',
         'season_year',
     ];
 
