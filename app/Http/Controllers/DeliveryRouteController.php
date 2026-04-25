@@ -12,6 +12,7 @@ use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DeliveryRouteController extends Controller
@@ -33,12 +34,18 @@ class DeliveryRouteController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'driver_user_id' => ['nullable', 'exists:users,id'],
+            'driver_user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(fn($q) => $q->where('permission', '>=', 8)),
+            ],
             'driver_name' => ['nullable', 'string', 'max:255'],
             'family_ids' => ['nullable', 'array'],
-            'family_ids.*' => ['exists:families,id'],
+            'family_ids.*' => [
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         $route = DeliveryRoute::create([
@@ -84,9 +91,12 @@ class DeliveryRouteController extends Controller
      */
     public function optimize(Request $request): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'route_ids' => ['required', 'array', 'min:1'],
-            'route_ids.*' => ['exists:delivery_routes,id'],
+            'route_ids.*' => [
+                Rule::exists('delivery_routes', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
             'start_lat' => ['required', 'numeric'],
             'start_lng' => ['required', 'numeric'],
         ]);
@@ -146,9 +156,12 @@ class DeliveryRouteController extends Controller
      */
     public function updateFamilies(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'family_ids' => ['required', 'array'],
-            'family_ids.*' => ['exists:families,id'],
+            'family_ids.*' => [
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         // Unassign current families

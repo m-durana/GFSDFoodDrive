@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Actions\AssignFamilyNumber;
 use App\Actions\MergeFamilies;
 use App\Enums\GiftLevel;
+use App\Http\Requests\ApproveAccessRequestRequest;
+use App\Http\Requests\BulkUpdateUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\AccessRequest;
@@ -23,6 +25,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SantaController extends Controller
@@ -84,8 +87,12 @@ class SantaController extends Controller
 
     public function updateFamilyNumber(Request $request): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
-            'family_id' => ['required', 'exists:families,id'],
+            'family_id' => [
+                'required',
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
             'family_number' => ['required', 'integer', 'min:1'],
         ]);
 
@@ -1020,9 +1027,16 @@ class SantaController extends Controller
 
     public function dismissDuplicate(Request $request): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
-            'family_a_id' => ['required', 'exists:families,id'],
-            'family_b_id' => ['required', 'exists:families,id'],
+            'family_a_id' => [
+                'required',
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
+            'family_b_id' => [
+                'required',
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         DismissedDuplicate::dismiss($request->family_a_id, $request->family_b_id);
@@ -1033,9 +1047,17 @@ class SantaController extends Controller
 
     public function mergeFamilies(Request $request, MergeFamilies $action): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
-            'keep_id' => ['required', 'exists:families,id'],
-            'merge_id' => ['required', 'exists:families,id', 'different:keep_id'],
+            'keep_id' => [
+                'required',
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
+            'merge_id' => [
+                'required',
+                'different:keep_id',
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         $keep = Family::findOrFail($request->keep_id);
@@ -1380,6 +1402,21 @@ class SantaController extends Controller
             'inactive' => 0,
         ];
 
+        // Self-protection: acting Santa cannot demote/deactivate themselves.
+        if ($user->id === auth()->id() && $request->role !== 'santa') {
+            return redirect()->route('santa.users')
+                ->with('error', 'You cannot demote or deactivate your own account.');
+        }
+
+        // Must-keep-one-Santa: reject if this is the last Santa and the new role isn't santa.
+        if ($user->permission === 9
+            && $request->role !== 'santa'
+            && User::where('permission', 9)->count() <= 1
+        ) {
+            return redirect()->route('santa.users')
+                ->with('error', 'Cannot demote the last Santa account.');
+        }
+
         $data = [
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -1407,7 +1444,7 @@ class SantaController extends Controller
             ->with('success', "User '{$user->username}' updated successfully.");
     }
 
-    public function bulkUpdateUsers(Request $request): RedirectResponse
+    public function bulkUpdateUsers(BulkUpdateUsersRequest $request): RedirectResponse
     {
         $roleToPermission = [
             'family' => 7,
@@ -1416,12 +1453,18 @@ class SantaController extends Controller
             'inactive' => 0,
         ];
 
-        $users = $request->input('users', []);
+        $users = $request->validated('users', []);
         $updatedCount = 0;
 
         foreach ($users as $userId => $userData) {
             $user = User::find($userId);
             if (!$user) continue;
+
+            // Self-protection: never let the acting Santa downgrade themselves
+            // (also enforced in the FormRequest; this is the second barrier).
+            if ($user->id === auth()->id() && ($userData['role'] ?? null) !== 'santa') {
+                continue;
+            }
 
             $role = $userData['role'] ?? 'family';
             $data = [
@@ -1460,6 +1503,11 @@ class SantaController extends Controller
         if ($user->id === auth()->id()) {
             return redirect()->route('santa.users')
                 ->with('error', 'You cannot delete your own account.');
+        }
+
+        if ($user->permission === 9 && User::where('permission', 9)->count() <= 1) {
+            return redirect()->route('santa.users')
+                ->with('error', 'Cannot delete the last Santa account.');
         }
 
         $username = $user->username;
@@ -1503,15 +1551,20 @@ class SantaController extends Controller
     /**
      * Approve a pending access request — creates the user account.
      */
-    public function approveAccessRequest(Request $request, AccessRequest $accessRequest): RedirectResponse
+    public function approveAccessRequest(ApproveAccessRequestRequest $request, AccessRequest $accessRequest): RedirectResponse
     {
         if (!$accessRequest->isPending()) {
             return redirect()->route('santa.users')
                 ->with('error', 'This request has already been processed.');
         }
 
-        $role = $request->input('role', $accessRequest->requested_role);
         $roleToPermission = ['family' => 7, 'coordinator' => 8, 'santa' => 9];
+        // Fall back to the requester-stated role only if the approver did not
+        // choose one — and only if it is in the whitelist.
+        $role = $request->validated('role')
+            ?? (in_array($accessRequest->requested_role, array_keys($roleToPermission), true)
+                ? $accessRequest->requested_role
+                : 'family');
 
         // Generate a username from the email (part before @)
         $baseUsername = Str::slug(Str::before($accessRequest->email, '@'), '.');

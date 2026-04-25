@@ -13,6 +13,7 @@ use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DeliveryDayController extends Controller
@@ -167,9 +168,13 @@ class DeliveryDayController extends Controller
 
     public function updateTeam(Request $request, Family $family): RedirectResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'delivery_team' => ['nullable', 'string', 'max:255'],
-            'delivery_team_id' => ['nullable', 'exists:delivery_teams,id'],
+            'delivery_team_id' => [
+                'nullable',
+                Rule::exists('delivery_teams', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         $family->update($request->only('delivery_team', 'delivery_team_id'));
@@ -180,10 +185,16 @@ class DeliveryDayController extends Controller
 
     public function bulkAssignTeam(Request $request): JsonResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'family_ids' => ['required', 'array', 'min:1'],
-            'family_ids.*' => ['exists:families,id'],
-            'delivery_team_id' => ['nullable', 'exists:delivery_teams,id'],
+            'family_ids.*' => [
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
+            'delivery_team_id' => [
+                'nullable',
+                Rule::exists('delivery_teams', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         Family::whereIn('id', $request->family_ids)
@@ -348,7 +359,10 @@ class DeliveryDayController extends Controller
     {
         $request->validate([
             'driver_name' => ['required', 'string', 'max:255'],
-            'driver_user_id' => ['nullable', 'exists:users,id'],
+            'driver_user_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(fn($q) => $q->where('permission', '>=', 8)),
+            ],
             'batch_size' => ['nullable', 'integer', 'min:1', 'max:20'],
             'start_lat' => ['nullable', 'numeric'],
             'start_lng' => ['nullable', 'numeric'],
@@ -449,9 +463,12 @@ class DeliveryDayController extends Controller
 
     public function addFamiliesToRoute(Request $request, DeliveryRoute $deliveryRoute): JsonResponse
     {
+        $seasonYear = (int) Setting::get('season_year', date('Y'));
         $request->validate([
             'family_ids' => ['required', 'array', 'min:1'],
-            'family_ids.*' => ['exists:families,id'],
+            'family_ids.*' => [
+                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
+            ],
         ]);
 
         $maxOrder = Family::where('delivery_route_id', $deliveryRoute->id)->max('route_order') ?? 0;

@@ -504,7 +504,7 @@ class PackingTest extends TestCase
         $family = $this->createFamily();
         $list = $this->createPackingListWithItems($family);
 
-        $response = $this->postJson("/api/packing/{$list->id}/scan", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/scan", [
             'barcode' => 'UNKNOWN-99999',
         ]);
         $response->assertOk();
@@ -518,7 +518,7 @@ class PackingTest extends TestCase
         $family = $this->createFamily();
         $list = $this->createPackingListWithItems($family);
 
-        $response = $this->postJson("/api/packing/{$list->id}/scan", []);
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/scan", []);
         $response->assertUnprocessable();
     }
 
@@ -530,7 +530,7 @@ class PackingTest extends TestCase
         $list = $this->createPackingListWithItems($family);
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
         $response->assertOk();
         $response->assertJsonFragment(['success' => true]);
 
@@ -547,9 +547,9 @@ class PackingTest extends TestCase
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
         // Pack once
-        $this->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
+        $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
         // Pack again — should warn
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/pack");
         $response->assertOk();
         $response->assertJsonFragment(['warning' => true]);
     }
@@ -569,7 +569,7 @@ class PackingTest extends TestCase
             $this->markTestSkipped('No unfulfilled items generated');
         }
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$unfulfilledItem->id}/pack");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$unfulfilledItem->id}/pack");
         $response->assertOk();
         $response->assertJsonFragment(['success' => false]);
     }
@@ -585,7 +585,7 @@ class PackingTest extends TestCase
 
         $itemFromB = $listB->items()->first();
 
-        $response = $this->postJson("/api/packing/{$listA->id}/item/{$itemFromB->id}/pack");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$listA->id}/item/{$itemFromB->id}/pack");
         $response->assertNotFound();
     }
 
@@ -597,7 +597,7 @@ class PackingTest extends TestCase
         $list = $this->createPackingListWithItems($family);
         $item = $list->items()->where('status', PackingItemStatus::Pending->value)->first();
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => 'Replaced with equivalent brand',
         ]);
         $response->assertOk();
@@ -615,7 +615,7 @@ class PackingTest extends TestCase
         $list = $this->createPackingListWithItems($family);
         $item = $list->items()->first();
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", []);
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", []);
         $response->assertUnprocessable();
     }
 
@@ -636,7 +636,7 @@ class PackingTest extends TestCase
             }
         }
 
-        $response = $this->postJson("/api/packing/{$list->id}/complete");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/complete");
         $response->assertOk();
         $response->assertJsonFragment(['success' => true]);
 
@@ -651,7 +651,7 @@ class PackingTest extends TestCase
         $family = $this->createFamily();
         $list = $this->createPackingListWithItems($family);
 
-        $response = $this->postJson("/api/packing/{$list->id}/complete");
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/complete");
         $response->assertOk();
         $response->assertJsonFragment(['success' => false]);
     }
@@ -697,11 +697,17 @@ class PackingTest extends TestCase
         $this->seedGroceryItems();
         $this->createFamily();
 
-        $response = $this->getJson('/api/packing/stats');
+        $response = $this->actingAs($this->santa)->getJson('/api/packing/stats');
         $response->assertOk();
         $response->assertJsonStructure([
             'total_families', 'packed', 'verified', 'in_progress', 'not_started', 'fulfillment_rate',
         ]);
+    }
+
+    public function test_api_packing_stats_requires_auth(): void
+    {
+        $response = $this->getJson('/api/packing/stats');
+        $response->assertUnauthorized();
     }
 
     // ==========================================
@@ -715,7 +721,7 @@ class PackingTest extends TestCase
         $family = $this->createFamily();
         $this->createPackingListWithItems($family);
 
-        $response = $this->getJson('/api/packing/stats');
+        $response = $this->actingAs($this->santa)->getJson('/api/packing/stats');
         $response->assertOk();
         $response->assertJsonStructure([
             'total_families', 'packed', 'verified', 'in_progress', 'not_started', 'fulfillment_rate',
@@ -831,7 +837,7 @@ class PackingTest extends TestCase
             'active' => true,
         ]);
 
-        $response = $this->getJson("/api/packing/{$list->id}/item/{$item->id}/substitutes");
+        $response = $this->actingAs($this->santa)->getJson("/api/packing/{$list->id}/item/{$item->id}/substitutes");
         $response->assertOk();
         $response->assertJsonStructure([['id', 'name', 'barcode']]);
     }
@@ -852,7 +858,7 @@ class PackingTest extends TestCase
             'active' => true,
         ]);
 
-        $response = $this->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
+        $response = $this->actingAs($this->santa)->postJson("/api/packing/{$list->id}/item/{$item->id}/substitute", [
             'notes' => 'Replaced with alternative',
             'new_item_id' => $warehouseItem->id,
         ]);
@@ -871,7 +877,7 @@ class PackingTest extends TestCase
         $family = $this->createFamily();
         $this->createPackingListWithItems($family);
 
-        $response = $this->getJson('/api/packing/stats');
+        $response = $this->actingAs($this->santa)->getJson('/api/packing/stats');
         $response->assertOk();
         $response->assertJsonStructure(['unfulfilled_families', 'unfulfilled_items']);
     }
@@ -989,15 +995,13 @@ class PackingTest extends TestCase
         $response->assertDontSee('Packing</a>', false);
     }
 
-    public function test_packing_api_stats_returns_disabled_flag(): void
+    public function test_packing_api_stats_is_404_when_system_disabled(): void
     {
         Setting::set('packing_system_enabled', '0');
+        Setting::clearCache();
 
-        $response = $this->getJson('/api/packing/stats');
-        $response->assertOk();
-        $response->assertJsonFragment(['enabled' => false]);
-        // Should not contain normal stats keys
-        $response->assertJsonMissing(['total_families']);
+        $response = $this->actingAs($this->santa)->getJson('/api/packing/stats');
+        $response->assertNotFound();
     }
 
     public function test_warehouse_item_location_update(): void
