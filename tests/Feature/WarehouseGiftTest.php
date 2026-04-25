@@ -10,6 +10,7 @@ use App\Models\WarehouseCategory;
 use App\Models\WarehouseTransaction;
 use App\Services\WarehouseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class WarehouseGiftTest extends TestCase
@@ -95,6 +96,38 @@ class WarehouseGiftTest extends TestCase
         $transactions = WarehouseTransaction::where('child_id', $this->child->id)->get();
         $this->assertCount(1, $transactions);
         $this->assertEquals('Misc gifts', $transactions->first()->notes);
+    }
+
+    public function test_confirm_gift_dropoff_rolls_back_child_update_when_transaction_insert_fails(): void
+    {
+        $service = app(WarehouseService::class);
+
+        DB::unprepared("
+            CREATE TRIGGER fail_warehouse_transaction_insert
+            BEFORE INSERT ON warehouse_transactions
+            BEGIN
+                SELECT RAISE(ABORT, 'forced warehouse transaction failure');
+            END;
+        ");
+
+        $thrown = false;
+        try {
+            $service->confirmGiftDropoff($this->child, $this->santa, 'Rollback gift');
+        } catch (\Illuminate\Database\QueryException) {
+            $thrown = true;
+        } finally {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_warehouse_transaction_insert');
+        }
+
+        $this->assertTrue($thrown);
+        $this->child->refresh();
+        $this->assertFalse($this->child->gift_dropped_off);
+        $this->assertEquals(GiftLevel::None, $this->child->gift_level);
+        $this->assertNull($this->child->gifts_received);
+        $this->assertDatabaseMissing('warehouse_transactions', [
+            'child_id' => $this->child->id,
+            'notes' => 'Rollback gift',
+        ]);
     }
 
     public function test_computed_gifts_received_from_transactions(): void

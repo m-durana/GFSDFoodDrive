@@ -7,6 +7,7 @@ use App\Models\DeliveryLog;
 use App\Models\Family;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DeliveryDayTest extends TestCase
@@ -53,6 +54,32 @@ class DeliveryDayTest extends TestCase
         ]);
     }
 
+    public function test_delivery_status_update_rolls_back_when_log_insert_fails(): void
+    {
+        DB::unprepared("
+            CREATE TRIGGER fail_delivery_log_insert
+            BEFORE INSERT ON delivery_logs
+            BEGIN
+                SELECT RAISE(ABORT, 'forced delivery log failure');
+            END;
+        ");
+
+        try {
+            $response = $this->actingAs($this->santa)->put(route('delivery.updateStatus', $this->family), [
+                'delivery_status' => 'in_transit',
+            ]);
+        } finally {
+            DB::unprepared('DROP TRIGGER IF EXISTS fail_delivery_log_insert');
+        }
+
+        $response->assertServerError();
+        $this->assertEquals(DeliveryStatus::Pending, $this->family->fresh()->delivery_status);
+        $this->assertDatabaseMissing('delivery_logs', [
+            'family_id' => $this->family->id,
+            'status' => 'in_transit',
+        ]);
+    }
+
     public function test_delivery_team_can_be_assigned(): void
     {
         $response = $this->actingAs($this->santa)->put(route('delivery.updateTeam', $this->family), [
@@ -74,6 +101,25 @@ class DeliveryDayTest extends TestCase
             'status' => 'no_answer',
             'notes' => 'Nobody home at 2pm',
             'user_id' => $this->santa->id,
+        ]);
+    }
+
+    public function test_delivery_logs_survive_family_deletion(): void
+    {
+        $log = DeliveryLog::create([
+            'family_id' => $this->family->id,
+            'user_id' => $this->santa->id,
+            'status' => 'delivered',
+            'notes' => 'Keep this audit trail',
+        ]);
+
+        $this->family->delete();
+
+        $this->assertDatabaseHas('delivery_logs', [
+            'id' => $log->id,
+            'family_id' => null,
+            'status' => 'delivered',
+            'notes' => 'Keep this audit trail',
         ]);
     }
 

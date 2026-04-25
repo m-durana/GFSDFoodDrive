@@ -209,7 +209,6 @@ class RoutePlanningService
     private function client(string $orsKey)
     {
         return Http::timeout(30)
-            ->withoutVerifying()
             ->withHeaders([
                 'Authorization' => $orsKey,
                 'Content-type' => 'application/json',

@@ -286,8 +286,8 @@ class SantaController extends Controller
         }
         // Allow clearing OAuth settings
         if ($request->has('google_client_id') && !$request->filled('google_client_id')) {
-            Setting::where('key', 'google_client_id')->delete();
-            Setting::where('key', 'google_client_secret')->delete();
+            Setting::forget('google_client_id');
+            Setting::forget('google_client_secret');
         }
 
         // Logo upload
@@ -1672,9 +1672,9 @@ class SantaController extends Controller
 
     public function downloadBackup(string $filename)
     {
-        $path = storage_path("backups/{$filename}");
+        $path = $this->resolveBackupPath($filename);
 
-        if (! file_exists($path) || ! str_starts_with($filename, 'backup_')) {
+        if ($path === null) {
             abort(404);
         }
 
@@ -1683,10 +1683,9 @@ class SantaController extends Controller
 
     public function rollbackBackup(Request $request): RedirectResponse
     {
-        $filename = $request->input('filename');
-        $path = storage_path("backups/{$filename}");
+        $path = $this->resolveBackupPath($request->input('filename'));
 
-        if (! file_exists($path) || ! str_starts_with($filename, 'backup_')) {
+        if ($path === null) {
             return redirect()->route('santa.backups')
                 ->with('error', 'Backup not found.');
         }
@@ -1720,6 +1719,34 @@ class SantaController extends Controller
             ->with('error', 'Rollback is only supported for SQLite databases.');
     }
 
+    private function resolveBackupPath(?string $filename): ?string
+    {
+        if (
+            $filename === null ||
+            $filename === '' ||
+            basename($filename) !== $filename ||
+            str_contains($filename, '/') ||
+            str_contains($filename, '\\') ||
+            ! str_starts_with($filename, 'backup_')
+        ) {
+            return null;
+        }
+
+        $backupDir = realpath(storage_path('backups'));
+        if ($backupDir === false) {
+            return null;
+        }
+
+        $path = realpath($backupDir . DIRECTORY_SEPARATOR . $filename);
+        if ($path === false || ! is_file($path)) {
+            return null;
+        }
+
+        $backupDir = rtrim($backupDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+        return str_starts_with($path, $backupDir) ? $path : null;
+    }
+
     private function rollbackDataOnly(string $backupPath, string $dbPath): void
     {
         // Tables that hold user/system data we want to preserve
@@ -1739,7 +1766,7 @@ class SantaController extends Controller
         // Use SQLite ATTACH to copy data tables from backup
         \DB::disconnect('sqlite');
         $db = new \SQLite3($dbPath);
-        $db->exec("ATTACH DATABASE '{$backupPath}' AS backup_db");
+        $db->exec("ATTACH DATABASE '" . \SQLite3::escapeString($backupPath) . "' AS backup_db");
 
         foreach ($dataTables as $table) {
             // Check if table exists in both databases

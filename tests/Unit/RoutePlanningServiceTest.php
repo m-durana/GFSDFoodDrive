@@ -137,4 +137,15 @@ class RoutePlanningServiceTest extends TestCase
         $this->assertEquals(47.85, (float) $route->start_lat);
         $this->assertEquals(-121.97, (float) $route->start_lng);
     }
+
+    public function test_ors_client_keeps_tls_verification_enabled(): void
+    {
+        $method = new \ReflectionMethod(RoutePlanningService::class, 'client');
+
+        $client = $method->invoke($this->service, 'test-key');
+        $options = $client->getOptions();
+
+        $this->assertArrayNotHasKey('verify', $options);
+        $this->assertSame(30, $options['timeout']);
+    }
 }

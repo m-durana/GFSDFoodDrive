@@ -140,6 +140,9 @@
                                         class="inline-flex items-center px-3 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium transition">
                                         Copy Link
                                     </button>
+                                    <span class="inline-flex items-center px-2 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md text-xs font-mono">
+                                        PIN {{ $route->driver_pin }}
+                                    </span>
                                     <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" class="inline" onsubmit="return confirm('Delete this route?')">
                                         @csrf
                                         @method('DELETE')

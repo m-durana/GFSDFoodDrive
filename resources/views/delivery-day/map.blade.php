@@ -168,12 +168,13 @@
         }
 
         function familyPopup(f) {
-            const phone = f.phone ? `<a href="tel:${f.phone}" class="text-blue-600">${f.phone}</a><br>` : '';
             const statusLabel = f.status.replace('_', ' ');
-            const markBtn = (f.status !== 'delivered')
+            const title = f.name ? `#${f.number} ${f.name}` : `#${f.number}`;
+            const address = f.address ? `${f.address}<br>` : '';
+            const markBtn = @json($canManageFamilies) && f.id && (f.status !== 'delivered')
                 ? `<button onclick="markDelivered(${f.id}, this)" style="margin-top:6px;padding:3px 10px;background:#16a34a;color:white;border:none;border-radius:4px;font-size:12px;cursor:pointer;">Mark Delivered</button>`
                 : '';
-            return `<strong>#${f.number} ${f.name}</strong><br>${f.address}<br>${phone}Status: <em>${statusLabel}</em>${markBtn}`;
+            return `<strong>${title}</strong><br>${address}Status: <em>${statusLabel}</em>${markBtn}`;
         }
 
         window.markDelivered = function(familyId, btn) {

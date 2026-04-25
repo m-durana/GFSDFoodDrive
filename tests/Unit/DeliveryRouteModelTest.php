@@ -79,7 +79,7 @@ class DeliveryRouteModelTest extends TestCase
         Family::create([
             'family_name' => 'Test', 'family_number' => 1,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-1234',
+            'number_of_children' => 1, 'address' => '1 Main St', 'phone1' => '555-1234',
             'delivery_route_id' => $route->id, 'route_order' => 1,
             'delivery_status' => DeliveryStatus::Pending,
         ]);
@@ -93,7 +93,7 @@ class DeliveryRouteModelTest extends TestCase
         Family::create([
             'family_name' => 'Test', 'family_number' => 1,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-1234',
+            'number_of_children' => 1, 'address' => '1 Main St', 'phone1' => '555-1234',
             'delivery_route_id' => $route->id, 'route_order' => 1,
             'delivery_status' => DeliveryStatus::InTransit,
         ]);
@@ -107,14 +107,14 @@ class DeliveryRouteModelTest extends TestCase
         Family::create([
             'family_name' => 'A', 'family_number' => 1,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-1234',
+            'number_of_children' => 1, 'address' => '1 Main St', 'phone1' => '555-1234',
             'delivery_route_id' => $route->id, 'route_order' => 1,
             'delivery_status' => DeliveryStatus::Delivered,
         ]);
         Family::create([
             'family_name' => 'B', 'family_number' => 2,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-5678',
+            'number_of_children' => 1, 'address' => '2 Main St', 'phone1' => '555-5678',
             'delivery_route_id' => $route->id, 'route_order' => 2,
             'delivery_status' => DeliveryStatus::Pending,
         ]);
@@ -128,7 +128,7 @@ class DeliveryRouteModelTest extends TestCase
         Family::create([
             'family_name' => 'A', 'family_number' => 1,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-1234',
+            'number_of_children' => 1, 'address' => '1 Main St', 'phone1' => '555-1234',
             'delivery_route_id' => $route->id, 'route_order' => 1,
             'delivery_status' => DeliveryStatus::Delivered,
         ]);
@@ -142,7 +142,7 @@ class DeliveryRouteModelTest extends TestCase
         Family::create([
             'family_name' => 'A', 'family_number' => 1,
             'number_of_family_members' => 3, 'number_of_adults' => 2,
-            'number_of_children' => 1, 'phone1' => '555-1234',
+            'number_of_children' => 1, 'address' => '1 Main St', 'phone1' => '555-1234',
             'delivery_route_id' => $route->id, 'route_order' => 1,
             'delivery_status' => DeliveryStatus::Delivered,
         ]);

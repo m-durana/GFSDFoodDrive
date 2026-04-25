@@ -4,7 +4,9 @@ namespace App\Actions;
 
 use App\Models\Family;
 use App\Models\SchoolRange;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class AssignFamilyNumber
 {
@@ -50,6 +52,7 @@ class AssignFamilyNumber
     {
         $schoolRanges ??= SchoolRange::orderBy('sort_order')->get();
 
+        $family->loadMissing('children');
         $oldestChild = $family->children->sortByDesc(fn($c) => (int) $c->age)->first();
         $school = $oldestChild?->school;
 
@@ -70,12 +73,57 @@ class AssignFamilyNumber
             return "{$family->family_name}: no matching school range for '{$school}'";
         }
 
-        $nextNumber = $range->nextAvailableNumber();
-        if ($nextNumber === null) {
-            return "{$family->family_name}: range for '{$range->school_name}' is full";
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            try {
+                return DB::transaction(function () use ($family, $range) {
+                    $lockedFamily = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
+
+                    if ($lockedFamily->family_number !== null) {
+                        return true;
+                    }
+
+                    $nextNumber = $this->nextAvailableNumberForRange($range);
+                    if ($nextNumber === null) {
+                        return "{$lockedFamily->family_name}: range for '{$range->school_name}' is full";
+                    }
+
+                    $lockedFamily->update(['family_number' => $nextNumber]);
+
+                    return true;
+                });
+            } catch (QueryException $e) {
+                if ($attempt === 3 || ! $this->isUniqueFamilyNumberViolation($e)) {
+                    return "{$family->family_name}: could not assign a unique family number; please retry";
+                }
+            }
         }
 
-        $family->update(['family_number' => $nextNumber]);
-        return true;
+        return "{$family->family_name}: could not assign a unique family number; please retry";
+    }
+
+    private function nextAvailableNumberForRange(SchoolRange $range): ?int
+    {
+        $usedNumbers = Family::whereBetween('family_number', [$range->range_start, $range->range_end])
+            ->lockForUpdate()
+            ->pluck('family_number')
+            ->all();
+
+        for ($number = $range->range_start; $number <= $range->range_end; $number++) {
+            if (! in_array($number, $usedNumbers, true)) {
+                return $number;
+            }
+        }
+
+        return null;
+    }
+
+    private function isUniqueFamilyNumberViolation(QueryException $e): bool
+    {
+        $message = $e->getMessage();
+
+        return $e->getCode() === '23000'
+            || str_contains($message, 'families_number_season_unique')
+            || str_contains($message, 'families_family_number_unique')
+            || str_contains($message, 'UNIQUE constraint failed');
     }
 }

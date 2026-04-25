@@ -12,6 +12,7 @@ use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -199,39 +200,66 @@ class DeliveryRouteController extends Controller
             ])
             ->firstOrFail();
 
+        if (! $this->driverRouteVerified($route)) {
+            return view('delivery-routes.verify', compact('route'));
+        }
+
         return view('delivery-routes.driver', compact('route'));
+    }
+
+    public function verifyDriverPin(Request $request, string $token): RedirectResponse
+    {
+        $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+
+        $request->validate([
+            'pin' => ['required', 'digits:6'],
+        ]);
+
+        if (! $route->verifyDriverPin($request->input('pin'))) {
+            return back()->withErrors(['pin' => 'Invalid route PIN.'])->withInput();
+        }
+
+        $request->session()->put($this->driverRouteSessionKey($route), true);
+
+        return redirect()->route('delivery.driverView', $token);
     }
 
     /**
      * Mark a stop as delivered from the driver view.
      */
-    public function completeStop(Request $request, string $token, Family $family): RedirectResponse|JsonResponse
+    public function completeStop(Request $request, string $token, int $stopOrder): RedirectResponse|JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+        $this->abortUnlessDriverRouteVerified($route);
 
-        if ($family->delivery_route_id !== $route->id) {
+        $family = $this->familyForStopOrder($route, $stopOrder);
+        if (! $family) {
             abort(403);
         }
 
-        $family->update(['delivery_status' => DeliveryStatus::Delivered]);
+        DB::transaction(function () use ($route, $family) {
+            $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
-        DeliveryLog::create([
-            'family_id' => $family->id,
-            'user_id' => $route->driver_user_id,
-            'status' => 'delivered',
-            'notes' => 'Marked delivered via driver route view.',
-        ]);
+            $family->update(['delivery_status' => DeliveryStatus::Delivered]);
+
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => $route->driver_user_id,
+                'status' => 'delivered',
+                'notes' => 'Marked delivered via driver route view.',
+            ]);
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
                 'ok' => true,
-                'family_id' => $family->id,
+                'stop_order' => $family->route_order,
                 'status' => 'delivered',
             ]);
         }
 
         return redirect()->route('delivery.driverView', $token)
-            ->with('success', "#{$family->family_number} marked as delivered.");
+            ->with('success', "Stop {$family->route_order} marked as delivered.");
     }
 
     /**
@@ -240,6 +268,7 @@ class DeliveryRouteController extends Controller
     public function updateDriverLocation(Request $request, string $token): JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+        $this->abortUnlessDriverRouteVerified($route);
 
         $request->validate([
             'latitude' => ['required', 'numeric', 'between:-90,90'],
@@ -267,25 +296,32 @@ class DeliveryRouteController extends Controller
     /**
      * Mark a stop as in transit when the driver clicks Navigate.
      */
-    public function markHeading(Request $request, string $token, Family $family): JsonResponse
+    public function markHeading(Request $request, string $token, int $stopOrder): JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
-        if ($family->delivery_route_id !== $route->id) {
+        $this->abortUnlessDriverRouteVerified($route);
+
+        $family = $this->familyForStopOrder($route, $stopOrder);
+        if (! $family) {
             abort(403);
         }
 
-        $family->update(['delivery_status' => DeliveryStatus::InTransit]);
+        DB::transaction(function () use ($route, $family) {
+            $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
-        DeliveryLog::create([
-            'family_id' => $family->id,
-            'user_id' => $route->driver_user_id,
-            'status' => 'in_transit',
-            'notes' => 'Driver started navigation.',
-        ]);
+            $family->update(['delivery_status' => DeliveryStatus::InTransit]);
+
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => $route->driver_user_id,
+                'status' => 'in_transit',
+                'notes' => 'Driver started navigation.',
+            ]);
+        });
 
         return response()->json([
             'ok' => true,
-            'family_id' => $family->id,
+            'stop_order' => $family->route_order,
             'status' => 'in_transit',
         ]);
     }
@@ -296,6 +332,7 @@ class DeliveryRouteController extends Controller
     public function markReturning(Request $request, string $token): JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
+        $this->abortUnlessDriverRouteVerified($route);
         $route->update(['returning_at' => now()]);
 
         return response()->json(['ok' => true, 'route_status' => $route->route_status]);
@@ -309,11 +346,9 @@ class DeliveryRouteController extends Controller
         $route = DeliveryRoute::where('access_token', $token)
             ->with(['families' => fn($q) => $q->orderBy('route_order')])
             ->firstOrFail();
+        $this->abortUnlessDriverRouteVerified($route);
 
         $stops = $route->families->map(fn($f) => [
-            'id' => $f->id,
-            'number' => $f->family_number,
-            'name' => $f->family_name,
             'address' => $f->address,
             'lat' => (float) $f->latitude,
             'lng' => (float) $f->longitude,
@@ -334,5 +369,27 @@ class DeliveryRouteController extends Controller
             ],
             'stops' => $stops,
         ]);
+    }
+
+    private function driverRouteVerified(DeliveryRoute $route): bool
+    {
+        return session()->get($this->driverRouteSessionKey($route)) === true;
+    }
+
+    private function abortUnlessDriverRouteVerified(DeliveryRoute $route): void
+    {
+        abort_unless($this->driverRouteVerified($route), 403);
+    }
+
+    private function driverRouteSessionKey(DeliveryRoute $route): string
+    {
+        return 'driver_route_verified:' . $route->id;
+    }
+
+    private function familyForStopOrder(DeliveryRoute $route, int $stopOrder): ?Family
+    {
+        return Family::where('delivery_route_id', $route->id)
+            ->where('route_order', $stopOrder)
+            ->first();
     }
 }

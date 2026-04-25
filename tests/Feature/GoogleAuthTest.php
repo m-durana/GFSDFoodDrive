@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class GoogleAuthTest extends TestCase
@@ -71,5 +72,27 @@ class GoogleAuthTest extends TestCase
 
         $this->assertEquals('my-client-id', Setting::get('google_client_id'));
         $this->assertEquals('my-client-secret', Setting::get('google_client_secret'));
+        $this->assertNotSame(
+            'my-client-secret',
+            DB::table('settings')->where('key', 'google_client_secret')->value('value')
+        );
+    }
+
+    public function test_settings_page_does_not_prefill_google_client_secret(): void
+    {
+        $santa = User::create([
+            'username' => 'santa_oauth3',
+            'first_name' => 'Santa',
+            'last_name' => 'OAuth',
+            'password' => 'password123',
+            'permission' => 9,
+        ]);
+        Setting::set('google_client_secret', 'my-client-secret');
+
+        $response = $this->actingAs($santa)->get('/santa/settings');
+
+        $response->assertStatus(200);
+        $response->assertDontSee('my-client-secret');
+        $response->assertSee('Leave blank to keep current secret');
     }
 }

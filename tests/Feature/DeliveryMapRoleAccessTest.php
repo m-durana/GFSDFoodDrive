@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Family;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -38,11 +39,26 @@ class DeliveryMapRoleAccessTest extends TestCase
     public function test_coordinator_can_read_map_data(): void
     {
         $coord = $this->user(8, 'map_coord2');
+        Family::create([
+            'family_name' => 'Private Household',
+            'family_number' => 77,
+            'address' => '77 Private Way',
+            'phone1' => '360-555-7777',
+            'latitude' => 47.85,
+            'longitude' => -121.97,
+            'number_of_family_members' => 3,
+        ]);
 
         $this->actingAs($coord)
             ->get('/delivery-day/map-data')
             ->assertOk()
-            ->assertJsonStructure([]);
+            ->assertJsonPath('families.0.number', 77)
+            ->assertJsonMissingPath('families.0.id')
+            ->assertJsonMissingPath('families.0.name')
+            ->assertJsonMissingPath('families.0.address')
+            ->assertDontSee('Private Household')
+            ->assertDontSee('77 Private Way')
+            ->assertDontSee('360-555-7777');
     }
 
     public function test_coordinator_can_share_location(): void

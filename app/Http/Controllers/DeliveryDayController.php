@@ -13,6 +13,7 @@ use App\Services\RoutePlanningService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -129,14 +130,18 @@ class DeliveryDayController extends Controller
             'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered'],
         ]);
 
-        $family->update(['delivery_status' => $request->delivery_status]);
+        DB::transaction(function () use ($request, $family) {
+            $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
-        DeliveryLog::create([
-            'family_id' => $family->id,
-            'user_id' => auth()->id(),
-            'status' => $request->delivery_status,
-            'notes' => $request->input('notes'),
-        ]);
+            $family->update(['delivery_status' => $request->delivery_status]);
+
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => auth()->id(),
+                'status' => $request->delivery_status,
+                'notes' => $request->input('notes'),
+            ]);
+        });
 
         return redirect()->back()
             ->with('success', "Status updated for '{$family->family_name}'.");
@@ -149,14 +154,18 @@ class DeliveryDayController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $family->update(['delivery_status' => $request->delivery_status]);
+        DB::transaction(function () use ($request, $family) {
+            $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
-        DeliveryLog::create([
-            'family_id' => $family->id,
-            'user_id' => auth()->id(),
-            'status' => $request->delivery_status,
-            'notes' => $request->notes,
-        ]);
+            $family->update(['delivery_status' => $request->delivery_status]);
+
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => auth()->id(),
+                'status' => $request->delivery_status,
+                'notes' => $request->notes,
+            ]);
+        });
 
         return response()->json([
             'ok' => true,
@@ -213,19 +222,23 @@ class DeliveryDayController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        DeliveryLog::create([
-            'family_id' => $family->id,
-            'user_id' => auth()->id(),
-            'status' => $request->status,
-            'notes' => $request->notes,
-        ]);
+        DB::transaction(function () use ($request, $family) {
+            $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
-        // Auto-update family delivery_status for terminal statuses
-        if ($request->status === 'delivered') {
-            $family->update(['delivery_status' => 'delivered']);
-        } elseif ($request->status === 'attempted' || $request->status === 'left_at_door') {
-            $family->update(['delivery_status' => 'in_transit']);
-        }
+            DeliveryLog::create([
+                'family_id' => $family->id,
+                'user_id' => auth()->id(),
+                'status' => $request->status,
+                'notes' => $request->notes,
+            ]);
+
+            // Auto-update family delivery_status for terminal statuses
+            if ($request->status === 'delivered') {
+                $family->update(['delivery_status' => 'delivered']);
+            } elseif ($request->status === 'attempted' || $request->status === 'left_at_door') {
+                $family->update(['delivery_status' => 'in_transit']);
+            }
+        });
 
         return redirect()->back()
             ->with('success', "Log added for '{$family->family_name}'.");
@@ -235,33 +248,44 @@ class DeliveryDayController extends Controller
     {
         $teams = DeliveryTeam::select('id', 'name', 'color')->get();
         $routes = DeliveryRoute::select('id', 'name')->get();
+        $canManageFamilies = $this->shouldShowHouseholdDetails();
 
-        return view('delivery-day.map', compact('teams', 'routes'));
+        return view('delivery-day.map', compact('teams', 'routes', 'canManageFamilies'));
     }
 
     public function mapData(): JsonResponse
     {
+        $includeFamilyDetails = $this->shouldShowHouseholdDetails();
+
         // Family pins with delivery status
         $families = Family::whereNotNull('family_number')
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
-            ->select('id', 'family_number', 'family_name', 'address', 'phone1',
+            ->select('id', 'family_number', 'family_name', 'address',
                 'latitude', 'longitude', 'delivery_status', 'delivery_team_id',
                 'delivery_route_id', 'route_order')
             ->get()
-            ->map(fn($f) => [
-                'id' => $f->id,
-                'number' => $f->family_number,
-                'name' => $f->family_name,
-                'address' => $f->address,
-                'phone' => $f->phone1,
-                'lat' => (float) $f->latitude,
-                'lng' => (float) $f->longitude,
-                'status' => $f->delivery_status?->value ?? 'pending',
-                'team_id' => $f->delivery_team_id,
-                'route_id' => $f->delivery_route_id,
-                'route_order' => $f->route_order,
-            ]);
+            ->map(function ($f) use ($includeFamilyDetails) {
+                $family = [
+                    'number' => $f->family_number,
+                    'lat' => (float) $f->latitude,
+                    'lng' => (float) $f->longitude,
+                    'status' => $f->delivery_status?->value ?? 'pending',
+                    'team_id' => $f->delivery_team_id,
+                    'route_id' => $f->delivery_route_id,
+                    'route_order' => $f->route_order,
+                ];
+
+                if ($includeFamilyDetails) {
+                    $family = [
+                        'id' => $f->id,
+                        'name' => $f->family_name,
+                        'address' => $f->address,
+                    ] + $family;
+                }
+
+                return $family;
+            });
 
         // Volunteer locations (updated in last 10 minutes)
         $volunteers = User::whereNotNull('last_lat')
@@ -370,24 +394,59 @@ class DeliveryDayController extends Controller
 
         $batchSize = $request->input('batch_size', 5);
 
-        // Find undelivered families with coordinates, not already on a route
-        $query = Family::whereNotNull('family_number')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->whereNull('delivery_route_id')
-            ->where(function ($q) {
-                $q->where('delivery_status', DeliveryStatus::Pending)
-                    ->orWhereNull('delivery_status');
-            })
-            ->where(function ($q) {
-                $q->where('delivery_preference', 'like', '%deliver%')
-                    ->orWhereNull('delivery_preference');
-            });
+        $assignment = DB::transaction(function () use ($request, $batchSize) {
+            // Find undelivered families with coordinates, not already on a route
+            $query = Family::whereNotNull('family_number')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereNull('delivery_route_id')
+                ->where(function ($q) {
+                    $q->where('delivery_status', DeliveryStatus::Pending)
+                        ->orWhereNull('delivery_status');
+                })
+                ->where(function ($q) {
+                    $q->where('delivery_preference', 'like', '%deliver%')
+                        ->orWhereNull('delivery_preference');
+                })
+                ->lockForUpdate();
 
-        $eligible = $query->get();
-        $families = $this->selectNearbyFamilies($eligible, $batchSize, $request->start_lat, $request->start_lng);
+            $eligible = $query->get();
+            $families = $this->selectNearbyFamilies($eligible, $batchSize, $request->start_lat, $request->start_lng);
 
-        if ($families->isEmpty()) {
+            if ($families->isEmpty()) {
+                return ['route' => null, 'families' => $families, 'eligible' => $eligible];
+            }
+
+            // Create route
+            $route = DeliveryRoute::create([
+                'name' => $request->driver_name . ' - ' . now()->format('g:ia'),
+                'driver_name' => $request->driver_name,
+                'driver_user_id' => $request->driver_user_id,
+                'start_lat' => $request->start_lat,
+                'start_lng' => $request->start_lng,
+                'stop_count' => $families->count(),
+                'access_token' => \Illuminate\Support\Str::random(32),
+                'season_year' => (int) Setting::get('season_year', date('Y')),
+            ]);
+
+            // Assign families to route (nearest-neighbor order for coherence)
+            $ordered = $this->orderByNearestNeighbor($families, $request->start_lat, $request->start_lng);
+            foreach ($ordered as $i => $family) {
+                $family->update([
+                    'delivery_route_id' => $route->id,
+                    'route_order' => $i + 1,
+                    'delivery_status' => DeliveryStatus::Pending,
+                ]);
+            }
+
+            return ['route' => $route, 'families' => $families, 'eligible' => $eligible];
+        });
+
+        $route = $assignment['route'];
+        $families = $assignment['families'];
+        $eligible = $assignment['eligible'];
+
+        if ($route === null) {
             $totalWithNumber = Family::whereNotNull('family_number')->count();
             $withCoords = Family::whereNotNull('family_number')->whereNotNull('latitude')->whereNotNull('longitude')->count();
             $onRoutes = Family::whereNotNull('family_number')->whereNotNull('delivery_route_id')->count();
@@ -416,28 +475,6 @@ class DeliveryDayController extends Controller
             return response()->json(['ok' => false, 'message' => $reason], 422);
         }
 
-        // Create route
-        $route = DeliveryRoute::create([
-            'name' => $request->driver_name . ' - ' . now()->format('g:ia'),
-            'driver_name' => $request->driver_name,
-            'driver_user_id' => $request->driver_user_id,
-            'start_lat' => $request->start_lat,
-            'start_lng' => $request->start_lng,
-            'stop_count' => $families->count(),
-            'access_token' => \Illuminate\Support\Str::random(32),
-            'season_year' => (int) Setting::get('season_year', date('Y')),
-        ]);
-
-        // Assign families to route (nearest-neighbor order for coherence)
-        $ordered = $this->orderByNearestNeighbor($families, $request->start_lat, $request->start_lng);
-        foreach ($ordered as $i => $family) {
-            $family->update([
-                'delivery_route_id' => $route->id,
-                'route_order' => $i + 1,
-                'delivery_status' => DeliveryStatus::Pending,
-            ]);
-        }
-
         // Try to optimize via ORS if key available
         if ($families->count() >= 2) {
             $this->routePlanning->optimizeRoute($route, $request->start_lat, $request->start_lng);
@@ -455,6 +492,7 @@ class DeliveryDayController extends Controller
                 'name' => $route->name,
                 'stop_count' => $families->count(),
                 'driver_url' => $driverUrl,
+                'driver_pin' => $route->driver_pin,
                 'access_token' => $route->access_token,
             ],
             'suggested' => $suggested,
@@ -471,27 +509,39 @@ class DeliveryDayController extends Controller
             ],
         ]);
 
-        $maxOrder = Family::where('delivery_route_id', $deliveryRoute->id)->max('route_order') ?? 0;
-        $added = 0;
+        $added = DB::transaction(function () use ($request, $deliveryRoute) {
+            $deliveryRoute = DeliveryRoute::whereKey($deliveryRoute->id)->lockForUpdate()->firstOrFail();
+            $maxOrder = Family::where('delivery_route_id', $deliveryRoute->id)
+                ->lockForUpdate()
+                ->max('route_order') ?? 0;
+            $added = 0;
 
-        foreach ($request->family_ids as $familyId) {
-            $family = Family::where('id', $familyId)
+            $families = Family::whereIn('id', $request->family_ids)
                 ->whereNull('delivery_route_id')
-                ->first();
-            if (! $family) {
-                continue;
-            }
-            $maxOrder++;
-            $family->update([
-                'delivery_route_id' => $deliveryRoute->id,
-                'route_order' => $maxOrder,
-                'delivery_status' => DeliveryStatus::Pending,
-            ]);
-            $added++;
-        }
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
 
-        $deliveryRoute->update(['stop_count' => Family::where('delivery_route_id', $deliveryRoute->id)->count()]);
+            foreach ($request->family_ids as $familyId) {
+                $family = $families->get($familyId);
+                if (! $family) {
+                    continue;
+                }
+                $maxOrder++;
+                $family->update([
+                    'delivery_route_id' => $deliveryRoute->id,
+                    'route_order' => $maxOrder,
+                    'delivery_status' => DeliveryStatus::Pending,
+                ]);
+                $added++;
+            }
+
+            $deliveryRoute->update(['stop_count' => Family::where('delivery_route_id', $deliveryRoute->id)->count()]);
+
+            return $added;
+        });
         $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+        $deliveryRoute->refresh();
 
         return response()->json([
             'ok' => true,
@@ -528,6 +578,11 @@ class DeliveryDayController extends Controller
         return $eligible->sortBy(fn($f) => $this->distanceSq((float) $seed->latitude, (float) $seed->longitude, (float) $f->latitude, (float) $f->longitude))
             ->take($batchSize)
             ->values();
+    }
+
+    private function shouldShowHouseholdDetails(): bool
+    {
+        return auth()->user()?->isSanta() ?? false;
     }
 
     private function orderByNearestNeighbor($families, ?float $startLat, ?float $startLng)

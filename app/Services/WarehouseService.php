@@ -12,6 +12,7 @@ use App\Models\WarehouseCategory;
 use App\Models\WarehouseItem;
 use App\Models\WarehouseTransaction;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 
 class WarehouseService
@@ -609,16 +610,35 @@ class WarehouseService
             $giftsReceived = $itemNames ?: $giftsReceived;
         }
 
-        $child->update([
-            'gift_dropped_off' => true,
-            'gift_level' => max($child->gift_level?->value ?? 0, GiftLevel::Moderate->value),
-            'gifts_received' => $giftsReceived ?: $child->gifts_received,
-        ]);
+        return DB::transaction(function () use ($child, $user, $giftsReceived, $items, $category) {
+            $child = Child::whereKey($child->id)->lockForUpdate()->firstOrFail();
 
-        // Create per-item transactions if items provided
-        $lastTransaction = null;
-        if (!empty($items)) {
-            foreach ($items as $item) {
+            $child->update([
+                'gift_dropped_off' => true,
+                'gift_level' => max($child->gift_level?->value ?? 0, GiftLevel::Moderate->value),
+                'gifts_received' => $giftsReceived ?: $child->gifts_received,
+            ]);
+
+            // Create per-item transactions if items provided
+            $lastTransaction = null;
+            if (!empty($items)) {
+                foreach ($items as $item) {
+                    $lastTransaction = WarehouseTransaction::create([
+                        'category_id' => $category->id,
+                        'family_id' => $child->family_id,
+                        'child_id' => $child->id,
+                        'transaction_type' => TransactionType::In,
+                        'quantity' => 1,
+                        'source' => 'Gift Drop-off',
+                        'scanned_by' => $user->id,
+                        'notes' => $item['name'] ?? null,
+                        'barcode_scanned' => $item['barcode'] ?? null,
+                    ]);
+                }
+            }
+
+            // Fallback: single summary transaction if no items array
+            if (empty($items)) {
                 $lastTransaction = WarehouseTransaction::create([
                     'category_id' => $category->id,
                     'family_id' => $child->family_id,
@@ -627,27 +647,12 @@ class WarehouseService
                     'quantity' => 1,
                     'source' => 'Gift Drop-off',
                     'scanned_by' => $user->id,
-                    'notes' => $item['name'] ?? null,
-                    'barcode_scanned' => $item['barcode'] ?? null,
+                    'notes' => $giftsReceived,
                 ]);
             }
-        }
 
-        // Fallback: single summary transaction if no items array
-        if (empty($items)) {
-            $lastTransaction = WarehouseTransaction::create([
-                'category_id' => $category->id,
-                'family_id' => $child->family_id,
-                'child_id' => $child->id,
-                'transaction_type' => TransactionType::In,
-                'quantity' => 1,
-                'source' => 'Gift Drop-off',
-                'scanned_by' => $user->id,
-                'notes' => $giftsReceived,
-            ]);
-        }
-
-        return $lastTransaction;
+            return $lastTransaction;
+        });
     }
 
     /**
