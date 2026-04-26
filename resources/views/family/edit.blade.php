@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-base-content leading-tight">
             Edit Family: {{ $family->family_name }}
         </h2>
     </x-slot>
@@ -9,7 +9,7 @@
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             @if($errors->any())
-                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+                <div class="bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary text-primary dark:text-primary px-4 py-3 rounded-sm">
                     <p class="font-medium">Please fix the following errors:</p>
                     <ul class="mt-2 list-disc list-inside text-sm">
                         @foreach($errors->all() as $error)
@@ -24,39 +24,39 @@
                 @method('PUT')
 
                 <!-- Basic Information -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Family Information</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Family Information</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="md:col-span-2">
-                                <label for="family_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Family Name <span class="text-red-500">*</span></label>
+                                <label for="family_name" class="block text-sm font-medium text-base-content/80">Family Name <span class="text-primary">*</span></label>
                                 <input type="text" name="family_name" id="family_name" value="{{ old('family_name', $family->family_name) }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                             </div>
                             <div class="md:col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Address <span class="text-red-500">*</span></label>
+                                <label for="address" class="block text-sm font-medium text-base-content/80">Address <span class="text-primary">*</span></label>
                                 <input type="text" name="address" id="address" value="{{ old('address', $family->address) }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                             </div>
                             <div>
-                                <label for="phone1" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Primary Phone <span class="text-red-500">*</span></label>
+                                <label for="phone1" class="block text-sm font-medium text-base-content/80">Primary Phone <span class="text-primary">*</span></label>
                                 <input type="tel" name="phone1" id="phone1" value="{{ old('phone1', $family->phone1) }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                             </div>
                             <div>
-                                <label for="phone2" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Secondary Phone</label>
+                                <label for="phone2" class="block text-sm font-medium text-base-content/80">Secondary Phone</label>
                                 <input type="tel" name="phone2" id="phone2" value="{{ old('phone2', $family->phone2) }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                             </div>
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                <label for="email" class="block text-sm font-medium text-base-content/80">Email</label>
                                 <input type="email" name="email" id="email" value="{{ old('email', $family->email) }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                             </div>
                             <div>
-                                <label for="preferred_language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preferred Language</label>
+                                <label for="preferred_language" class="block text-sm font-medium text-base-content/80">Preferred Language</label>
                                 <select name="preferred_language" id="preferred_language"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                                     <option value="English" {{ old('preferred_language', $family->preferred_language) === 'English' ? 'selected' : '' }}>English</option>
                                     <option value="Spanish" {{ old('preferred_language', $family->preferred_language) === 'Spanish' ? 'selected' : '' }}>Spanish</option>
                                     <option value="Other" {{ old('preferred_language', $family->preferred_language) === 'Other' ? 'selected' : '' }}>Other</option>
@@ -67,59 +67,59 @@
                 </div>
 
                 <!-- Household Members -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Household Members</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Household Members</h3>
 
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Adults (18+)</h4>
+                        <h4 class="text-sm font-medium text-base-content/80 mb-2">Adults (18+)</h4>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                             <div>
-                                <label for="female_adults" class="block text-sm text-gray-600 dark:text-gray-400">Female Adults</label>
+                                <label for="female_adults" class="block text-sm text-base-content/70">Female Adults</label>
                                 <input type="number" name="female_adults" id="female_adults" value="{{ old('female_adults', $family->female_adults) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="male_adults" class="block text-sm text-gray-600 dark:text-gray-400">Male Adults</label>
+                                <label for="male_adults" class="block text-sm text-base-content/70">Male Adults</label>
                                 <input type="number" name="male_adults" id="male_adults" value="{{ old('male_adults', $family->male_adults) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="other_adults" class="block text-sm text-gray-600 dark:text-gray-400">Other Adults</label>
+                                <label for="other_adults" class="block text-sm text-base-content/70">Other Adults</label>
                                 <input type="number" name="other_adults" id="other_adults" value="{{ old('other_adults', $family->other_adults) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                         </div>
 
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Children (by age group)</h4>
+                        <h4 class="text-sm font-medium text-base-content/80 mb-2">Children (by age group)</h4>
                         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
                             <div>
-                                <label for="infants" class="block text-sm text-gray-600 dark:text-gray-400">Infants (0-2)</label>
+                                <label for="infants" class="block text-sm text-base-content/70">Infants (0-2)</label>
                                 <input type="number" name="infants" id="infants" value="{{ old('infants', $family->infants) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="young_children" class="block text-sm text-gray-600 dark:text-gray-400">Young (3-7)</label>
+                                <label for="young_children" class="block text-sm text-base-content/70">Young (3-7)</label>
                                 <input type="number" name="young_children" id="young_children" value="{{ old('young_children', $family->young_children) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="children_count" class="block text-sm text-gray-600 dark:text-gray-400">Children (8-12)</label>
+                                <label for="children_count" class="block text-sm text-base-content/70">Children (8-12)</label>
                                 <input type="number" name="children_count" id="children_count" value="{{ old('children_count', $family->children_count) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="tweens" class="block text-sm text-gray-600 dark:text-gray-400">Tweens (13-14)</label>
+                                <label for="tweens" class="block text-sm text-base-content/70">Tweens (13-14)</label>
                                 <input type="number" name="tweens" id="tweens" value="{{ old('tweens', $family->tweens) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                             <div>
-                                <label for="teenagers" class="block text-sm text-gray-600 dark:text-gray-400">Teenagers (15-17)</label>
+                                <label for="teenagers" class="block text-sm text-base-content/70">Teenagers (15-17)</label>
                                 <input type="number" name="teenagers" id="teenagers" value="{{ old('teenagers', $family->teenagers) }}" min="0" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm member-count">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm member-count">
                             </div>
                         </div>
 
-                        <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-sm text-gray-700 dark:text-gray-300">
+                        <div class="bg-base-200 rounded-lg p-3 text-sm text-base-content/80">
                             Total Adults: <span id="total-adults" class="font-medium">0</span> |
                             Total Children: <span id="total-children" class="font-medium">0</span> |
                             Total Family Members: <span id="total-members" class="font-bold">0</span>
@@ -128,40 +128,40 @@
                 </div>
 
                 <!-- School & Needs -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">School & Needs</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">School & Needs</h3>
                         <div class="space-y-4">
                             <div class="flex items-center space-x-6">
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="has_crhs_children" value="1" {{ old('has_crhs_children', $family->has_crhs_children) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Has children at Crossroads High School</span>
+                                        class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary">
+                                    <span class="ml-2 text-sm text-base-content/80">Has children at Crossroads High School</span>
                                 </label>
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="has_gfhs_children" value="1" {{ old('has_gfhs_children', $family->has_gfhs_children) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Has children at Granite Falls High School</span>
+                                        class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary">
+                                    <span class="ml-2 text-sm text-base-content/80">Has children at Granite Falls High School</span>
                                 </label>
                             </div>
                             <div>
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="needs_baby_supplies" value="1" {{ old('needs_baby_supplies', $family->needs_baby_supplies) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Family needs baby supplies / baby food</span>
+                                        class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary">
+                                    <span class="ml-2 text-sm text-base-content/80">Family needs baby supplies / baby food</span>
                                 </label>
                             </div>
                             @if(auth()->user()->isSanta() || auth()->user()->permission >= 7)
-                            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                            <div class="pt-2 border-t border-base-300">
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="is_severe_need" value="1" {{ old('is_severe_need', $family->is_severe_need) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500"
+                                        class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary"
                                         id="is_severe_need_checkbox"
                                         onchange="document.getElementById('severe_need_notes').classList.toggle('hidden', !this.checked)">
-                                    <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Severe Need</span>
+                                    <span class="ml-2 text-sm font-medium text-base-content/80">Severe Need</span>
                                 </label>
                                 <textarea name="severe_need_notes" id="severe_need_notes" rows="2" placeholder="Optional: describe the severe need"
-                                    class="mt-2 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm {{ old('is_severe_need', $family->is_severe_need) ? '' : 'hidden' }}">{{ old('severe_need_notes', $family->severe_need_notes ?? $family->severe_need) }}</textarea>
+                                    class="mt-2 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm {{ old('is_severe_need', $family->is_severe_need) ? '' : 'hidden' }}">{{ old('severe_need_notes', $family->severe_need_notes ?? $family->severe_need) }}</textarea>
                             </div>
                             @endif
                         </div>
@@ -169,46 +169,46 @@
                 </div>
 
                 <!-- Dietary Restrictions -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Dietary Restrictions</h3>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Select any dietary restrictions that apply to this family. These will be used to flag incompatible items during packing.</p>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Dietary Restrictions</h3>
+                        <p class="text-sm text-base-content/60 mb-3">Select any dietary restrictions that apply to this family. These will be used to flag incompatible items during packing.</p>
                         @php $restrictions = old('dietary_restrictions', $family->dietary_restrictions ?? []); @endphp
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
                             @foreach(['nut_free' => 'Nut Free', 'halal' => 'Halal', 'kosher' => 'Kosher', 'vegetarian' => 'Vegetarian', 'gluten_free' => 'Gluten Free', 'dairy_free' => 'Dairy Free'] as $key => $label)
                                 <label class="inline-flex items-center">
                                     <input type="checkbox" name="dietary_restrictions[]" value="{{ $key }}" {{ in_array($key, $restrictions) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 dark:border-gray-600 text-red-600 shadow-sm focus:ring-red-500">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ $label }}</span>
+                                        class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary">
+                                    <span class="ml-2 text-sm text-base-content/80">{{ $label }}</span>
                                 </label>
                             @endforeach
                         </div>
                         <div>
-                            <label for="dietary_notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Dietary Notes</label>
+                            <label for="dietary_notes" class="block text-sm font-medium text-base-content/80">Dietary Notes</label>
                             <textarea name="dietary_notes" id="dietary_notes" rows="2" placeholder="Any additional dietary info (e.g. specific allergies)"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('dietary_notes', $family->dietary_notes) }}</textarea>
+                                class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">{{ old('dietary_notes', $family->dietary_notes) }}</textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Delivery Preferences -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Delivery Preferences</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Delivery Preferences</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             <div>
-                                <label for="delivery_preference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preference</label>
+                                <label for="delivery_preference" class="block text-sm font-medium text-base-content/80">Preference</label>
                                 <select name="delivery_preference" id="delivery_preference"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                                     <option value="">-- Select --</option>
                                     <option value="Delivery" {{ old('delivery_preference', $family->delivery_preference) === 'Delivery' ? 'selected' : '' }}>Delivery</option>
                                     <option value="Pickup" {{ old('delivery_preference', $family->delivery_preference) === 'Pickup' ? 'selected' : '' }}>Pickup</option>
                                 </select>
                             </div>
                             <div>
-                                <label for="delivery_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Date</label>
+                                <label for="delivery_date" class="block text-sm font-medium text-base-content/80">Delivery Date</label>
                                 <select name="delivery_date" id="delivery_date"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                                     <option value="">-- Select --</option>
                                     @foreach(array_filter(array_map('trim', explode(',', \App\Models\Setting::get('delivery_dates', 'December 18th,December 19th')))) as $date)
                                         <option value="{{ $date }}" {{ old('delivery_date', $family->delivery_date) === $date ? 'selected' : '' }}>{{ $date }}</option>
@@ -216,9 +216,9 @@
                                 </select>
                             </div>
                             <div>
-                                <label for="delivery_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Delivery Time</label>
+                                <label for="delivery_time" class="block text-sm font-medium text-base-content/80">Delivery Time</label>
                                 <select name="delivery_time" id="delivery_time"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">
                                     <option value="">-- Select --</option>
                                     @foreach(['8 am', '9 am', '10 am', '11 am', '12 pm', '1 pm', '2 pm', '3 pm', '4 pm', '5 pm'] as $time)
                                         <option value="{{ $time }}" {{ old('delivery_time', $family->delivery_time) === $time ? 'selected' : '' }}>{{ $time }}</option>
@@ -227,32 +227,32 @@
                             </div>
                         </div>
                         <div class="mt-4">
-                            <label for="delivery_reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300">If family can't have items picked up, why?</label>
+                            <label for="delivery_reason" class="block text-sm font-medium text-base-content/80">If family can't have items picked up, why?</label>
                             <textarea name="delivery_reason" id="delivery_reason" rows="2"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('delivery_reason', $family->delivery_reason) }}</textarea>
+                                class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">{{ old('delivery_reason', $family->delivery_reason) }}</textarea>
                         </div>
                     </div>
                 </div>
 
                 <!-- Additional Information -->
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 overflow-hidden shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Additional Information</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Additional Information</h3>
                         <div class="space-y-4">
                             <div>
-                                <label for="pet_information" class="block text-sm font-medium text-gray-700 dark:text-gray-300">What pets does family have?</label>
+                                <label for="pet_information" class="block text-sm font-medium text-base-content/80">What pets does family have?</label>
                                 <textarea name="pet_information" id="pet_information" rows="2" placeholder="e.g. 2 dogs, 1 cat (for pet food)"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('pet_information', $family->pet_information) }}</textarea>
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">{{ old('pet_information', $family->pet_information) }}</textarea>
                             </div>
                             <div>
-                                <label for="need_for_help" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reason for Needing Help</label>
+                                <label for="need_for_help" class="block text-sm font-medium text-base-content/80">Reason for Needing Help</label>
                                 <textarea name="need_for_help" id="need_for_help" rows="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('need_for_help', $family->need_for_help) }}</textarea>
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">{{ old('need_for_help', $family->need_for_help) }}</textarea>
                             </div>
                             <div>
-                                <label for="other_questions" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Other Questions / Comments</label>
+                                <label for="other_questions" class="block text-sm font-medium text-base-content/80">Other Questions / Comments</label>
                                 <textarea name="other_questions" id="other_questions" rows="3"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">{{ old('other_questions', $family->other_questions) }}</textarea>
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm">{{ old('other_questions', $family->other_questions) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -260,10 +260,10 @@
 
                 <!-- Submit -->
                 <div class="flex items-center justify-between">
-                    <a href="{{ route('family.show', $family) }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                    <a href="{{ route('family.show', $family) }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                         &larr; Back to Family
                     </a>
-                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                    <button type="submit" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                         Update Family
                     </button>
                 </div>

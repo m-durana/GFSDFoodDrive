@@ -13,13 +13,13 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-base-content">
     <div class="min-h-screen flex flex-col items-center justify-center px-4">
         <div class="max-w-lg w-full text-center">
             <div class="text-6xl mb-6">🎄</div>
             <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Adopt-a-Tag Has Closed</h1>
-            <p class="text-lg text-gray-600 dark:text-gray-400 mb-6">
-                The adoption deadline was <strong class="text-red-600 dark:text-red-400">{{ $deadline->format('F j, Y') }}</strong>.
+            <p class="text-lg text-base-content/70 mb-6">
+                The adoption deadline was <strong class="text-primary dark:text-primary">{{ $deadline->format('F j, Y') }}</strong>.
                 Thank you to everyone who adopted a tag this year!
             </p>
 
@@ -35,12 +35,12 @@
             @endif
 
             <div class="space-y-3">
-                <a href="{{ route('home') }}" class="inline-flex items-center px-6 py-3 bg-red-700 text-white rounded-lg hover:bg-red-600 font-medium transition">
+                <a href="{{ route('home') }}" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 font-medium transition">
                     Back to Homepage
                 </a>
             </div>
 
-            <p class="mt-8 text-xs text-gray-400 dark:text-gray-600">
+            <p class="mt-8 text-xs text-base-content/50">
                 GFSD Food Drive &copy; {{ date('Y') }} &middot; Made with love in 🇨🇭
             </p>
         </div>

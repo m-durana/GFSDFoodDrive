@@ -1,6 +1,211 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/forms';
+@plugin 'daisyui' {
+  themes: false;
+  root: ':root';
+}
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@custom-variant dark (&:is(.dark *));
+
+/* North Pole — internal dashboard theme (Santa/Christmas identity) */
+@plugin 'daisyui/theme' {
+  name: 'northpole';
+  default: true;
+  prefersdark: false;
+  color-scheme: 'light';
+
+  --color-base-100: #FFFAFF;
+  --color-base-200: #F2EDF2;
+  --color-base-300: #E4DFE4;
+  --color-base-content: #1E1B18;
+
+  --color-primary: #C5261B;
+  --color-primary-content: #FFFAFF;
+
+  --color-secondary: #0A2463;
+  --color-secondary-content: #FFFAFF;
+
+  --color-accent: #3E92CC;
+  --color-accent-content: #FFFAFF;
+
+  --color-neutral: #1E1B18;
+  --color-neutral-content: #FFFAFF;
+
+  --color-info: #3E92CC;
+  --color-info-content: #FFFAFF;
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: #FFFAFF;
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: #1E1B18;
+  --color-error: #C5261B;
+  --color-error-content: #FFFAFF;
+
+  --radius-selector: 0.25rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* North Pole Dark — internal dashboard, dark variant */
+@plugin 'daisyui/theme' {
+  name: 'northpole-dark';
+  default: false;
+  prefersdark: true;
+  color-scheme: 'dark';
+
+  --color-base-100: #1E1B18;
+  --color-base-200: #2A2724;
+  --color-base-300: #3A3633;
+  --color-base-content: #FFFAFF;
+
+  --color-primary: #C5261B;
+  --color-primary-content: #FFFAFF;
+
+  --color-secondary: #3E92CC;
+  --color-secondary-content: #1E1B18;
+
+  --color-accent: #3E92CC;
+  --color-accent-content: #1E1B18;
+
+  --color-neutral: #0A0A0A;
+  --color-neutral-content: #FFFAFF;
+
+  --color-info: #3E92CC;
+  --color-info-content: #1E1B18;
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: #FFFAFF;
+  --color-warning: oklch(66% 0.179 58.318);
+  --color-warning-content: #1E1B18;
+  --color-error: #C5261B;
+  --color-error-content: #FFFAFF;
+
+  --radius-selector: 0.25rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* GFSD — public-facing theme (school district orange/black/white) */
+@plugin 'daisyui/theme' {
+  name: 'gfsd';
+  default: false;
+  prefersdark: false;
+  color-scheme: 'light';
+
+  --color-base-100: #FFFFFF;
+  --color-base-200: #F5F5F5;
+  --color-base-300: #E5E5E5;
+  --color-base-content: #1E1B18;
+
+  --color-primary: #F5911F;
+  --color-primary-content: #1E1B18;
+
+  --color-secondary: #1E1B18;
+  --color-secondary-content: #FFFFFF;
+
+  --color-accent: #636363;
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #1E1B18;
+  --color-neutral-content: #FFFFFF;
+
+  --color-info: oklch(60% 0.126 221.723);
+  --color-info-content: #FFFFFF;
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: #FFFFFF;
+  --color-warning: #F5911F;
+  --color-warning-content: #1E1B18;
+  --color-error: #C5261B;
+  --color-error-content: #FFFFFF;
+
+  --radius-selector: 0.25rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+/* GFSD Dark — public-facing, dark variant */
+@plugin 'daisyui/theme' {
+  name: 'gfsd-dark';
+  default: false;
+  prefersdark: false;
+  color-scheme: 'dark';
+
+  --color-base-100: #1E1B18;
+  --color-base-200: #2A2724;
+  --color-base-300: #3A3633;
+  --color-base-content: #FFFFFF;
+
+  --color-primary: #F5911F;
+  --color-primary-content: #1E1B18;
+
+  --color-secondary: #FFFFFF;
+  --color-secondary-content: #1E1B18;
+
+  --color-accent: #636363;
+  --color-accent-content: #FFFFFF;
+
+  --color-neutral: #0A0A0A;
+  --color-neutral-content: #FFFFFF;
+
+  --color-info: oklch(60% 0.126 221.723);
+  --color-info-content: #FFFFFF;
+  --color-success: oklch(60% 0.118 184.704);
+  --color-success-content: #FFFFFF;
+  --color-warning: #F5911F;
+  --color-warning-content: #1E1B18;
+  --color-error: #C5261B;
+  --color-error-content: #FFFFFF;
+
+  --radius-selector: 0.25rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --font-sans:
+    Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
 
 /* Alpine.js x-cloak: hide elements until Alpine initializes (prevents dropdown flash) */
 [x-cloak] { display: none !important; }

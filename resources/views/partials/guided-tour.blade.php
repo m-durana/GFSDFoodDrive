@@ -48,17 +48,17 @@
 <div id="tour-welcome" class="fixed inset-0 z-[9999] hidden">
     <div class="fixed inset-0 bg-black/50"></div>
     <div class="fixed inset-0 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-sm w-full p-6 text-center relative">
+        <div class="bg-base-100 rounded-xl shadow-2xl max-w-sm w-full p-6 text-center relative">
             <div class="text-4xl mb-3">&#127877;</div>
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Welcome to North Pole!</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5">
+            <h3 class="text-lg font-bold text-base-content mb-2">Welcome to North Pole!</h3>
+            <p class="text-sm text-base-content/60 mb-5">
                 Would you like a quick tour of the system? It only takes 30 seconds.
             </p>
             <div class="flex gap-3 justify-center">
-                <button onclick="dismissTour()" class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <button onclick="dismissTour()" class="px-4 py-2 text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-300">
                     Skip for now
                 </button>
-                <button onclick="startTour()" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-semibold transition">
+                <button onclick="startTour()" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-semibold transition">
                     Take the Tour
                 </button>
             </div>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-gray-100 dark:bg-gray-900">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="bg-base-200" data-theme="northpole">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -15,12 +15,22 @@
 
     <!-- Dark mode: apply before page renders to prevent flash -->
     <script>
-        if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
+        (function() {
+            const html = document.documentElement;
+            const wantDark = localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (wantDark) {
+                html.classList.add('dark');
+                const t = html.getAttribute('data-theme') || 'northpole';
+                if (!t.endsWith('-dark')) html.setAttribute('data-theme', t + '-dark');
+            }
+        })();
         function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            const t = html.getAttribute('data-theme') || 'northpole';
+            const base = t.endsWith('-dark') ? t.slice(0, -5) : t;
+            html.setAttribute('data-theme', isDark ? base + '-dark' : base);
+            localStorage.setItem('darkMode', isDark);
         }
     </script>
 
@@ -33,12 +43,12 @@
     <script>document.getElementById('fouc-guard').remove();</script>
 </head>
 <body class="font-sans antialiased pb-safe">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen bg-base-200">
         @include('layouts.navigation')
 
         <!-- Page Heading -->
         @isset($header)
-            <header class="bg-white dark:bg-gray-800 shadow">
+            <header class="bg-base-100 shadow-sm">
                 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                     {{ $header }}
                 </div>

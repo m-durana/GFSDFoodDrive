@@ -43,21 +43,21 @@
     </footer>
 @elseif($variant === 'light')
     {{-- Used on confirmation, status pages --}}
-    <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+    <footer class="bg-base-200 border-t border-base-300 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm text-base-content/60">
             Organized by {{ $orgName }}
         </div>
     </footer>
 @elseif($variant === 'border')
     {{-- Used on family status page --}}
-    <footer class="border-t border-gray-200 dark:border-gray-700 mt-8">
-        <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-gray-400 dark:text-gray-500">
+    <footer class="border-t border-base-300 mt-8">
+        <div class="max-w-2xl mx-auto px-4 sm:px-6 py-6 text-center text-xs text-base-content/50">
             Granite Falls School District Food Drive
         </div>
     </footer>
 @else
     {{-- Default minimal - used in app layout --}}
-    <footer class="py-4 text-center text-xs text-gray-400 dark:text-gray-600">
+    <footer class="py-4 text-center text-xs text-base-content/50">
         <span>GFSD Food Drive &copy; {{ date('Y') }}</span>
         <span class="mx-1">&middot;</span>
         <span>{!! $footerText !!}</span>

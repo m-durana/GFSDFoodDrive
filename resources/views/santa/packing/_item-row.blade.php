@@ -1,13 +1,13 @@
 <tr class="{{ $item->isPacked() ? 'bg-green-50/50 dark:bg-green-900/10' : '' }}">
-    <td class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400" data-sort-value="{{ $item->category?->name ?? '' }}">{{ $item->category?->name ?? '—' }}</td>
-    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->description }}">
+    <td class="px-4 py-2 text-sm text-base-content/60" data-sort-value="{{ $item->category?->name ?? '' }}">{{ $item->category?->name ?? '—' }}</td>
+    <td class="px-4 py-2 text-sm text-base-content" data-sort-value="{{ $item->description }}">
         {{ $item->description }}
         @if($item->warehouseItem && $item->warehouseItem->locationLabel() !== 'Unassigned')
-            <span class="ml-1 text-xs text-gray-400 dark:text-gray-500">{{ $item->warehouseItem->locationLabel() }}</span>
+            <span class="ml-1 text-xs text-base-content/50">{{ $item->warehouseItem->locationLabel() }}</span>
         @endif
     </td>
     <td class="px-4 py-2 text-center text-sm" data-sort-value="{{ $item->quantity_packed }}">
-        <span class="{{ $item->quantity_packed >= $item->quantity_needed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400' }}">
+        <span class="{{ $item->quantity_packed >= $item->quantity_needed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-base-content/60' }}">
             {{ $item->quantity_packed }}/{{ $item->quantity_needed }}
         </span>
     </td>

@@ -1,21 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-base-content leading-tight">
             Location Sharing
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-lg mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center space-y-6">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center space-y-6">
 
                 <div id="status-icon" class="text-6xl">&#128205;</div>
 
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100" id="status-title">
+                <h3 class="text-lg font-medium text-base-content" id="status-title">
                     Location Sharing
                 </h3>
 
-                <p class="text-sm text-gray-500 dark:text-gray-400" id="status-text">
+                <p class="text-sm text-base-content/60" id="status-text">
                     Share your location so coordinators can see where delivery teams are on the live map.
                 </p>
 
@@ -26,16 +26,16 @@
                     <p class="text-xs text-green-600 dark:text-green-400 mt-1" id="coords-display"></p>
                 </div>
 
-                <div id="error-info" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4">
-                    <p class="text-sm text-red-700 dark:text-red-300" id="error-text"></p>
+                <div id="error-info" class="hidden bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary rounded-lg p-4">
+                    <p class="text-sm text-primary dark:text-primary" id="error-text"></p>
                 </div>
 
                 <button id="toggle-btn" onclick="toggleTracking()"
-                    class="w-full py-3 bg-red-700 text-white rounded-lg font-semibold text-sm hover:bg-red-600 active:bg-red-800 transition">
+                    class="w-full py-3 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 active:opacity-80 transition">
                     Start Sharing Location
                 </button>
 
-                <p class="text-xs text-gray-400 dark:text-gray-500">
+                <p class="text-xs text-base-content/50">
                     Your location is only shared while this page is open.
                     Close the tab to stop sharing.
                 </p>
@@ -66,7 +66,7 @@
                     sendLocation(pos.coords.latitude, pos.coords.longitude);
                     isTracking = true;
                     document.getElementById('toggle-btn').textContent = 'Stop Sharing';
-                    document.getElementById('toggle-btn').classList.remove('bg-red-700', 'hover:bg-red-600');
+                    document.getElementById('toggle-btn').classList.remove('bg-primary', 'hover:opacity-90');
                     document.getElementById('toggle-btn').classList.add('bg-gray-600', 'hover:bg-gray-500');
                     document.getElementById('location-info').classList.remove('hidden');
                     document.getElementById('error-info').classList.add('hidden');
@@ -89,7 +89,7 @@
             if (trackingInterval) clearInterval(trackingInterval);
             isTracking = false;
             document.getElementById('toggle-btn').textContent = 'Start Sharing Location';
-            document.getElementById('toggle-btn').classList.add('bg-red-700', 'hover:bg-red-600');
+            document.getElementById('toggle-btn').classList.add('bg-primary', 'hover:opacity-90');
             document.getElementById('toggle-btn').classList.remove('bg-gray-600', 'hover:bg-gray-500');
             document.getElementById('location-info').classList.add('hidden');
             document.getElementById('status-title').textContent = 'Location Sharing';

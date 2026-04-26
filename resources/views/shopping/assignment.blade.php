@@ -19,27 +19,27 @@
                 <h2 class="text-lg font-bold text-gray-900 mb-2">What's your name?</h2>
                 <p class="text-sm text-gray-500 mb-4">This will show others who checked off items.</p>
                 <input type="text" id="ninja-name-input" placeholder="Your name"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-red-500 focus:border-red-500 mb-4"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:ring-2 focus:ring-primary focus:border-primary mb-4"
                        autofocus>
-                <button id="save-name-btn" class="w-full bg-red-700 text-white rounded-lg py-3 font-semibold text-base hover:bg-red-600 transition">
+                <button id="save-name-btn" class="w-full bg-primary text-white rounded-lg py-3 font-semibold text-base hover:opacity-90 transition">
                     Start Shopping
                 </button>
             </div>
         </div>
 
         <!-- Header -->
-        <div class="bg-red-700 text-white rounded-xl p-4 mb-4 shadow-sm">
+        <div class="bg-primary text-white rounded-xl p-4 mb-4 shadow-xs">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-xl font-bold" id="display-name">{{ $assignment->getDisplayName() }}</h1>
-                    <p class="text-red-200 text-sm" id="description">{{ $assignment->getDescription() }}</p>
+                    <p class="text-primary-content/80 text-sm" id="description">{{ $assignment->getDescription() }}</p>
                 </div>
                 <div class="text-right">
                     <div class="text-3xl font-bold" id="progress-count">0</div>
-                    <div class="text-red-200 text-xs">of <span id="total-count">0</span> items</div>
+                    <div class="text-primary-content/80 text-xs">of <span id="total-count">0</span> items</div>
                 </div>
             </div>
-            <div class="mt-3 bg-red-900 rounded-full h-2">
+            <div class="mt-3 bg-primary/30 rounded-full h-2">
                 <div class="bg-white rounded-full h-2 transition-all duration-300" id="progress-bar" style="width: 0%"></div>
             </div>
         </div>
@@ -64,7 +64,7 @@
 
         <!-- Reset button -->
         <div class="mt-6 mb-8 text-center">
-            <button onclick="resetChecklist()" class="text-sm text-gray-400 hover:text-red-600 transition">
+            <button onclick="resetChecklist()" class="text-sm text-gray-400 hover:text-primary transition">
                 Reset All My Checks
             </button>
         </div>
@@ -163,7 +163,7 @@
         function renderList() {
             const container = document.getElementById('shopping-list');
             if (items.length === 0) {
-                container.innerHTML = '<div class="bg-white rounded-xl p-6 text-center text-gray-500 shadow-sm">No items in this assignment.</div>';
+                container.innerHTML = '<div class="bg-white rounded-xl p-6 text-center text-gray-500 shadow-xs">No items in this assignment.</div>';
                 return;
             }
 
@@ -183,7 +183,7 @@
                 html += '<div class="mb-4">';
                 html += '<h2 class="text-sm font-bold uppercase tracking-wide text-gray-500 mb-2 px-1">' +
                          label + ' <span class="text-xs font-normal">(' + catTotal + ' items)</span></h2>';
-                html += '<div class="bg-white rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">';
+                html += '<div class="bg-white rounded-xl shadow-xs overflow-hidden divide-y divide-gray-100">';
 
                 catItems.forEach(item => {
                     const check = checks[item.key];
@@ -194,7 +194,7 @@
                     const checkedInfo = isChecked ? '<span class="text-xs text-gray-400 ml-1">' + check.checked_by + '</span>' : '';
 
                     html += '<div class="shopping-item flex items-center px-4 py-3 cursor-pointer active:bg-gray-50 transition" data-key="' + escHtml(item.key) + '">' +
-                        '<div class="w-6 h-6 rounded-full border-2 ' + circleClass + ' flex items-center justify-center mr-3 flex-shrink-0">' +
+                        '<div class="w-6 h-6 rounded-full border-2 ' + circleClass + ' flex items-center justify-center mr-3 shrink-0">' +
                             '<svg class="w-4 h-4 text-white ' + iconHidden + '" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">' +
                                 '<path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>' +
                             '</svg>' +
@@ -203,7 +203,7 @@
                             '<span class="text-sm font-medium ' + nameClass + '">' + escHtml(item.key) + '</span>' +
                             checkedInfo +
                         '</div>' +
-                        '<span class="inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-full text-sm font-bold ' + colorClass + '">' +
+                        '<span class="inline-flex items-center justify-center min-w-8 h-7 px-2 rounded-full text-sm font-bold ' + colorClass + '">' +
                             item.quantity +
                         '</span>' +
                     '</div>';
@@ -243,7 +243,7 @@
                 dot.className = 'w-2 h-2 rounded-full bg-yellow-500 animate-pulse';
                 text.textContent = 'Syncing...';
             } else {
-                dot.className = 'w-2 h-2 rounded-full bg-red-500';
+                dot.className = 'w-2 h-2 rounded-full bg-primary';
                 text.textContent = 'Offline — retrying';
             }
         }

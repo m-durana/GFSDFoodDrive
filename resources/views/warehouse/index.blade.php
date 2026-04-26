@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-base-content leading-tight">
             Warehouse Dashboard
             <x-hint key="warehouse-dashboard" text="Track all incoming donations here. The deficit table shows what's still needed. Use Kiosk Mode for fast barcode scanning, or Gift Intake to record child-specific gifts." />
             <x-live-indicator class="ml-3" />
@@ -12,31 +12,31 @@
 
             <!-- Quick Actions -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-sm border border-green-200 dark:border-green-800 text-center">
+                <div class="block p-4 bg-green-50 dark:bg-green-900/20 rounded-lg shadow-xs border border-green-200 dark:border-green-800 text-center">
                     <div class="text-2xl mb-1">📦</div>
                     <h4 class="font-medium text-green-800 dark:text-green-300 mb-2">Intake Scanner</h4>
                     <p class="text-xs text-green-700/70 dark:text-green-400/60 mb-3">Scan barcodes and log donations</p>
                     <div class="flex gap-2 justify-center">
-                        <a href="{{ route('warehouse.kiosk') }}" class="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-500 transition">Food & Supplies</a>
-                        <a href="{{ route('warehouse.kiosk.gifts') }}" class="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-500 transition">Gifts</a>
+                        <a href="{{ route('warehouse.kiosk') }}" class="px-2 py-1 bg-green-600 text-white rounded-sm text-xs hover:bg-green-500 transition">Food & Supplies</a>
+                        <a href="{{ route('warehouse.kiosk.gifts') }}" class="px-2 py-1 bg-purple-600 text-white rounded-sm text-xs hover:bg-purple-500 transition">Gifts</a>
                     </div>
                 </div>
-                <a href="{{ route('warehouse.gifts-intake') }}" class="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm hover:bg-purple-100 dark:hover:bg-purple-900/30 transition border border-purple-200 dark:border-purple-800 text-center">
+                <a href="{{ route('warehouse.gifts-intake') }}" class="block p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-xs hover:bg-purple-100 dark:hover:bg-purple-900/30 transition border border-purple-200 dark:border-purple-800 text-center">
                     <div class="text-2xl mb-1">🎁</div>
                     <h4 class="font-medium text-purple-800 dark:text-purple-300">Gift Intake</h4>
                     <p class="text-xs text-purple-700/70 dark:text-purple-400/60 mt-1">Record child-specific gift drop-offs</p>
                 </a>
-                <div class="block p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800 text-center">
+                <div class="block p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-xs border border-blue-200 dark:border-blue-800 text-center">
                     <div class="text-2xl mb-1">📋</div>
                     <h4 class="font-medium text-blue-800 dark:text-blue-300 mb-2">Inventory</h4>
                     <p class="text-xs text-blue-700/70 dark:text-blue-400/60 mb-3">Stock levels, gift bank & history</p>
                     <div class="flex gap-2 justify-center flex-wrap">
-                        <a href="{{ route('warehouse.inventory') }}" class="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-500 transition">Stock</a>
-                        <a href="{{ route('warehouse.gift-bank') }}" class="px-2 py-1 bg-pink-600 text-white rounded text-xs hover:bg-pink-500 transition">Gift Bank</a>
-                        <a href="{{ route('warehouse.transactions') }}" class="px-2 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-500 transition">Log</a>
+                        <a href="{{ route('warehouse.inventory') }}" class="px-2 py-1 bg-blue-600 text-white rounded-sm text-xs hover:bg-blue-500 transition">Stock</a>
+                        <a href="{{ route('warehouse.gift-bank') }}" class="px-2 py-1 bg-pink-600 text-white rounded-sm text-xs hover:bg-pink-500 transition">Gift Bank</a>
+                        <a href="{{ route('warehouse.transactions') }}" class="px-2 py-1 bg-amber-600 text-white rounded-sm text-xs hover:bg-amber-500 transition">Log</a>
                     </div>
                 </div>
-                <a href="{{ route('warehouse.mobile-scan') }}" class="block p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg shadow-sm hover:bg-gray-100 dark:hover:bg-gray-900/30 transition border border-gray-200 dark:border-gray-800 text-center">
+                <a href="{{ route('warehouse.mobile-scan') }}" class="block p-4 bg-gray-50 dark:bg-gray-900/20 rounded-lg shadow-xs hover:bg-gray-100 dark:hover:bg-gray-900/30 transition border border-gray-200 dark:border-gray-800 text-center">
                     <div class="text-2xl mb-1">📱</div>
                     <h4 class="font-medium text-gray-800 dark:text-gray-300">Mobile Scanner</h4>
                     <p class="text-xs text-gray-700/70 dark:text-gray-400/60 mt-1">Scan from your phone</p>
@@ -44,29 +44,29 @@
             </div>
 
             <!-- Inventory Deficit Table -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Inventory vs. Needs</h3>
+                    <h3 class="text-lg font-medium text-base-content mb-4">Inventory vs. Needs</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700">
-                                    <th class="text-left py-2 px-3 text-gray-500 dark:text-gray-400">Category</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">Needed</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">On Hand</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">Surplus / Deficit</th>
+                                <tr class="border-b border-base-300">
+                                    <th class="text-left py-2 px-3 text-base-content/60">Category</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">Needed</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">On Hand</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">Surplus / Deficit</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($deficits as $row)
                                     <tr class="border-b border-gray-100 dark:border-gray-700/50">
-                                        <td class="py-2 px-3 text-gray-900 dark:text-gray-100">
+                                        <td class="py-2 px-3 text-base-content">
                                             <span class="inline-block w-2 h-2 rounded-full mr-2 {{ $row['category']->type === 'food' ? 'bg-amber-400' : ($row['category']->type === 'gift' ? 'bg-purple-400' : ($row['category']->type === 'baby' ? 'bg-pink-400' : 'bg-blue-400')) }}"></span>
                                             {{ $row['category']->name }}
                                         </td>
-                                        <td class="text-right py-2 px-3 text-gray-600 dark:text-gray-400">{{ $row['needed'] }}</td>
-                                        <td class="text-right py-2 px-3 text-gray-600 dark:text-gray-400">{{ $row['on_hand'] }}</td>
-                                        <td class="text-right py-2 px-3 font-medium {{ $row['deficit'] > 0 ? 'text-red-600 dark:text-red-400' : ($row['deficit'] < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400') }}">
+                                        <td class="text-right py-2 px-3 text-base-content/70">{{ $row['needed'] }}</td>
+                                        <td class="text-right py-2 px-3 text-base-content/70">{{ $row['on_hand'] }}</td>
+                                        <td class="text-right py-2 px-3 font-medium {{ $row['deficit'] > 0 ? 'text-primary dark:text-primary' : ($row['deficit'] < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400') }}">
                                             @if($row['deficit'] > 0)
                                                 -{{ $row['deficit'] }}
                                             @elseif($row['deficit'] < 0)
@@ -85,18 +85,18 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Gift Progress by Age Group -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Gift Progress</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Gift Progress</h3>
                         <div class="space-y-3">
                             @foreach($giftProgress as $gp)
                                 <div>
-                                    <div class="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                                    <div class="flex justify-between text-xs text-base-content/70 mb-1">
                                         <span>{{ $gp['category'] }}</span>
                                         <span>{{ $gp['on_hand'] }}/{{ $gp['needed'] }} ({{ $gp['percent'] }}%)</span>
                                     </div>
-                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                        <div class="h-2.5 rounded-full {{ $gp['percent'] >= 100 ? 'bg-green-500' : ($gp['percent'] >= 50 ? 'bg-yellow-500' : 'bg-red-500') }}" style="width: {{ $gp['percent'] }}%"></div>
+                                    <div class="w-full bg-base-300 rounded-full h-2.5">
+                                        <div class="h-2.5 rounded-full {{ $gp['percent'] >= 100 ? 'bg-green-500' : ($gp['percent'] >= 50 ? 'bg-yellow-500' : 'bg-primary') }}" style="width: {{ $gp['percent'] }}%"></div>
                                     </div>
                                 </div>
                             @endforeach
@@ -105,26 +105,26 @@
                 </div>
 
                 <!-- Donation Source Breakdown -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg">
                     <div class="p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Donation Sources</h3>
+                        <h3 class="text-lg font-medium text-base-content mb-4">Donation Sources</h3>
                         @if($sourceBreakdown->isEmpty())
-                            <p class="text-sm text-gray-500 dark:text-gray-400">No donations recorded yet.</p>
+                            <p class="text-sm text-base-content/60">No donations recorded yet.</p>
                         @else
                             <table class="w-full text-sm">
                                 <thead>
-                                    <tr class="border-b border-gray-200 dark:border-gray-700">
-                                        <th class="text-left py-2 text-gray-500 dark:text-gray-400">Source</th>
-                                        <th class="text-right py-2 text-gray-500 dark:text-gray-400">Items</th>
-                                        <th class="text-right py-2 text-gray-500 dark:text-gray-400">Qty</th>
+                                    <tr class="border-b border-base-300">
+                                        <th class="text-left py-2 text-base-content/60">Source</th>
+                                        <th class="text-right py-2 text-base-content/60">Items</th>
+                                        <th class="text-right py-2 text-base-content/60">Qty</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($sourceBreakdown as $src)
                                         <tr class="border-b border-gray-100 dark:border-gray-700/50">
-                                            <td class="py-2 text-gray-900 dark:text-gray-100">{{ $src->source ?? 'Unknown' }}</td>
-                                            <td class="text-right py-2 text-gray-600 dark:text-gray-400">{{ $src->count }}</td>
-                                            <td class="text-right py-2 text-gray-600 dark:text-gray-400">{{ $src->total_qty }}</td>
+                                            <td class="py-2 text-base-content">{{ $src->source ?? 'Unknown' }}</td>
+                                            <td class="text-right py-2 text-base-content/70">{{ $src->count }}</td>
+                                            <td class="text-right py-2 text-base-content/70">{{ $src->total_qty }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -135,11 +135,11 @@
             </div>
 
             <!-- Recent Transactions Feed -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Live Intake Feed</h3>
-                        <a href="{{ route('warehouse.transactions') }}" class="text-sm text-red-600 dark:text-red-400 hover:underline">View All</a>
+                        <h3 class="text-lg font-medium text-base-content">Live Intake Feed</h3>
+                        <a href="{{ route('warehouse.transactions') }}" class="text-sm text-primary dark:text-primary hover:underline">View All</a>
                     </div>
                     <div id="live-feed">
                         @include('warehouse._feed', ['transactions' => $recentTransactions])

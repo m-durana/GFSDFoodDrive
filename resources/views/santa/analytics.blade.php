@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Analytics Dashboard
             </h2>
             <a href="{{ route('santa.analytics.export') }}" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition">
@@ -16,73 +16,73 @@
 
             {{-- KPI Cards --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($kpis['total_years']) }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Years Running</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ number_format($kpis['total_years']) }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">Years Running</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($kpis['all_time_families']) }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">All-Time Families</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ number_format($kpis['all_time_families']) }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">All-Time Families</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($kpis['all_time_children']) }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">All-Time Children</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ number_format($kpis['all_time_children']) }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">All-Time Children</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($kpis['all_time_people']) }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">All-Time People Served</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ number_format($kpis['all_time_people']) }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">All-Time People Served</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ number_format($kpis['avg_families_per_year']) }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Avg Families/Year</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ number_format($kpis['avg_families_per_year']) }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">Avg Families/Year</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     @if($kpis['current_year_growth_families'] !== null)
-                        <div class="text-2xl font-bold {{ $kpis['current_year_growth_families'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                        <div class="text-2xl font-bold {{ $kpis['current_year_growth_families'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-primary dark:text-primary' }}">
                             {{ $kpis['current_year_growth_families'] > 0 ? '+' : '' }}{{ $kpis['current_year_growth_families'] }}%
                         </div>
                     @else
                         <div class="text-2xl font-bold text-gray-400">--</div>
                     @endif
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Family Growth YoY</div>
+                    <div class="text-xs text-base-content/60 mt-1">Family Growth YoY</div>
                 </div>
             </div>
 
             {{-- Current Season Snapshot --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{{ $currentYear }} Season Snapshot</h3>
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                <h3 class="text-lg font-semibold text-base-content mb-4">{{ $currentYear }} Season Snapshot</h3>
                 <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['total_families'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Families</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['total_families'] }}</div>
+                        <div class="text-xs text-base-content/60">Families</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['total_children'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Children</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['total_children'] }}</div>
+                        <div class="text-xs text-base-content/60">Children</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['total_family_members'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">People</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['total_family_members'] }}</div>
+                        <div class="text-xs text-base-content/60">People</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['tags_adopted'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Tags Adopted</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['tags_adopted'] }}</div>
+                        <div class="text-xs text-base-content/60">Tags Adopted</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['adoption_rate'] }}%</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Adoption Rate</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['adoption_rate'] }}%</div>
+                        <div class="text-xs text-base-content/60">Adoption Rate</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['deliveries_completed'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Deliveries Done</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['deliveries_completed'] }}</div>
+                        <div class="text-xs text-base-content/60">Deliveries Done</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['avg_family_size'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Avg Family Size</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['avg_family_size'] }}</div>
+                        <div class="text-xs text-base-content/60">Avg Family Size</div>
                     </div>
                     <div>
-                        <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $currentStats['families_severe_need'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">Severe Need</div>
+                        <div class="text-xl font-bold text-base-content">{{ $currentStats['families_severe_need'] }}</div>
+                        <div class="text-xs text-base-content/60">Severe Need</div>
                     </div>
                 </div>
             </div>
@@ -90,14 +90,14 @@
             {{-- Chart Row 1: Trends --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Families & Children Trend --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Families & Children Over Time</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Families & Children Over Time</h3>
                     <div class="relative h-64"><canvas id="trendChart"></canvas></div>
                 </div>
 
                 {{-- Growth Rate --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Year-Over-Year Growth %</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Year-Over-Year Growth %</h3>
                     <div class="relative h-64"><canvas id="growthChart"></canvas></div>
                 </div>
             </div>
@@ -105,14 +105,14 @@
             {{-- Chart Row 2: Gift Program --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Gift Levels Stacked Bar --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Gift Level Distribution by Year</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Gift Level Distribution by Year</h3>
                     <div class="relative h-64"><canvas id="giftLevelChart"></canvas></div>
                 </div>
 
                 {{-- Adoption Rate Trend --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Tag Adoption Rate Trend</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Tag Adoption Rate Trend</h3>
                     <div class="relative h-64"><canvas id="adoptionChart"></canvas></div>
                 </div>
             </div>
@@ -120,20 +120,20 @@
             {{-- Chart Row 3: Demographics --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {{-- Age Groups (current year) --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Children by Age Group ({{ $currentYear }})</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Children by Age Group ({{ $currentYear }})</h3>
                     <div class="relative h-60"><canvas id="ageGroupChart"></canvas></div>
                 </div>
 
                 {{-- Family Size Distribution (current year) --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Family Size Distribution ({{ $currentYear }})</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Family Size Distribution ({{ $currentYear }})</h3>
                     <div class="relative h-60"><canvas id="familySizeChart"></canvas></div>
                 </div>
 
                 {{-- Languages (current year) --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Preferred Language ({{ $currentYear }})</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Preferred Language ({{ $currentYear }})</h3>
                     <div class="relative h-60"><canvas id="languageChart"></canvas></div>
                 </div>
             </div>
@@ -141,26 +141,26 @@
             {{-- Chart Row 4: Delivery & Operations --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {{-- Delivery Completion Trend --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Deliveries Completed by Year</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Deliveries Completed by Year</h3>
                     <div class="relative h-64"><canvas id="deliveryChart"></canvas></div>
                 </div>
 
                 {{-- Avg Family Size Trend --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Average Family Size Over Time</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Average Family Size Over Time</h3>
                     <div class="relative h-64"><canvas id="avgSizeChart"></canvas></div>
                 </div>
             </div>
 
             {{-- School Breakdown Table (current year) --}}
             @if(!empty($currentStats['families_by_school']))
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Families by School ({{ $currentYear }})</h3>
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60 mb-4">Families by School ({{ $currentYear }})</h3>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm" x-data="sortTable()">
                         <thead>
-                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <tr class="border-b border-base-300">
                                 <x-sort-th key="school">School</x-sort-th>
                                 <x-sort-th key="families" class="text-right">Families</x-sort-th>
                             </tr>
@@ -168,7 +168,7 @@
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
                             @foreach($currentStats['families_by_school'] as $school => $count)
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                <td class="px-3 py-2 text-gray-900 dark:text-gray-100">{{ $school }}</td>
+                                <td class="px-3 py-2 text-base-content">{{ $school }}</td>
                                 <td class="px-3 py-2 text-right text-gray-600 dark:text-gray-300" data-sort-value="{{ $count }}">{{ $count }}</td>
                             </tr>
                             @endforeach
@@ -179,15 +179,15 @@
             @endif
 
             {{-- Year-Over-Year Data Table --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">Year-Over-Year Data</h3>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-base-content/60">Year-Over-Year Data</h3>
                     <a href="{{ route('santa.analytics.export') }}" class="text-xs text-green-600 dark:text-green-400 hover:underline">Download CSV</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-sm" x-data="sortTable()">
                         <thead>
-                            <tr class="border-b border-gray-200 dark:border-gray-700">
+                            <tr class="border-b border-base-300">
                                 <x-sort-th key="year">Year</x-sort-th>
                                 <x-sort-th key="families" class="text-right">Families</x-sort-th>
                                 <x-sort-th key="children" class="text-right">Children</x-sort-th>
@@ -203,7 +203,7 @@
                             @foreach($sortedYears as $year)
                                 @php $s = $allYearStats[$year]; @endphp
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 {{ $year == $currentYear ? 'bg-green-50 dark:bg-green-900/20 font-medium' : '' }}">
-                                <td class="px-3 py-2 text-gray-900 dark:text-gray-100">
+                                <td class="px-3 py-2 text-base-content">
                                     {{ $year }}
                                     @if($year == $currentYear) <span class="text-xs text-green-600 dark:text-green-400 ml-1">(current)</span> @endif
                                 </td>
@@ -214,7 +214,7 @@
                                 <td class="px-3 py-2 text-right text-gray-600 dark:text-gray-300" data-sort-value="{{ $s['tags_adopted'] }}">{{ number_format($s['tags_adopted']) }}</td>
                                 <td class="px-3 py-2 text-right text-gray-600 dark:text-gray-300" data-sort-value="{{ $s['adoption_rate'] }}">{{ $s['adoption_rate'] }}%</td>
                                 <td class="px-3 py-2 text-right text-gray-600 dark:text-gray-300" data-sort-value="{{ $s['deliveries_completed'] }}">{{ number_format($s['deliveries_completed']) }}</td>
-                                <td class="px-3 py-2 text-right {{ isset($growthRates[$year]) && $growthRates[$year]['families'] !== null ? ($growthRates[$year]['families'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400') : 'text-gray-400' }}"
+                                <td class="px-3 py-2 text-right {{ isset($growthRates[$year]) && $growthRates[$year]['families'] !== null ? ($growthRates[$year]['families'] >= 0 ? 'text-green-600 dark:text-green-400' : 'text-primary dark:text-primary') : 'text-gray-400' }}"
                                     data-sort-value="{{ $growthRates[$year]['families'] ?? 0 }}">
                                     @if(isset($growthRates[$year]) && $growthRates[$year]['families'] !== null)
                                         {{ $growthRates[$year]['families'] > 0 ? '+' : '' }}{{ $growthRates[$year]['families'] }}%

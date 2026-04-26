@@ -13,49 +13,49 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-base-content">
     <div class="min-h-screen">
         <!-- Header -->
-        <header class="bg-red-700 dark:bg-red-900 text-white">
+        <header class="bg-primary dark:bg-primary/30 text-white">
             <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
                 <h1 class="text-2xl sm:text-3xl font-bold">Thank you, {{ $child->adopter_name }}!</h1>
-                <p class="text-red-200 mt-1">You're making a difference for a child in Granite Falls.</p>
+                <p class="text-primary-content/80 mt-1">You're making a difference for a child in Granite Falls.</p>
             </div>
         </header>
 
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded mb-6">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-sm mb-6">
                     {{ session('success') }}
                 </div>
             @endif
 
             <!-- What you claimed -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6 mb-6">
                 <h3 class="text-lg font-semibold mb-4">Your Adopted Tag</h3>
                 <div class="flex items-center space-x-4 mb-4">
                     <x-gender-icon :gender="$child->gender" size="md" />
                     <div>
                         <p class="font-semibold">{{ strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child') }}, Age {{ $child->age ?? '?' }}</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Family #{{ $child->family->family_number }}</p>
+                        <p class="text-sm text-base-content/60">Family #{{ $child->family->family_number }}</p>
                         @if($child->adopter_email)
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $child->adopter_email }}</p>
+                            <p class="text-xs text-base-content/60">{{ $child->adopter_email }}</p>
                         @endif
                         @if($child->adopter_phone)
-                            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $child->adopter_phone }}</p>
+                            <p class="text-xs text-base-content/60">{{ $child->adopter_phone }}</p>
                         @endif
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     @if($child->clothes_size)
-                        <div><span class="text-gray-500 dark:text-gray-400">Size:</span> {{ $child->clothes_size }}</div>
+                        <div><span class="text-base-content/60">Size:</span> {{ $child->clothes_size }}</div>
                     @endif
                     @if($child->toy_ideas)
-                        <div class="sm:col-span-2"><span class="text-gray-500 dark:text-gray-400">Interests:</span> {{ $child->toy_ideas }}</div>
+                        <div class="sm:col-span-2"><span class="text-base-content/60">Interests:</span> {{ $child->toy_ideas }}</div>
                     @endif
                     @if($child->gift_preferences)
-                        <div class="sm:col-span-2"><span class="text-gray-500 dark:text-gray-400">Gift preferences:</span> {{ $child->gift_preferences }}</div>
+                        <div class="sm:col-span-2"><span class="text-base-content/60">Gift preferences:</span> {{ $child->gift_preferences }}</div>
                     @endif
                 </div>
             </div>
@@ -76,7 +76,7 @@
             </div>
 
             <!-- Deadline & Drop-off -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6 mb-6">
                 <h3 class="text-lg font-semibold mb-4">Drop-off Information</h3>
 
                 @if($child->adoption_deadline)
@@ -85,18 +85,18 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <p class="font-medium">
-                            Please drop off the gift by <span class="text-red-600 dark:text-red-400">{{ $child->adoption_deadline->format('F j, Y') }}</span>
+                            Please drop off the gift by <span class="text-primary dark:text-primary">{{ $child->adoption_deadline->format('F j, Y') }}</span>
                         </p>
                     </div>
                 @endif
 
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                <p class="text-sm text-base-content/70 mb-4">
                     When dropping off the gift, please label it with <strong>Family #{{ $child->family->family_number }}</strong> so we can match it to the right child.
                 </p>
 
                 @if($child->gift_dropped_off)
                     <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 flex items-center space-x-3">
-                        <svg class="w-8 h-8 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <svg class="w-8 h-8 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>

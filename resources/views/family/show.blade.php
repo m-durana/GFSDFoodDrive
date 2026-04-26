@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 {{ $family->family_name }}
                 @if($family->family_number)
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">#{{ $family->family_number }}</span>
+                    <span class="text-sm font-normal text-base-content/60">#{{ $family->family_number }}</span>
                 @endif
             </h2>
             <div class="flex items-center space-x-2">
@@ -31,7 +31,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-sm">
                     {{ session('success') }}
                 </div>
             @endif
@@ -39,23 +39,23 @@
             <!-- Family Info Cards -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Contact Info -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Contact Information</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-3">Contact Information</h3>
                     <dl class="space-y-2 text-sm">
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Address:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->address }}</dd></div>
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Phone:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->phone1 }}</dd></div>
-                        @if($family->phone2)<div><dt class="text-gray-500 dark:text-gray-400 inline">Alt Phone:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->phone2 }}</dd></div>@endif
-                        @if($family->email)<div><dt class="text-gray-500 dark:text-gray-400 inline">Email:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->email }}</dd></div>@endif
-                        @if($family->preferred_language)<div><dt class="text-gray-500 dark:text-gray-400 inline">Language:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->preferred_language }}</dd></div>@endif
+                        <div><dt class="text-base-content/60 inline">Address:</dt> <dd class="inline text-base-content">{{ $family->address }}</dd></div>
+                        <div><dt class="text-base-content/60 inline">Phone:</dt> <dd class="inline text-base-content">{{ $family->phone1 }}</dd></div>
+                        @if($family->phone2)<div><dt class="text-base-content/60 inline">Alt Phone:</dt> <dd class="inline text-base-content">{{ $family->phone2 }}</dd></div>@endif
+                        @if($family->email)<div><dt class="text-base-content/60 inline">Email:</dt> <dd class="inline text-base-content">{{ $family->email }}</dd></div>@endif
+                        @if($family->preferred_language)<div><dt class="text-base-content/60 inline">Language:</dt> <dd class="inline text-base-content">{{ $family->preferred_language }}</dd></div>@endif
                     </dl>
 
                     @if(auth()->user()->isCoordinator() || auth()->user()->isSanta())
-                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Status Link</dt>
+                        <div class="mt-4 pt-4 border-t border-base-300">
+                            <dt class="text-sm font-medium text-base-content/60 mb-2">Status Link</dt>
                             @if($family->status_token)
                                 <div class="flex items-center space-x-2">
                                     <input type="text" readonly value="{{ route('family.status', $family->status_token) }}" id="status-link-{{ $family->id }}"
-                                        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-xs bg-gray-50 dark:bg-gray-800">
+                                        class="flex-1 rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-xs bg-base-200">
                                     <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('status-link-{{ $family->id }}').value).then(() => { this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000); })"
                                         class="px-2 py-1.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500 text-xs font-medium transition whitespace-nowrap">
                                         Copy
@@ -64,41 +64,41 @@
                                 <div class="mt-2 flex items-center space-x-2">
                                     <form method="POST" action="{{ route('family.regenerateStatus', $family) }}" class="inline" onsubmit="return confirm('Regenerate status link? The old link will stop working.')">
                                         @csrf
-                                        <button type="submit" class="text-xs text-red-600 dark:text-red-400 hover:underline">Regenerate Link</button>
+                                        <button type="submit" class="text-xs text-primary dark:text-primary hover:underline">Regenerate Link</button>
                                     </form>
-                                    <span class="text-xs text-gray-400 dark:text-gray-500">Share this link with the family so they can check their status.</span>
+                                    <span class="text-xs text-base-content/50">Share this link with the family so they can check their status.</span>
                                 </div>
                             @else
-                                <p class="text-xs text-gray-400 dark:text-gray-500">No status token generated. Save the family to generate one.</p>
+                                <p class="text-xs text-base-content/50">No status token generated. Save the family to generate one.</p>
                             @endif
                         </div>
                     @endif
                 </div>
 
                 <!-- Demographics -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Demographics</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-3">Demographics</h3>
                     <dl class="space-y-2 text-sm">
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Adults:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->number_of_adults }} ({{ $family->female_adults }}F, {{ $family->male_adults }}M{{ $family->other_adults ? ', ' . $family->other_adults . ' Other' : '' }})</dd></div>
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Children:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->number_of_children }}</dd></div>
-                        <div class="text-xs text-gray-400 dark:text-gray-500 ml-4">
+                        <div><dt class="text-base-content/60 inline">Adults:</dt> <dd class="inline text-base-content">{{ $family->number_of_adults }} ({{ $family->female_adults }}F, {{ $family->male_adults }}M{{ $family->other_adults ? ', ' . $family->other_adults . ' Other' : '' }})</dd></div>
+                        <div><dt class="text-base-content/60 inline">Children:</dt> <dd class="inline text-base-content">{{ $family->number_of_children }}</dd></div>
+                        <div class="text-xs text-base-content/50 ml-4">
                             Infants: {{ $family->infants }} | Young (3-7): {{ $family->young_children }} | Children (8-12): {{ $family->children_count }} | Tweens: {{ $family->tweens }} | Teens: {{ $family->teenagers }}
                         </div>
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Total Members:</dt> <dd class="inline font-medium text-gray-900 dark:text-gray-100">{{ $family->number_of_family_members }}</dd></div>
+                        <div><dt class="text-base-content/60 inline">Total Members:</dt> <dd class="inline font-medium text-base-content">{{ $family->number_of_family_members }}</dd></div>
                         @if($family->needs_baby_supplies)<div class="text-yellow-600 dark:text-yellow-400 font-medium">Needs baby supplies</div>@endif
                     </dl>
                 </div>
 
                 <!-- Delivery -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Delivery</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-3">Delivery</h3>
                     <dl class="space-y-2 text-sm">
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Preference:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_preference ?? 'Not set' }}</dd></div>
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Date:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_date ?? 'Not set' }}</dd></div>
-                        <div><dt class="text-gray-500 dark:text-gray-400 inline">Time:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_time ?? 'Not set' }}</dd></div>
-                        @if($family->delivery_team)<div><dt class="text-gray-500 dark:text-gray-400 inline">Team:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_team }}</dd></div>@endif
-                        @if($family->delivery_status)<div><dt class="text-gray-500 dark:text-gray-400 inline">Status:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_status->label() }}</dd></div>@endif
-                        @if($family->delivery_reason)<div><dt class="text-gray-500 dark:text-gray-400 inline">Can't deliver because:</dt> <dd class="inline text-gray-900 dark:text-gray-100">{{ $family->delivery_reason }}</dd></div>@endif
+                        <div><dt class="text-base-content/60 inline">Preference:</dt> <dd class="inline text-base-content">{{ $family->delivery_preference ?? 'Not set' }}</dd></div>
+                        <div><dt class="text-base-content/60 inline">Date:</dt> <dd class="inline text-base-content">{{ $family->delivery_date ?? 'Not set' }}</dd></div>
+                        <div><dt class="text-base-content/60 inline">Time:</dt> <dd class="inline text-base-content">{{ $family->delivery_time ?? 'Not set' }}</dd></div>
+                        @if($family->delivery_team)<div><dt class="text-base-content/60 inline">Team:</dt> <dd class="inline text-base-content">{{ $family->delivery_team }}</dd></div>@endif
+                        @if($family->delivery_status)<div><dt class="text-base-content/60 inline">Status:</dt> <dd class="inline text-base-content">{{ $family->delivery_status->label() }}</dd></div>@endif
+                        @if($family->delivery_reason)<div><dt class="text-base-content/60 inline">Can't deliver because:</dt> <dd class="inline text-base-content">{{ $family->delivery_reason }}</dd></div>@endif
                     </dl>
                 </div>
 
@@ -114,20 +114,20 @@
                             'verified' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                         ];
                     @endphp
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Packing Status</h3>
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-base-content mb-3">Packing Status</h3>
                         <div class="space-y-3">
                             <div class="flex items-center gap-2">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $plStatusColors[$pl->status->value] ?? $plStatusColors['pending'] }}">
                                     {{ $pl->status->label() }}
                                 </span>
-                                <span class="text-sm text-gray-500 dark:text-gray-400">{{ $plProgress['packed'] }}/{{ $plProgress['total'] }} items</span>
+                                <span class="text-sm text-base-content/60">{{ $plProgress['packed'] }}/{{ $plProgress['total'] }} items</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
                                 <div class="bg-green-500 h-2.5 rounded-full transition-all" style="width: {{ $plProgress['percentage'] }}%"></div>
                             </div>
                             @if($pl->volunteer)
-                                <div class="text-sm text-gray-500 dark:text-gray-400">Volunteer: {{ $pl->volunteer->first_name }} {{ $pl->volunteer->last_name }}</div>
+                                <div class="text-sm text-base-content/60">Volunteer: {{ $pl->volunteer->first_name }} {{ $pl->volunteer->last_name }}</div>
                             @endif
                             @if($pl->verified_at)
                                 <div class="text-sm text-green-600 dark:text-green-400">Verified: {{ $pl->verified_at->format('M j, g:i A') }}</div>
@@ -140,70 +140,70 @@
                 @endif
 
                 <!-- Needs -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Needs & Notes</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-3">Needs & Notes</h3>
                     <dl class="space-y-2 text-sm">
-                        @if($family->need_for_help)<div><dt class="text-gray-500 dark:text-gray-400">Reason for help:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->need_for_help }}</dd></div>@endif
-                        @if($family->severe_need)<div><dt class="text-red-500 dark:text-red-400 font-medium">Severe need:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->severe_need }}</dd></div>@endif
-                        @if($family->pet_information)<div><dt class="text-gray-500 dark:text-gray-400">Pets (for pet food):</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->pet_information }}</dd></div>@endif
+                        @if($family->need_for_help)<div><dt class="text-base-content/60">Reason for help:</dt> <dd class="text-base-content mt-1">{{ $family->need_for_help }}</dd></div>@endif
+                        @if($family->severe_need)<div><dt class="text-primary dark:text-primary font-medium">Severe need:</dt> <dd class="text-base-content mt-1">{{ $family->severe_need }}</dd></div>@endif
+                        @if($family->pet_information)<div><dt class="text-base-content/60">Pets (for pet food):</dt> <dd class="text-base-content mt-1">{{ $family->pet_information }}</dd></div>@endif
                         @if(!empty($family->dietary_restrictions))
                             <div>
-                                <dt class="text-gray-500 dark:text-gray-400 mb-1">Dietary Restrictions:</dt>
+                                <dt class="text-base-content/60 mb-1">Dietary Restrictions:</dt>
                                 <dd class="flex flex-wrap gap-1">
                                     @foreach($family->dietary_restrictions as $restriction)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">{{ str_replace('_', ' ', ucwords($restriction, '_')) }}</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">{{ str_replace('_', ' ', ucwords($restriction, '_')) }}</span>
                                     @endforeach
                                 </dd>
                             </div>
                         @endif
-                        @if($family->dietary_notes)<div><dt class="text-gray-500 dark:text-gray-400">Dietary Notes:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->dietary_notes }}</dd></div>@endif
-                        @if($family->other_questions)<div><dt class="text-gray-500 dark:text-gray-400">Other:</dt> <dd class="text-gray-900 dark:text-gray-100 mt-1">{{ $family->other_questions }}</dd></div>@endif
+                        @if($family->dietary_notes)<div><dt class="text-base-content/60">Dietary Notes:</dt> <dd class="text-base-content mt-1">{{ $family->dietary_notes }}</dd></div>@endif
+                        @if($family->other_questions)<div><dt class="text-base-content/60">Other:</dt> <dd class="text-base-content mt-1">{{ $family->other_questions }}</dd></div>@endif
                         @if($family->family_done)
-                            <div class="mt-2 inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded text-xs font-medium">Family Complete</div>
+                            <div class="mt-2 inline-flex items-center px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-sm text-xs font-medium">Family Complete</div>
                         @endif
                     </dl>
                 </div>
             </div>
 
             <!-- Children -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Children ({{ $family->children->count() }})</h3>
+                    <h3 class="text-lg font-medium text-base-content mb-4">Children ({{ $family->children->count() }})</h3>
 
                     @if($family->children->count() > 0)
                         <div class="overflow-x-auto mb-6" x-data="sortTable()">
-                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <thead class="bg-gray-50 dark:bg-gray-700">
+                            <table class="min-w-full divide-y divide-base-300">
+                                <thead class="bg-base-200">
                                     <tr>
                                         <x-sort-th key="gender" class="px-3 py-2">Gender</x-sort-th>
                                         <x-sort-th key="age" class="px-3 py-2">Age</x-sort-th>
                                         <x-sort-th key="school" class="px-3 py-2">School</x-sort-th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Sizes</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Toy Ideas</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Sizes</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Toy Ideas</th>
                                         <x-sort-th key="gift_level" class="px-3 py-2">Gift Level</x-sort-th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Gifts Received</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Gifts Received</th>
                                         <x-sort-th key="adopter" class="px-3 py-2">Adopter</x-sort-th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tag</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Tag</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                <tbody class="divide-y divide-base-300">
                                     @foreach($family->children as $child)
                                         <tr>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->gender }}">{{ $child->gender }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->age }}">{{ $child->age }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->school ?? '' }}">{{ $child->school ?? '-' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate" title="{{ $child->all_sizes }}">{{ $child->all_sizes ?? '-' }}</td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate" title="{{ $child->toy_ideas }}">{{ $child->toy_ideas ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content" data-sort-value="{{ $child->gender }}">{{ $child->gender }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content" data-sort-value="{{ $child->age }}">{{ $child->age }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content" data-sort-value="{{ $child->school ?? '' }}">{{ $child->school ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content max-w-[150px] truncate" title="{{ $child->all_sizes }}">{{ $child->all_sizes ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content max-w-[150px] truncate" title="{{ $child->toy_ideas }}">{{ $child->toy_ideas ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm" data-sort-value="{{ ($child->gift_level ?? \App\Enums\GiftLevel::None)->value }}">
                                                 @php $level = $child->gift_level ?? \App\Enums\GiftLevel::None; @endphp
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                                                    {{ $level->color() === 'red' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' : '' }}
+                                                    {{ $level->color() === 'red' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : '' }}
                                                     {{ $level->color() === 'yellow' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : '' }}
                                                     {{ $level->color() === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : '' }}
                                                 ">{{ $level->label() }}</span>
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100 max-w-[150px] truncate">
+                                            <td class="px-3 py-2 text-sm text-base-content max-w-[150px] truncate">
                                                 @php $computedGifts = $child->getComputedGiftsReceived(); @endphp
                                                 @if($computedGifts)
                                                     <a href="{{ route('warehouse.child.gifts', $child) }}" class="text-blue-600 dark:text-blue-400 hover:underline" title="{{ $computedGifts }}">{{ $computedGifts }}</a>
@@ -211,15 +211,15 @@
                                                     <span class="text-gray-400">-</span>
                                                 @endif
                                             </td>
-                                            <td class="px-3 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $child->adopter_name ?? '' }}">{{ $child->adopter_name ?? '-' }}</td>
+                                            <td class="px-3 py-2 text-sm text-base-content" data-sort-value="{{ $child->adopter_name ?? '' }}">{{ $child->adopter_name ?? '-' }}</td>
                                             <td class="px-3 py-2 text-sm">
                                                 @if($child->mail_merged)
                                                     <span class="text-green-600 dark:text-green-400" title="Printed">Printed</span>
                                                 @else
-                                                    <span class="text-gray-400 dark:text-gray-500">Pending</span>
+                                                    <span class="text-base-content/50">Pending</span>
                                                 @endif
                                                 @if($child->adoption_token)
-                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ml-1">Online</span>
+                                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-sm text-[10px] font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 ml-1">Online</span>
                                                 @endif
                                             </td>
                                             <td class="px-3 py-2 text-sm whitespace-nowrap">
@@ -227,79 +227,79 @@
                                                 <form method="POST" action="{{ route('family.destroyChild', [$family, $child]) }}" class="inline" onsubmit="return confirm('Remove this child?')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 dark:text-red-400 hover:underline text-xs ml-2">Remove</button>
+                                                    <button type="submit" class="text-primary dark:text-primary hover:underline text-xs ml-2">Remove</button>
                                                 </form>
                                             </td>
                                         </tr>
                                         <!-- Inline edit row (hidden by default) -->
-                                        <tr id="edit-child-{{ $child->id }}" class="hidden bg-gray-50 dark:bg-gray-700/50">
+                                        <tr id="edit-child-{{ $child->id }}" class="hidden bg-base-200/50">
                                             <td colspan="10" class="px-3 py-3">
                                                 <form method="POST" action="{{ route('family.updateChild', [$family, $child]) }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                     @csrf
                                                     @method('PUT')
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Gender</label>
-                                                        <select name="gender" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Gender</label>
+                                                        <select name="gender" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                             <option value="Male" {{ $child->gender === 'Male' ? 'selected' : '' }}>Male</option>
                                                             <option value="Female" {{ $child->gender === 'Female' ? 'selected' : '' }}>Female</option>
                                                             <option value="Other" {{ $child->gender === 'Other' ? 'selected' : '' }}>Other</option>
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Age</label>
-                                                        <input type="text" name="age" value="{{ $child->age }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Age</label>
+                                                        <input type="text" name="age" value="{{ $child->age }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">School</label>
-                                                        <input type="text" name="school" value="{{ $child->school }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">School</label>
+                                                        <input type="text" name="school" value="{{ $child->school }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">All Sizes</label>
-                                                        <input type="text" name="all_sizes" value="{{ $child->all_sizes }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">All Sizes</label>
+                                                        <input type="text" name="all_sizes" value="{{ $child->all_sizes }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Clothing Options</label>
-                                                        <input type="text" name="clothing_options" value="{{ $child->clothing_options }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Clothing Options</label>
+                                                        <input type="text" name="clothing_options" value="{{ $child->clothing_options }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Clothing Styles</label>
-                                                        <input type="text" name="clothing_styles" value="{{ $child->clothing_styles }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Clothing Styles</label>
+                                                        <input type="text" name="clothing_styles" value="{{ $child->clothing_styles }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Toy Ideas</label>
-                                                        <input type="text" name="toy_ideas" value="{{ $child->toy_ideas }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Toy Ideas</label>
+                                                        <input type="text" name="toy_ideas" value="{{ $child->toy_ideas }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Gift Level</label>
-                                                        <select name="gift_level" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Gift Level</label>
+                                                        <select name="gift_level" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                             @foreach(\App\Enums\GiftLevel::cases() as $gl)
                                                                 <option value="{{ $gl->value }}" {{ ($child->gift_level ?? \App\Enums\GiftLevel::None) === $gl ? 'selected' : '' }}>{{ $gl->label() }}</option>
                                                             @endforeach
                                                         </select>
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Gifts Received</label>
-                                                        <input type="text" name="gifts_received" value="{{ $child->gifts_received }}" placeholder="List gifts received" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Gifts Received</label>
+                                                        <input type="text" name="gifts_received" value="{{ $child->gifts_received }}" placeholder="List gifts received" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Name</label>
-                                                        <input type="text" name="adopter_name" value="{{ $child->adopter_name }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Adopter Name</label>
+                                                        <input type="text" name="adopter_name" value="{{ $child->adopter_name }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Email</label>
-                                                        <input type="email" name="adopter_email" value="{{ $child->adopter_email }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Adopter Email</label>
+                                                        <input type="email" name="adopter_email" value="{{ $child->adopter_email }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Adopter Phone</label>
-                                                        <input type="tel" name="adopter_phone" value="{{ $child->adopter_phone }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Adopter Phone</label>
+                                                        <input type="tel" name="adopter_phone" value="{{ $child->adopter_phone }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div>
-                                                        <label class="block text-xs text-gray-500 dark:text-gray-400">Where is Tag?</label>
-                                                        <input type="text" name="where_is_tag" value="{{ $child->where_is_tag }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                                        <label class="block text-xs text-base-content/60">Where is Tag?</label>
+                                                        <input type="text" name="where_is_tag" value="{{ $child->where_is_tag }}" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                                     </div>
                                                     <div class="flex items-end">
-                                                        <button type="submit" class="inline-flex items-center px-3 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-xs font-medium transition">Save</button>
-                                                        <button type="button" onclick="toggleEditChild({{ $child->id }})" class="ml-2 px-3 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-xs">Cancel</button>
+                                                        <button type="submit" class="inline-flex items-center px-3 py-2 bg-primary text-white rounded-md hover:opacity-90 text-xs font-medium transition">Save</button>
+                                                        <button type="button" onclick="toggleEditChild({{ $child->id }})" class="ml-2 px-3 py-2 text-base-content/60 hover:text-gray-700 dark:hover:text-gray-300 text-xs">Cancel</button>
                                                     </div>
                                                 </form>
                                             </td>
@@ -309,56 +309,56 @@
                             </table>
                         </div>
                     @else
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">No children added yet.</p>
+                        <p class="text-base-content/60 mb-4">No children added yet.</p>
                     @endif
 
                     <!-- Add Child Form -->
-                    <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Add a Child</h4>
+                    <div class="border-t border-base-300 pt-4">
+                        <h4 class="text-sm font-medium text-base-content/80 mb-3">Add a Child</h4>
                         <form method="POST" action="{{ route('family.storeChild', $family) }}" class="grid grid-cols-2 md:grid-cols-4 gap-3">
                             @csrf
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Gender <span class="text-red-500">*</span></label>
-                                <select name="gender" required class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Gender <span class="text-primary">*</span></label>
+                                <select name="gender" required class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                     <option value="Male">Male</option>
                                     <option value="Female">Female</option>
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Age <span class="text-red-500">*</span></label>
-                                <input type="text" name="age" required placeholder="e.g. 5, 12, 16" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Age <span class="text-primary">*</span></label>
+                                <input type="text" name="age" required placeholder="e.g. 5, 12, 16" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">School</label>
-                                <input type="text" name="school" placeholder="e.g. Mountain Way" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">School</label>
+                                <input type="text" name="school" placeholder="e.g. Mountain Way" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">All Sizes</label>
-                                <input type="text" name="all_sizes" placeholder="Shirt M, Pants 10, Shoe 5" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">All Sizes</label>
+                                <input type="text" name="all_sizes" placeholder="Shirt M, Pants 10, Shoe 5" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Clothing Options</label>
-                                <input type="text" name="clothing_options" placeholder="Shirts, pants, shoes" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Clothing Options</label>
+                                <input type="text" name="clothing_options" placeholder="Shirts, pants, shoes" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Clothing Styles</label>
-                                <input type="text" name="clothing_styles" placeholder="Sporty, casual" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Clothing Styles</label>
+                                <input type="text" name="clothing_styles" placeholder="Sporty, casual" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Clothes Size</label>
-                                <input type="text" name="clothes_size" placeholder="e.g. M (8-10), 4T" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Clothes Size</label>
+                                <input type="text" name="clothes_size" placeholder="e.g. M (8-10), 4T" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Toy Ideas</label>
-                                <input type="text" name="toy_ideas" placeholder="Legos, art supplies" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Toy Ideas</label>
+                                <input type="text" name="toy_ideas" placeholder="Legos, art supplies" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-500 dark:text-gray-400">Gift Preferences</label>
-                                <input type="text" name="gift_preferences" placeholder="e.g. Practical gifts, toys preferred" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-xs text-base-content/60">Gift Preferences</label>
+                                <input type="text" name="gift_preferences" placeholder="e.g. Practical gifts, toys preferred" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             </div>
                             <div class="flex items-end">
-                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                                <button type="submit" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                                     Add Child
                                 </button>
                             </div>
@@ -368,7 +368,7 @@
             </div>
 
             <div>
-                <a href="{{ route('family.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                <a href="{{ route('family.index') }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                     &larr; Back to Dashboard
                 </a>
             </div>

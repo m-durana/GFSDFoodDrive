@@ -22,12 +22,12 @@
     <!-- Top Bar -->
     <div class="flex items-center justify-between px-6 py-3 bg-gray-900 border-b border-gray-800 shrink-0">
         <div class="flex items-center space-x-4">
-            <h1 class="text-xl font-bold text-red-500">GFSD Food Drive</h1>
+            <h1 class="text-xl font-bold text-primary">GFSD Food Drive</h1>
             <span class="text-gray-500">|</span>
             <span class="text-sm text-gray-400">Command Center</span>
             <span class="inline-flex items-center gap-1.5 text-xs ml-2">
-                <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span></span>
-                <span class="font-semibold text-red-500 uppercase tracking-wider">Live</span>
+                <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span></span>
+                <span class="font-semibold text-primary uppercase tracking-wider">Live</span>
                 <span id="live-age" class="text-gray-500 ml-0.5">just now</span>
             </span>
         </div>
@@ -74,7 +74,7 @@
                 <div class="text-[10px] text-gray-600"><span id="stat-adopted-count">0</span> children</div>
             </div>
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
-                <div class="text-3xl font-bold text-red-400" id="stat-severe">—</div>
+                <div class="text-3xl font-bold text-primary" id="stat-severe">—</div>
                 <div class="text-xs text-gray-400 mt-1">Severe Need</div>
                 <div class="text-[10px] text-gray-600"><span id="stat-pickup">0</span> pickups</div>
             </div>
@@ -95,19 +95,19 @@
                 <div class="space-y-3 flex-1 overflow-y-auto">
                     <!-- Delivery metrics -->
                     <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                             <div class="text-lg font-bold text-green-400" id="ov-delivered">0</div>
                             <div class="text-[10px] text-gray-500">Delivered</div>
                         </div>
-                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                             <div class="text-lg font-bold text-blue-400" id="ov-in-transit">0</div>
                             <div class="text-[10px] text-gray-500">In Transit</div>
                         </div>
-                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                             <div class="text-lg font-bold text-amber-400" id="ov-per-hour">0</div>
                             <div class="text-[10px] text-gray-500">Delivered/hr</div>
                         </div>
-                        <div class="bg-gray-700/50 rounded p-2 text-center">
+                        <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                             <div class="text-lg font-bold text-purple-400" id="ov-active-drivers">0</div>
                             <div class="text-[10px] text-gray-500">Active Drivers</div>
                         </div>
@@ -205,19 +205,19 @@
             <div class="bg-gray-800 rounded-lg p-3 col-span-3 overflow-y-auto">
                 <h3 class="text-xs font-medium text-gray-400 mb-2">Packing Status</h3>
                 <div class="grid grid-cols-4 gap-2 mb-3" id="packing-status-cards">
-                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                    <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                         <div class="text-lg font-bold text-gray-400" id="pack-pending">0</div>
                         <div class="text-[10px] text-gray-500">Pending</div>
                     </div>
-                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                    <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                         <div class="text-lg font-bold text-yellow-400" id="pack-progress">0</div>
                         <div class="text-[10px] text-gray-500">In Progress</div>
                     </div>
-                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                    <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                         <div class="text-lg font-bold text-blue-400" id="pack-complete">0</div>
                         <div class="text-[10px] text-gray-500">Complete</div>
                     </div>
-                    <div class="bg-gray-700/50 rounded p-2 text-center">
+                    <div class="bg-gray-700/50 rounded-sm p-2 text-center">
                         <div class="text-lg font-bold text-green-400" id="pack-verified">0</div>
                         <div class="text-[10px] text-gray-500">Verified</div>
                     </div>
@@ -299,9 +299,9 @@
                     <div class="flex items-center justify-between mb-3">
                         <h3 class="text-sm font-medium text-gray-400">Active Routes</h3>
                         <div class="flex gap-1">
-                            <button onclick="setRouteSort('name')" id="sort-name" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Name</button>
-                            <button onclick="setRouteSort('progress')" id="sort-progress" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Progress</button>
-                            <button onclick="setRouteSort('stops')" id="sort-stops" class="text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300">Stops</button>
+                            <button onclick="setRouteSort('name')" id="sort-name" class="text-[10px] px-1.5 py-0.5 rounded-sm text-gray-500 hover:text-gray-300">Name</button>
+                            <button onclick="setRouteSort('progress')" id="sort-progress" class="text-[10px] px-1.5 py-0.5 rounded-sm text-gray-500 hover:text-gray-300">Progress</button>
+                            <button onclick="setRouteSort('stops')" id="sort-stops" class="text-[10px] px-1.5 py-0.5 rounded-sm text-gray-500 hover:text-gray-300">Stops</button>
                         </div>
                     </div>
                     <div id="route-bars" class="space-y-3">
@@ -356,8 +356,8 @@
                 const btn = document.getElementById('sort-' + s);
                 if (!btn) return;
                 btn.className = s === routeSort
-                    ? 'text-[10px] px-1.5 py-0.5 rounded bg-gray-700 text-white'
-                    : 'text-[10px] px-1.5 py-0.5 rounded text-gray-500 hover:text-gray-300';
+                    ? 'text-[10px] px-1.5 py-0.5 rounded-sm bg-gray-700 text-white'
+                    : 'text-[10px] px-1.5 py-0.5 rounded-sm text-gray-500 hover:text-gray-300';
             });
         }
         updateSortButtons();
@@ -376,10 +376,10 @@
             document.getElementById('mode-' + mode).classList.remove('hidden');
 
             document.querySelectorAll('[id^="btn-"]').forEach(el => {
-                el.classList.remove('bg-red-700', 'text-white');
+                el.classList.remove('bg-primary', 'text-white');
                 el.classList.add('text-gray-400');
             });
-            document.getElementById('btn-' + mode).classList.add('bg-red-700', 'text-white');
+            document.getElementById('btn-' + mode).classList.add('bg-primary', 'text-white');
             document.getElementById('btn-' + mode).classList.remove('text-gray-400');
 
             if (mode === 'delivery' && !map) {
@@ -536,7 +536,7 @@
 
         // Build a progress bar HTML
         function progressBar(label, pct, checked, total, color = 'green') {
-            const colors = {green: 'bg-green-500', blue: 'bg-blue-500', red: 'bg-red-500', yellow: 'bg-yellow-500'};
+            const colors = {green: 'bg-green-500', blue: 'bg-blue-500', red: 'bg-primary', yellow: 'bg-yellow-500'};
             const barStyle = color.startsWith('#') ? `style="width:${pct}%;background:${color}"` : `class="${colors[color] || 'bg-green-500'} h-2.5 rounded-full transition-all" style="width:${pct}%"`;
             return `<div>
                 <div class="flex items-center justify-between text-sm mb-1">
@@ -565,7 +565,7 @@
                 document.getElementById('stat-members').textContent = data.overview.total_members;
                 document.getElementById('stat-gifts-pct').textContent = data.gifts.pct_covered + '%';
                 document.getElementById('stat-gifts-pct').className = 'text-3xl font-bold ' +
-                    (data.gifts.pct_covered >= 80 ? 'text-green-400' : data.gifts.pct_covered >= 50 ? 'text-yellow-400' : 'text-red-400');
+                    (data.gifts.pct_covered >= 80 ? 'text-green-400' : data.gifts.pct_covered >= 50 ? 'text-yellow-400' : 'text-primary');
                 document.getElementById('stat-adoption-pct').textContent = data.overview.adoption_pct + '%';
                 document.getElementById('stat-adopted-count').textContent = data.overview.adopted;
                 document.getElementById('stat-severe').textContent = data.overview.severe_need;
@@ -673,7 +673,7 @@
                     const statusColors = {
                         'Delivered': 'text-green-400', 'In transit': 'text-blue-400',
                         'Attempted': 'text-yellow-400', 'Left at door': 'text-green-300',
-                        'No answer': 'text-red-400',
+                        'No answer': 'text-primary',
                     };
                     const color = statusColors[a.status] || 'text-gray-400';
                     activityHtml += `<div class="text-xs border-b border-gray-700 pb-2">
@@ -714,7 +714,7 @@
                                 <div class="flex items-center gap-2 min-w-0">
                                     <input type="checkbox" ${checked ? 'checked' : ''}
                                         onchange="toggleRouteVisibility(${r.id}, this.checked)"
-                                        class="rounded w-3.5 h-3.5 cursor-pointer" style="accent-color:${r.color}">
+                                        class="rounded-sm w-3.5 h-3.5 cursor-pointer" style="accent-color:${r.color}">
                                     <div class="min-w-0">
                                         <div class="text-sm font-medium text-gray-200 truncate" style="border-left:3px solid ${r.color};padding-left:6px">${r.name}</div>
                                         <div class="text-xs text-gray-500 mt-0.5">${r.driver} · ${r.meta}</div>
@@ -736,7 +736,7 @@
                                 <button onclick="recalcRoute(${r.id}, this)"
                                     class="text-yellow-500 hover:text-yellow-300 transition">Recalc</button>
                                 <button onclick="deleteRoute(${r.id})"
-                                    class="text-red-500 hover:text-red-400 transition">Delete</button>
+                                    class="text-primary hover:text-primary transition">Delete</button>
                             </div>
                         </div>
                     `;

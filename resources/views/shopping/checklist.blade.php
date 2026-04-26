@@ -9,25 +9,25 @@
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-lg mx-auto px-4 py-4">
         <!-- Header -->
-        <div class="bg-red-700 text-white rounded-xl p-4 mb-4 shadow-sm">
+        <div class="bg-primary text-white rounded-xl p-4 mb-4 shadow-xs">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-xl font-bold">Family #{{ $family->family_number }}</h1>
-                    <p class="text-red-200 text-sm">{{ $family->family_name }} &middot; {{ $family->number_of_family_members }} members</p>
+                    <p class="text-primary-content/80 text-sm">{{ $family->family_name }} &middot; {{ $family->number_of_family_members }} members</p>
                 </div>
                 <div class="text-right">
                     <div class="text-3xl font-bold" id="progress-count">0</div>
-                    <div class="text-red-200 text-xs">of {{ $totalItems }} items</div>
+                    <div class="text-primary-content/80 text-xs">of {{ $totalItems }} items</div>
                 </div>
             </div>
             <!-- Progress bar -->
-            <div class="mt-3 bg-red-900 rounded-full h-2">
+            <div class="mt-3 bg-primary/30 rounded-full h-2">
                 <div class="bg-white rounded-full h-2 transition-all duration-300" id="progress-bar" style="width: 0%"></div>
             </div>
         </div>
 
         @if(count($grouped) === 0)
-            <div class="bg-white rounded-xl p-6 text-center text-gray-500 shadow-sm">
+            <div class="bg-white rounded-xl p-6 text-center text-gray-500 shadow-xs">
                 No items in the shopping list for this family.
             </div>
         @else
@@ -51,19 +51,19 @@
                     <h2 class="text-sm font-bold uppercase tracking-wide text-gray-500 mb-2 px-1">
                         {{ $categoryLabels[$category] ?? ucfirst($category) }}
                     </h2>
-                    <div class="bg-white rounded-xl shadow-sm overflow-hidden divide-y divide-gray-100">
+                    <div class="bg-white rounded-xl shadow-xs overflow-hidden divide-y divide-gray-100">
                         @foreach($items as $itemName => $qty)
                             <label class="shopping-item flex items-center px-4 py-3 cursor-pointer active:bg-gray-50 transition"
                                    data-key="{{ md5($family->family_number . $itemName) }}"
                                    data-qty="{{ $qty }}">
                                 <input type="checkbox" class="item-checkbox sr-only">
-                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mr-3 flex-shrink-0 check-circle transition-colors">
+                                <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mr-3 shrink-0 check-circle transition-colors">
                                     <svg class="w-4 h-4 text-white hidden check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                                     </svg>
                                 </div>
                                 <span class="flex-1 text-sm font-medium text-gray-900 item-name">{{ $itemName }}</span>
-                                <span class="inline-flex items-center justify-center min-w-[2rem] h-7 px-2 rounded-full text-sm font-bold {{ $categoryColors[$category] ?? 'bg-gray-100 text-gray-800' }}">
+                                <span class="inline-flex items-center justify-center min-w-8 h-7 px-2 rounded-full text-sm font-bold {{ $categoryColors[$category] ?? 'bg-gray-100 text-gray-800' }}">
                                     {{ $qty }}
                                 </span>
                             </label>
@@ -75,7 +75,7 @@
 
         <!-- Reset button -->
         <div class="mt-6 mb-8 text-center">
-            <button onclick="resetChecklist()" class="text-sm text-gray-400 hover:text-red-600 transition">
+            <button onclick="resetChecklist()" class="text-sm text-gray-400 hover:text-primary transition">
                 Reset Checklist
             </button>
         </div>

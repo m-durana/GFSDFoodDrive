@@ -27,15 +27,15 @@
     @endif
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-red-700 via-red-600 to-red-500 text-white">
+    <div class="bg-linear-to-r from-primary via-primary/90 to-primary/80 text-white">
         <div class="max-w-4xl mx-auto px-4 py-4">
             <div class="flex items-start justify-between gap-3">
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">{{ $route->display_name }}</h1>
-                    <p class="text-sm text-red-100">{{ $route->formattedMeta() }}</p>
-                    <p class="text-xs text-red-200 mt-0.5" id="heading-to-text"></p>
+                    <p class="text-sm text-primary-content">{{ $route->formattedMeta() }}</p>
+                    <p class="text-xs text-primary-content/80 mt-0.5" id="heading-to-text"></p>
                 </div>
-                <div class="flex flex-col items-end text-xs text-red-100">
+                <div class="flex flex-col items-end text-xs text-primary-content">
                     <span class="uppercase tracking-wider">Driver View</span>
                     <span class="font-semibold">{{ now()->format('M j') }}</span>
                 </div>
@@ -46,13 +46,13 @@
     <div class="max-w-4xl mx-auto px-4 py-4 space-y-4">
 
         <!-- Map -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+        <div class="bg-white rounded-2xl shadow-xs overflow-hidden border border-slate-200">
             <div class="px-4 py-2 border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">Route Map</div>
             <div id="route-map"></div>
         </div>
 
         <!-- Progress Bar -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3" id="progress-section">
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 px-4 py-3" id="progress-section">
         @php
             $delivered = $route->families->filter(fn($f) => $f->delivery_status?->value === 'delivered')->count();
             $total = $route->families->count();
@@ -68,7 +68,7 @@
         </div>
 
         <!-- Location sharing banner -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3 flex items-center justify-between" id="location-banner">
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 px-4 py-3 flex items-center justify-between" id="location-banner">
             <div class="text-xs text-slate-600">
                 <div class="font-semibold text-slate-700 mb-0.5">Location Sharing</div>
                 <div id="location-status">Location sharing: tap Start</div>
@@ -84,12 +84,12 @@
                 $status = $family->delivery_status?->value ?? 'pending';
                 $isDone = $status === 'delivered';
             @endphp
-            <div class="bg-white rounded-2xl shadow-sm p-4 border border-slate-200 {{ $isDone ? 'stop-delivered' : '' }}" data-stop-id="{{ $family->route_order }}">
+            <div class="bg-white rounded-2xl shadow-xs p-4 border border-slate-200 {{ $isDone ? 'stop-delivered' : '' }}" data-stop-id="{{ $family->route_order }}">
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex-1">
                         <div class="flex items-center space-x-2">
                             <span class="inline-flex items-center justify-center h-8 w-8 rounded-full text-sm font-bold stop-order
-                                {{ $isDone ? 'bg-emerald-500 text-white' : 'bg-red-700 text-white' }}">
+                                {{ $isDone ? 'bg-emerald-500 text-white' : 'bg-primary text-white' }}">
                                 {!! $isDone ? '&#10003;' : $family->route_order !!}
                             </span>
                             <div>
@@ -137,7 +137,7 @@
         </div>
 
         <!-- Returning button -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-3 text-center">
+        <div class="bg-white rounded-2xl shadow-xs border border-slate-200 px-4 py-3 text-center">
             <button onclick="markReturning()" id="returning-btn"
                 class="px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-500 transition">
                 All Done — Heading Back
@@ -228,7 +228,7 @@
             const list = document.getElementById('stops-list');
             if (list) list.appendChild(card);
             const order = card.querySelector('.stop-order');
-            if (order) { order.classList.remove('bg-red-700'); order.classList.add('bg-emerald-500'); order.innerHTML = '&#10003;'; }
+            if (order) { order.classList.remove('bg-primary'); order.classList.add('bg-emerald-500'); order.innerHTML = '&#10003;'; }
             const badge = card.querySelector('.stop-status-badge');
             if (badge) { badge.className = 'stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800'; badge.textContent = 'Delivered'; }
             const btn = card.querySelector('.deliver-btn');
