@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Shopping Hub
             </h2>
             <div class="flex items-center space-x-3">
@@ -21,20 +21,20 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6" x-data="{ activeTab: '{{ $tab }}' }">
 
             @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-sm">
                     {{ session('success') }}
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded">
+                <div class="bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary text-primary dark:text-primary px-4 py-3 rounded-sm">
                     {{ session('error') }}
                 </div>
             @endif
 
             <!-- Staleness Warning -->
             @if($formulaStale)
-                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3 rounded">
+                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 px-4 py-3 rounded-sm">
                     <p class="text-sm text-amber-700 dark:text-amber-300 font-medium">
                         Grocery formulas have changed since packing lists were last generated.
                         Deficit numbers may be inaccurate. <a href="{{ route('packing.index') }}" class="underline hover:text-amber-800 dark:hover:text-amber-200">Regenerate packing lists</a> to sync.
@@ -43,18 +43,18 @@
             @endif
 
             <!-- Tab Buttons -->
-            <div class="border-b border-gray-200 dark:border-gray-700">
+            <div class="border-b border-base-300">
                 <nav class="-mb-px flex space-x-6">
-                    <button @click="activeTab = 'overview'" :class="activeTab === 'overview' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
+                    <button @click="activeTab = 'overview'" :class="activeTab === 'overview' ? 'border-primary text-primary dark:text-primary' : 'border-transparent text-base-content/60 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
                         Overview
                     </button>
-                    <button @click="activeTab = 'assignments'" :class="activeTab === 'assignments' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
+                    <button @click="activeTab = 'assignments'" :class="activeTab === 'assignments' ? 'border-primary text-primary dark:text-primary' : 'border-transparent text-base-content/60 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
                         Assignments
                         @if($assignments->count() > 0)
-                            <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{{ $assignments->count() }}</span>
+                            <span class="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-primary rounded-full">{{ $assignments->count() }}</span>
                         @endif
                     </button>
-                    <button @click="activeTab = 'formulas'" :class="activeTab === 'formulas' ? 'border-red-500 text-red-600 dark:text-red-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
+                    <button @click="activeTab = 'formulas'" :class="activeTab === 'formulas' ? 'border-primary text-primary dark:text-primary' : 'border-transparent text-base-content/60 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'" class="whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition">
                         Formulas & Lists
                     </button>
                 </nav>
@@ -67,16 +67,16 @@
 
                 <!-- Deficit Dashboard -->
                 @if(!empty($deficits))
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">What Needs to be Purchased</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-2">What Needs to be Purchased</h3>
                     @php
                         $totalToBuy = collect($deficits)->sum('deficit');
                         $totalNeeded = collect($deficits)->sum('total_needed');
                         $totalOnHand = collect($deficits)->sum('on_hand');
                         $byCategory = collect($deficits)->groupBy('category');
                     @endphp
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        <span class="font-semibold text-gray-900 dark:text-gray-100">{{ $totalToBuy }}</span> total items to buy
+                    <p class="text-sm text-base-content/60 mb-4">
+                        <span class="font-semibold text-base-content">{{ $totalToBuy }}</span> total items to buy
                         &middot; {{ $totalNeeded }} needed &middot; {{ $totalOnHand }} on hand
                     </p>
                     <div class="space-y-3">
@@ -86,20 +86,20 @@
                                 $catOnHand = $items->sum('on_hand');
                                 $catDeficit = $items->sum('deficit');
                                 $pct = $catNeeded > 0 ? round(($catOnHand / $catNeeded) * 100) : 100;
-                                $barColor = $pct >= 100 ? 'bg-green-500' : ($pct >= 50 ? 'bg-amber-500' : 'bg-red-500');
+                                $barColor = $pct >= 100 ? 'bg-green-500' : ($pct >= 50 ? 'bg-amber-500' : 'bg-primary');
                             @endphp
                             <div>
                                 <div class="flex justify-between text-sm mb-1">
-                                    <span class="font-medium text-gray-700 dark:text-gray-300">{{ ucfirst($catName) }}</span>
-                                    <span class="text-gray-500 dark:text-gray-400">{{ $catOnHand }} on hand / {{ $catNeeded }} needed &middot; <span class="font-semibold {{ $catDeficit > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">{{ $catDeficit > 0 ? $catDeficit . ' to buy' : 'Stocked' }}</span></span>
+                                    <span class="font-medium text-base-content/80">{{ ucfirst($catName) }}</span>
+                                    <span class="text-base-content/60">{{ $catOnHand }} on hand / {{ $catNeeded }} needed &middot; <span class="font-semibold {{ $catDeficit > 0 ? 'text-primary dark:text-primary' : 'text-green-600 dark:text-green-400' }}">{{ $catDeficit > 0 ? $catDeficit . ' to buy' : 'Stocked' }}</span></span>
                                 </div>
-                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                <div class="w-full bg-base-300 rounded-full h-2">
                                     <div class="{{ $barColor }} h-2 rounded-full transition-all" style="width: {{ min($pct, 100) }}%"></div>
                                 </div>
                                 @if($catDeficit > 0)
                                 <div class="mt-1 flex flex-wrap gap-1">
                                     @foreach($items->where('deficit', '>', 0) as $item)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-sm text-xs bg-base-200 text-base-content/70">
                                             {{ $item['grocery_item_name'] }} &times;{{ $item['deficit'] }}
                                         </span>
                                     @endforeach
@@ -110,24 +110,24 @@
                     </div>
                 </div>
                 @else
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center text-base-content/60">
                     No deficit data available. Generate packing lists first, then deficits will appear here.
                 </div>
                 @endif
 
                 <!-- Quick Stats -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4 text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $groceryItems->count() }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Grocery Items</div>
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-base-content">{{ $groceryItems->count() }}</div>
+                        <div class="text-sm text-base-content/60">Grocery Items</div>
                     </div>
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4 text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $assignments->count() }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Active Assignments</div>
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-base-content">{{ $assignments->count() }}</div>
+                        <div class="text-sm text-base-content/60">Active Assignments</div>
                     </div>
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4 text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $allFamilies->count() }}</div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">Numbered Families</div>
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-base-content">{{ $allFamilies->count() }}</div>
+                        <div class="text-sm text-base-content/60">Numbered Families</div>
                     </div>
                 </div>
             </div>
@@ -138,28 +138,28 @@
             <div x-show="activeTab === 'assignments'" x-cloak>
 
                 <!-- Current Assignments -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Current Assignments</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-4">Current Assignments</h3>
 
                     @if($assignments->count() > 0)
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             @foreach($assignments as $assignment)
-                                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                <div class="border border-base-300 rounded-lg p-4">
                                     <div class="flex justify-between items-start mb-2">
-                                        <h4 class="font-medium text-gray-900 dark:text-gray-100">
+                                        <h4 class="font-medium text-base-content">
                                             {{ $assignment->getDisplayName() }}
                                         </h4>
                                         <form method="POST" action="{{ route('santa.deleteAssignment', $assignment) }}" onsubmit="return confirm('Remove this assignment?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 text-xs">Remove</button>
+                                            <button type="submit" class="text-primary hover:text-primary text-xs">Remove</button>
                                         </form>
                                     </div>
-                                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ $assignment->getDescription() }}</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                    <p class="text-sm text-base-content/80">{{ $assignment->getDescription() }}</p>
+                                    <p class="text-xs text-base-content/60 mt-0.5">
                                         Type: <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $assignment->split_type)) }}</span>
                                     </p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                    <p class="text-sm text-base-content/60 mt-1">
                                         {{ $assignment->getTotalItems() }} total items
                                         @php $checked = $assignment->checks()->count(); @endphp
                                         @if($checked > 0)
@@ -167,20 +167,20 @@
                                         @endif
                                     </p>
                                     @if($assignment->notes)
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 italic">{{ $assignment->notes }}</p>
+                                        <p class="text-xs text-base-content/60 mt-1 italic">{{ $assignment->notes }}</p>
                                     @endif
                                     <div class="mt-3 space-y-2">
                                         <div class="flex items-center space-x-2">
                                             <a href="{{ route('shopping.assignment', $assignment->token) }}" target="_blank"
-                                               class="inline-flex items-center px-2 py-1 bg-red-700 text-white rounded text-xs hover:bg-red-600 transition">
+                                               class="inline-flex items-center px-2 py-1 bg-primary text-white rounded-sm text-xs hover:opacity-90 transition">
                                                 Open Checklist
                                             </a>
                                             <button type="button" onclick="copyLink('{{ route('shopping.assignment', $assignment->token) }}')"
-                                                    class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded text-xs hover:bg-gray-300 dark:hover:bg-gray-500 transition">
+                                                    class="inline-flex items-center px-2 py-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-sm text-xs hover:bg-gray-300 dark:hover:bg-gray-500 transition">
                                                 Copy URL
                                             </button>
                                         </div>
-                                        <div class="text-xs text-gray-400 dark:text-gray-500 font-mono break-all select-all">
+                                        <div class="text-xs text-base-content/50 font-mono break-all select-all">
                                             {{ route('shopping.assignment', $assignment->token) }}
                                         </div>
                                     </div>
@@ -188,29 +188,29 @@
                             @endforeach
                         </div>
                     @else
-                        <p class="text-gray-500 dark:text-gray-400">No assignments yet. Create one below.</p>
+                        <p class="text-base-content/60">No assignments yet. Create one below.</p>
                     @endif
                 </div>
 
                 <!-- Coverage Indicator -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-3">Family Range Coverage</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-3">Family Range Coverage</h3>
                     @if(count($assignedRanges) > 0)
                         <div class="flex flex-wrap gap-2">
                             @foreach($assignedRanges as $range)
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                                <span class="inline-flex items-center px-2 py-1 rounded-sm text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
                                     #{{ $range['start'] }}–#{{ $range['end'] }} &#10003;
                                 </span>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-xs text-gray-500 dark:text-gray-400">No family range assignments yet.</p>
+                        <p class="text-xs text-base-content/60">No family range assignments yet.</p>
                     @endif
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Highest family number: {{ $maxFamilyNumber }}</p>
+                    <p class="text-xs text-base-content/60 mt-2">Highest family number: {{ $maxFamilyNumber }}</p>
                 </div>
 
                 <!-- Add Assignment Form -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6" x-data="{
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6" x-data="{
                     splitType: '{{ old('split_type', 'smart_split') }}',
                     subcatCategory: '{{ old('subcategory_category', '') }}',
                     groceryItemsByCategory: @js($groceryItemsByCategory ?? []),
@@ -218,23 +218,23 @@
                         return this.groceryItemsByCategory[this.subcatCategory] || [];
                     }
                 }">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Add Assignment</h3>
+                    <h3 class="text-lg font-medium text-base-content mb-4">Add Assignment</h3>
                     <form method="POST" action="{{ route('santa.createAssignment') }}" class="space-y-4">
                         @csrf
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="ninja_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Shopper Name</label>
+                                <label for="ninja_name" class="block text-sm font-medium text-base-content/80">Shopper Name</label>
                                 <input type="text" name="ninja_name" id="ninja_name" placeholder="e.g. Jake, Sarah, Team Alpha"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                     value="{{ old('ninja_name') }}">
-                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">For volunteers who don't have accounts</p>
+                                <p class="mt-1 text-xs text-base-content/60">For volunteers who don't have accounts</p>
                             </div>
 
                             <div>
-                                <label for="user_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Or Assign to Coordinator</label>
+                                <label for="user_id" class="block text-sm font-medium text-base-content/80">Or Assign to Coordinator</label>
                                 <select name="user_id" id="user_id"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                     <option value="">— None (use name above) —</option>
                                     @foreach($coordinators as $coord)
                                         <option value="{{ $coord->id }}">{{ $coord->first_name }} {{ $coord->last_name }}</option>
@@ -245,45 +245,45 @@
 
                         <!-- Split Type Selection -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assignment Type</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-2">Assignment Type</label>
                             <div class="flex flex-wrap gap-3">
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="split_type" value="smart_split" x-model="splitType"
-                                        class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Smart Split</span>
+                                        class="text-primary focus:ring-primary border-base-300">
+                                    <span class="ml-2 text-sm text-base-content/80">Smart Split</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="split_type" value="family_range" x-model="splitType"
-                                        class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">By Family Range</span>
+                                        class="text-primary focus:ring-primary border-base-300">
+                                    <span class="ml-2 text-sm text-base-content/80">By Family Range</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="split_type" value="category" x-model="splitType"
-                                        class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">By Category</span>
+                                        class="text-primary focus:ring-primary border-base-300">
+                                    <span class="ml-2 text-sm text-base-content/80">By Category</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="split_type" value="deficit" x-model="splitType"
-                                        class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Full Deficit Buy</span>
+                                        class="text-primary focus:ring-primary border-base-300">
+                                    <span class="ml-2 text-sm text-base-content/80">Full Deficit Buy</span>
                                 </label>
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="radio" name="split_type" value="subcategory" x-model="splitType"
-                                        class="text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">By Subcategory</span>
+                                        class="text-primary focus:ring-primary border-base-300">
+                                    <span class="ml-2 text-sm text-base-content/80">By Subcategory</span>
                                 </label>
                             </div>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'deficit'">This shopper will see all items that still need to be purchased.</p>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'smart_split'">Auto-divide unassigned families so each shopper gets roughly equal item counts. Families already covered by existing assignments are excluded.</p>
-                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" x-show="splitType === 'subcategory'">Select specific items within a category for this shopper.</p>
+                            <p class="mt-1 text-xs text-base-content/60" x-show="splitType === 'deficit'">This shopper will see all items that still need to be purchased.</p>
+                            <p class="mt-1 text-xs text-base-content/60" x-show="splitType === 'smart_split'">Auto-divide unassigned families so each shopper gets roughly equal item counts. Families already covered by existing assignments are excluded.</p>
+                            <p class="mt-1 text-xs text-base-content/60" x-show="splitType === 'subcategory'">Select specific items within a category for this shopper.</p>
                         </div>
 
                         <!-- Family Range fields -->
                         <div x-show="splitType === 'family_range'" x-cloak class="space-y-3">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="md:col-span-1">
-                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">School (auto-fills range)</label>
-                                    <select id="sd_school_select" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                    <label class="block text-sm font-medium text-base-content/80">School (auto-fills range)</label>
+                                    <select id="sd_school_select" class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                         <option value="">Select a school...</option>
                                         @foreach($schoolRanges as $range)
                                             <option value="{{ $range->id }}" data-start="{{ $range->range_start }}" data-end="{{ $range->range_end }}">{{ $range->school_name }} ({{ $range->range_start }}&ndash;{{ $range->range_end }})</option>
@@ -291,15 +291,15 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="family_start" class="block text-sm font-medium text-gray-700 dark:text-gray-300">From Family #</label>
+                                    <label for="family_start" class="block text-sm font-medium text-base-content/80">From Family #</label>
                                     <input type="number" name="family_start" id="family_start" min="1"
-                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                        class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                         value="{{ old('family_start') }}">
                                 </div>
                                 <div>
-                                    <label for="family_end" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To Family #</label>
+                                    <label for="family_end" class="block text-sm font-medium text-base-content/80">To Family #</label>
                                     <input type="number" name="family_end" id="family_end" min="1"
-                                        class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                        class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                         value="{{ old('family_end') }}">
                                 </div>
                             </div>
@@ -307,14 +307,14 @@
 
                         <!-- Category fields -->
                         <div x-show="splitType === 'category'" x-cloak>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categories to Shop</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-2">Categories to Shop</label>
                             <div class="flex flex-wrap gap-3">
                                 @foreach($groceryCategories as $cat)
                                     <label class="inline-flex items-center cursor-pointer">
                                         <input type="checkbox" name="categories[]" value="{{ $cat }}"
-                                            class="rounded text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600"
+                                            class="rounded-sm text-primary focus:ring-primary border-base-300"
                                             {{ in_array($cat, old('categories', [])) ? 'checked' : '' }}>
-                                        <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ ucfirst($cat) }}</span>
+                                        <span class="ml-2 text-sm text-base-content/80">{{ ucfirst($cat) }}</span>
                                     </label>
                                 @endforeach
                             </div>
@@ -323,11 +323,11 @@
                         <!-- Smart Split fields -->
                         <div x-show="splitType === 'smart_split'" x-cloak class="space-y-3">
                             <div class="max-w-xs">
-                                <label for="num_shoppers" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Number of Shoppers</label>
+                                <label for="num_shoppers" class="block text-sm font-medium text-base-content/80">Number of Shoppers</label>
                                 <input type="number" name="num_shoppers" id="num_shoppers" min="2" max="10"
-                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                    class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                     value="{{ old('num_shoppers', 3) }}">
-                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                <p class="mt-1 text-xs text-base-content/60">
                                     Families will be divided into this many groups, balanced by item count. One assignment per group will be created.
                                 </p>
                             </div>
@@ -336,9 +336,9 @@
                         <!-- Subcategory fields -->
                         <div x-show="splitType === 'subcategory'" x-cloak class="space-y-3">
                             <div>
-                                <label for="subcategory_category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                                <label for="subcategory_category" class="block text-sm font-medium text-base-content/80">Category</label>
                                 <select name="subcategory_category" id="subcategory_category" x-model="subcatCategory"
-                                    class="mt-1 block w-full max-w-xs rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                    class="mt-1 block w-full max-w-xs rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                     <option value="">Select a category...</option>
                                     @foreach($groceryCategories as $cat)
                                         <option value="{{ $cat }}">{{ ucfirst($cat) }}</option>
@@ -346,36 +346,36 @@
                                 </select>
                             </div>
                             <div x-show="subcatCategory" x-cloak>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Items to Include</label>
+                                <label class="block text-sm font-medium text-base-content/80 mb-2">Items to Include</label>
                                 <div class="flex flex-wrap gap-3 max-h-48 overflow-y-auto p-2 border border-gray-200 dark:border-gray-600 rounded-md">
                                     <template x-for="item in subcatItems" :key="item.id">
                                         <label class="inline-flex items-center cursor-pointer">
                                             <input type="checkbox" name="subcategory_items[]" :value="item.id"
-                                                class="rounded text-red-600 focus:ring-red-500 border-gray-300 dark:border-gray-600">
-                                            <span class="ml-2 text-sm text-gray-700 dark:text-gray-300" x-text="item.name"></span>
+                                                class="rounded-sm text-primary focus:ring-primary border-base-300">
+                                            <span class="ml-2 text-sm text-base-content/80" x-text="item.name"></span>
                                         </label>
                                     </template>
-                                    <p x-show="subcatItems.length === 0" class="text-sm text-gray-400 dark:text-gray-500 italic">No items in this category.</p>
+                                    <p x-show="subcatItems.length === 0" class="text-sm text-base-content/50 italic">No items in this category.</p>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes (optional)</label>
+                            <label for="notes" class="block text-sm font-medium text-base-content/80">Notes (optional)</label>
                             <input type="text" name="notes" id="notes" placeholder="e.g. Meet at checkout lane 5"
-                                class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                 value="{{ old('notes') }}">
                         </div>
 
                         @if($errors->any())
-                            <div class="text-sm text-red-600 dark:text-red-400">
+                            <div class="text-sm text-primary dark:text-primary">
                                 @foreach($errors->all() as $error)
                                     <p>{{ $error }}</p>
                                 @endforeach
                             </div>
                         @endif
 
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                             Create Assignment
                         </button>
                     </form>
@@ -383,16 +383,16 @@
 
                 <!-- Reconciliation Panel -->
                 @if(!empty($reconciliation))
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">Reconciliation</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Comparing what volunteers checked off vs what was received at the kiosk.</p>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-2">Reconciliation</h3>
+                    <p class="text-sm text-base-content/60 mb-4">Comparing what volunteers checked off vs what was received at the kiosk.</p>
 
                     @php
                         $hasDiscrepancies = collect($reconciliation)->where('discrepancy', '!=', 0)->count();
                     @endphp
 
                     @if($hasDiscrepancies > 0)
-                        <div class="mb-3 p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
+                        <div class="mb-3 p-3 rounded-sm bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700">
                             <p class="text-sm text-amber-700 dark:text-amber-300 font-medium">{{ $hasDiscrepancies }} item(s) with discrepancies detected.</p>
                         </div>
                     @endif
@@ -400,22 +400,22 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700">
-                                    <th class="text-left py-2 px-3 text-gray-500 dark:text-gray-400">Category</th>
-                                    <th class="text-left py-2 px-3 text-gray-500 dark:text-gray-400">Item</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">Checked Off</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">Received</th>
-                                    <th class="text-right py-2 px-3 text-gray-500 dark:text-gray-400">Discrepancy</th>
+                                <tr class="border-b border-base-300">
+                                    <th class="text-left py-2 px-3 text-base-content/60">Category</th>
+                                    <th class="text-left py-2 px-3 text-base-content/60">Item</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">Checked Off</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">Received</th>
+                                    <th class="text-right py-2 px-3 text-base-content/60">Discrepancy</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($reconciliation as $row)
-                                    <tr class="border-b border-gray-100 dark:border-gray-700/50 {{ $row['discrepancy'] != 0 ? 'bg-red-50 dark:bg-red-900/10' : '' }}">
-                                        <td class="py-2 px-3 text-gray-600 dark:text-gray-400">{{ $row['category_name'] }}</td>
-                                        <td class="py-2 px-3 text-gray-900 dark:text-gray-100">{{ $row['item_name'] }}</td>
-                                        <td class="text-right py-2 px-3 text-gray-700 dark:text-gray-300">{{ $row['purchased_qty'] }}</td>
-                                        <td class="text-right py-2 px-3 text-gray-700 dark:text-gray-300">{{ $row['received_qty'] }}</td>
-                                        <td class="text-right py-2 px-3 font-medium {{ $row['discrepancy'] != 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400' }}">
+                                    <tr class="border-b border-gray-100 dark:border-gray-700/50 {{ $row['discrepancy'] != 0 ? 'bg-primary/5 dark:bg-primary/30/10' : '' }}">
+                                        <td class="py-2 px-3 text-base-content/70">{{ $row['category_name'] }}</td>
+                                        <td class="py-2 px-3 text-base-content">{{ $row['item_name'] }}</td>
+                                        <td class="text-right py-2 px-3 text-base-content/80">{{ $row['purchased_qty'] }}</td>
+                                        <td class="text-right py-2 px-3 text-base-content/80">{{ $row['received_qty'] }}</td>
+                                        <td class="text-right py-2 px-3 font-medium {{ $row['discrepancy'] != 0 ? 'text-primary dark:text-primary' : 'text-green-600 dark:text-green-400' }}">
                                             {{ $row['discrepancy'] > 0 ? '+' . $row['discrepancy'] : $row['discrepancy'] }}
                                         </td>
                                     </tr>
@@ -433,14 +433,14 @@
             <div x-show="activeTab === 'formulas'" x-cloak>
 
                 <!-- Filter -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Generate Shopping List</h3>
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-4">Generate Shopping List</h3>
                     <form method="GET" action="{{ route('santa.shopping') }}" class="space-y-4">
                         <input type="hidden" name="tab" value="formulas">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Single Family</label>
-                                <select name="family_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-sm font-medium text-base-content/80 mb-1">Single Family</label>
+                                <select name="family_id" class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                     <option value="">All numbered families</option>
                                     @foreach($allFamilies as $f)
                                         <option value="{{ $f->id }}" {{ request('family_id') == $f->id ? 'selected' : '' }}>
@@ -450,8 +450,8 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">School</label>
-                                <select id="sl_school_select" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                <label class="block text-sm font-medium text-base-content/80 mb-1">School</label>
+                                <select id="sl_school_select" class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                     <option value="">All Schools</option>
                                     @foreach($schoolRanges as $range)
                                         <option value="{{ $range->id }}" data-start="{{ $range->range_start }}" data-end="{{ $range->range_end }}">{{ $range->school_name }} ({{ $range->range_start }}–{{ $range->range_end }})</option>
@@ -459,29 +459,29 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range Start</label>
+                                <label class="block text-sm font-medium text-base-content/80 mb-1">Family # Range Start</label>
                                 <input type="number" name="family_number_start" id="sl_range_start" value="{{ request('family_number_start') }}"
-                                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 1">
+                                       class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm" placeholder="e.g. 1">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range End</label>
+                                <label class="block text-sm font-medium text-base-content/80 mb-1">Family # Range End</label>
                                 <input type="number" name="family_number_end" id="sl_range_end" value="{{ request('family_number_end') }}"
-                                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 99">
+                                       class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm" placeholder="e.g. 99">
                             </div>
                         </div>
                         <div class="flex items-center space-x-3">
-                            <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                            <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                                 Generate
                             </button>
-                            <a href="{{ route('santa.shopping', ['tab' => 'formulas']) }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">Reset</a>
+                            <a href="{{ route('santa.shopping', ['tab' => 'formulas']) }}" class="text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-200">Reset</a>
                         </div>
                     </form>
                 </div>
 
                 @if($families instanceof \Illuminate\Database\Eloquent\Collection && $families->count() > 0)
                     <!-- Summary -->
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                        <h3 class="text-lg font-medium text-base-content mb-4">
                             Aggregate Totals ({{ $families->count() }} {{ Str::plural('family', $families->count()) }})
                         </h3>
 
@@ -496,12 +496,12 @@
                             @endphp
                             @if($catTotals->count() > 0)
                                 <div class="mb-4">
-                                    <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">{{ $catLabel }}</h4>
+                                    <h4 class="text-sm font-semibold text-base-content/80 uppercase tracking-wide mb-2">{{ $catLabel }}</h4>
                                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                                         @foreach($catTotals as $name => $qty)
-                                            <div class="bg-gray-50 dark:bg-gray-700 rounded px-3 py-2 text-sm">
-                                                <span class="font-medium text-gray-900 dark:text-gray-100">{{ $qty }}</span>
-                                                <span class="text-gray-500 dark:text-gray-400 ml-1">{{ $name }}</span>
+                                            <div class="bg-base-200 rounded-sm px-3 py-2 text-sm">
+                                                <span class="font-medium text-base-content">{{ $qty }}</span>
+                                                <span class="text-base-content/60 ml-1">{{ $name }}</span>
                                             </div>
                                         @endforeach
                                     </div>
@@ -509,8 +509,8 @@
                             @endif
                         @endforeach
 
-                        <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <span class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        <div class="mt-4 pt-4 border-t border-base-300">
+                            <span class="text-lg font-bold text-base-content">
                                 Grand Total: {{ array_sum($totals) }} items
                             </span>
                         </div>
@@ -520,20 +520,20 @@
                     @foreach($families as $family)
                         @php $list = $shoppingLists[$family->id] ?? []; @endphp
                         @if(count($list) > 0)
-                            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                            <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">
+                                    <h4 class="text-md font-medium text-base-content">
                                         #{{ $family->family_number }} — {{ $family->family_name }}
-                                        <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                        <span class="text-sm font-normal text-base-content/60">
                                             ({{ $family->number_of_family_members }} members, {{ array_sum(array_column($list, 'quantity')) }} items)
                                         </span>
                                     </h4>
                                 </div>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
                                     @foreach($list as $itemName => $info)
-                                        <div class="text-xs px-2 py-1 bg-gray-50 dark:bg-gray-700 rounded">
-                                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ $info['quantity'] }}</span>
-                                            <span class="text-gray-500 dark:text-gray-400">{{ $itemName }}</span>
+                                        <div class="text-xs px-2 py-1 bg-base-200 rounded-sm">
+                                            <span class="font-medium text-base-content">{{ $info['quantity'] }}</span>
+                                            <span class="text-base-content/60">{{ $itemName }}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -541,11 +541,11 @@
                         @endif
                     @endforeach
                 @elseif(request()->anyFilled(['family_id', 'family_number_start']))
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center text-base-content/60">
                         No families match the selected filter.
                     </div>
                 @else
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center text-base-content/60">
                         Select a family or range above to generate a shopping list.
                         <br>
                         <span class="text-sm">{{ $groceryItems->count() }} grocery items configured in the formula.</span>
@@ -554,7 +554,7 @@
             </div>
 
             <div>
-                <a href="{{ route('santa.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                <a href="{{ route('santa.index') }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                     &larr; Back to Dashboard
                 </a>
             </div>

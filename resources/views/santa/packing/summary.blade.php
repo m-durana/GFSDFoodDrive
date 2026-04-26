@@ -1,13 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 End-of-Day Summary
             </h2>
             <div class="flex items-center gap-3">
                 <form method="GET" action="{{ route('packing.summary') }}" class="flex items-center gap-2">
                     <input type="date" name="date" value="{{ $date->toDateString() }}"
-                           class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 text-sm"
+                           class="rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-200 text-sm"
                            onchange="this.form.submit()">
                 </form>
                 <button onclick="window.print()" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-gray-600 text-white hover:bg-gray-700 transition">
@@ -26,77 +26,77 @@
 
             {{-- KPI Cards --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-green-600 dark:text-green-400">{{ $summary['families_packed_count'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Families Packed</div>
+                    <div class="text-xs text-base-content/60 mt-1">Families Packed</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ $summary['total_volunteers'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Volunteers</div>
+                    <div class="text-xs text-base-content/60 mt-1">Total Volunteers</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $summary['total_items_packed'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Items</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ $summary['total_items_packed'] }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">Total Items</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ $summary['substitutions_count'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Substitutions</div>
+                    <div class="text-xs text-base-content/60 mt-1">Substitutions</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ $summary['unfulfilled_count'] }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Unfulfilled</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-primary dark:text-primary">{{ $summary['unfulfilled_count'] }}</div>
+                    <div class="text-xs text-base-content/60 mt-1">Unfulfilled</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $summary['total_hours'] }}h</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Volunteer Hours</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content">{{ $summary['total_hours'] }}h</div>
+                    <div class="text-xs text-base-content/60 mt-1">Volunteer Hours</div>
                 </div>
             </div>
 
             {{-- Category Breakdown --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Category Breakdown</h3>
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                <h3 class="text-sm font-medium text-base-content/80 mb-4">Category Breakdown</h3>
                 <div class="grid grid-cols-3 gap-4">
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $summary['category_breakdown']['food'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Food Items</div>
+                        <div class="text-2xl font-bold text-base-content">{{ $summary['category_breakdown']['food'] }}</div>
+                        <div class="text-xs text-base-content/60 mt-1">Food Items</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $summary['category_breakdown']['gift'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Gift Items</div>
+                        <div class="text-2xl font-bold text-base-content">{{ $summary['category_breakdown']['gift'] }}</div>
+                        <div class="text-xs text-base-content/60 mt-1">Gift Items</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold text-gray-900 dark:text-gray-100">{{ $summary['category_breakdown']['baby'] }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Baby Items</div>
+                        <div class="text-2xl font-bold text-base-content">{{ $summary['category_breakdown']['baby'] }}</div>
+                        <div class="text-xs text-base-content/60 mt-1">Baby Items</div>
                     </div>
                 </div>
             </div>
 
             {{-- Volunteers Table --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 overflow-hidden">
                 <div class="p-6 pb-2">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Volunteer Sessions</h3>
+                    <h3 class="text-sm font-medium text-base-content/80">Volunteer Sessions</h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Volunteer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Hours</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items Packed</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items/Hour</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Volunteer</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Hours</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Items Packed</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Items/Hour</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             @forelse($summary['volunteers'] as $vol)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ $vol['name'] }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ $vol['hours'] }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ $vol['items_packed'] }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ $vol['items_per_hour'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content">{{ $vol['name'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content">{{ $vol['hours'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content">{{ $vol['items_packed'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content">{{ $vol['items_per_hour'] }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No volunteer sessions recorded for this date.</td>
+                                    <td colspan="4" class="px-6 py-4 text-center text-sm text-base-content/60">No volunteer sessions recorded for this date.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -105,29 +105,29 @@
             </div>
 
             {{-- Families Packed --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 overflow-hidden">
                 <div class="p-6 pb-2">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Families Packed</h3>
+                    <h3 class="text-sm font-medium text-base-content/80">Families Packed</h3>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Family</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Completed At</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">#</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Family</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-base-content/60 uppercase tracking-wider">Completed At</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             @forelse($summary['families_packed'] as $fam)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $fam['family_number'] }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100">{{ $fam['family_name'] }}</td>
-                                    <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $fam['completed_at'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content/60">{{ $fam['family_number'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content">{{ $fam['family_name'] }}</td>
+                                    <td class="px-6 py-3 text-sm text-base-content/60">{{ $fam['completed_at'] }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No families packed on this date.</td>
+                                    <td colspan="3" class="px-6 py-4 text-center text-sm text-base-content/60">No families packed on this date.</td>
                                 </tr>
                             @endforelse
                         </tbody>

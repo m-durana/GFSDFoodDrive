@@ -21,7 +21,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-red-900 via-red-800 to-green-900 flex items-center justify-center relative overflow-hidden">
+<body class="min-h-screen bg-linear-to-b from-primary via-primary/90 to-green-900 flex items-center justify-center relative overflow-hidden">
     {{-- Snowflakes --}}
     <script>
         for(var i=0;i<30;i++){
@@ -53,10 +53,10 @@
         </div>
 
         <h1 class="text-3xl sm:text-4xl font-bold text-white mb-3">@yield('title')</h1>
-        <p class="text-lg text-red-200 mb-8 max-w-md mx-auto">@yield('message')</p>
+        <p class="text-lg text-primary-content/80 mb-8 max-w-md mx-auto">@yield('message')</p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a href="{{ url('/') }}" class="inline-flex items-center px-6 py-3 bg-white text-red-800 font-semibold rounded-full shadow-lg hover:bg-red-50 transition">
+            <a href="{{ url('/') }}" class="inline-flex items-center px-6 py-3 bg-white text-primary font-semibold rounded-full shadow-lg hover:bg-primary/5 transition">
                 <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                 Back to Home
             </a>

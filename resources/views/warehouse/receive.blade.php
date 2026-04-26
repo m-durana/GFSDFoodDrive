@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-base-content leading-tight">
             Receive Items
             <x-hint key="warehouse-receive" text="Scan barcodes with the USB scanner or type them manually. Unknown barcodes can be registered on the fly. The input re-focuses after each scan for continuous intake." />
         </h2>
@@ -10,16 +10,16 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Barcode Scanner Input -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
                     <form id="receive-form" method="POST" action="{{ route('warehouse.store') }}">
                         @csrf
 
                         <!-- Barcode Input -->
                         <div class="mb-4">
-                            <label for="barcode-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scan Barcode</label>
+                            <label for="barcode-input" class="block text-sm font-medium text-base-content/80 mb-1">Scan Barcode</label>
                             <input type="text" id="barcode-input" autocomplete="off" autofocus
-                                class="w-full text-lg rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500"
+                                class="w-full text-lg rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary"
                                 placeholder="Scan or type barcode...">
                             <input type="hidden" name="barcode_scanned" id="barcode-scanned">
                             <input type="hidden" name="item_id" id="item-id">
@@ -38,9 +38,9 @@
 
                         <!-- Category -->
                         <div class="mb-4">
-                            <label for="category_id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                            <label for="category_id" class="block text-sm font-medium text-base-content/80 mb-1">Category</label>
                             <select name="category_id" id="category_id" required
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                 <option value="">Select category...</option>
                                 @foreach($categories as $cat)
                                     <option value="{{ $cat->id }}">{{ $cat->name }} ({{ $cat->unit }})</option>
@@ -50,16 +50,16 @@
 
                         <!-- Quantity -->
                         <div class="mb-4">
-                            <label for="quantity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantity</label>
+                            <label for="quantity" class="block text-sm font-medium text-base-content/80 mb-1">Quantity</label>
                             <input type="number" name="quantity" id="quantity" value="1" min="1" max="9999" required
-                                class="w-32 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="w-32 rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                         </div>
 
                         <!-- Source -->
                         <div class="mb-4">
-                            <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Source</label>
+                            <label for="source" class="block text-sm font-medium text-base-content/80 mb-1">Source</label>
                             <select name="source" id="source"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                 <option value="">Not specified</option>
                                 <option value="School Drive">School Drive</option>
                                 <option value="Adopt-a-Tag">Adopt-a-Tag</option>
@@ -70,17 +70,17 @@
 
                         <!-- Donor Name -->
                         <div class="mb-4">
-                            <label for="donor_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Donor Name <span class="text-gray-400">(optional)</span></label>
+                            <label for="donor_name" class="block text-sm font-medium text-base-content/80 mb-1">Donor Name <span class="text-gray-400">(optional)</span></label>
                             <input type="text" name="donor_name" id="donor_name" maxlength="200"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm"
+                                class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm"
                                 placeholder="e.g. Smith Family">
                         </div>
 
                         <!-- Notes -->
                         <div class="mb-6">
-                            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notes <span class="text-gray-400">(optional)</span></label>
+                            <label for="notes" class="block text-sm font-medium text-base-content/80 mb-1">Notes <span class="text-gray-400">(optional)</span></label>
                             <input type="text" name="notes" id="notes" maxlength="1000"
-                                class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                         </div>
 
                         <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-3 bg-green-600 text-white rounded-md hover:bg-green-500 text-sm font-medium transition">
@@ -94,10 +94,10 @@
             <div id="toast" class="hidden fixed bottom-6 right-6 bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 transition-opacity"></div>
 
             <!-- Session Running Total -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Session Total</h3>
-                    <div id="session-totals" class="text-sm text-gray-500 dark:text-gray-400">
+                    <h3 class="text-sm font-medium text-base-content/80 mb-3">Session Total</h3>
+                    <div id="session-totals" class="text-sm text-base-content/60">
                         No items scanned yet.
                     </div>
                 </div>
@@ -196,7 +196,7 @@
         function showToast(msg, isError) {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
-            toast.className = 'fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 text-white ' + (isError ? 'bg-red-600' : 'bg-green-600');
+            toast.className = 'fixed bottom-6 right-6 px-4 py-3 rounded-lg shadow-lg text-sm font-medium z-50 text-white ' + (isError ? 'bg-primary' : 'bg-green-600');
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 

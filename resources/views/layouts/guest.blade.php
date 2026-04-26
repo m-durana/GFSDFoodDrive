@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="" data-theme="northpole">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,30 +15,40 @@
 
     <!-- Dark mode: apply before page renders -->
     <script>
-        if (localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        }
+        (function() {
+            const html = document.documentElement;
+            const wantDark = localStorage.getItem('darkMode') === 'true' || (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (wantDark) {
+                html.classList.add('dark');
+                const t = html.getAttribute('data-theme') || 'northpole';
+                if (!t.endsWith('-dark')) html.setAttribute('data-theme', t + '-dark');
+            }
+        })();
         function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.documentElement.classList.contains('dark'));
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            const t = html.getAttribute('data-theme') || 'northpole';
+            const base = t.endsWith('-dark') ? t.slice(0, -5) : t;
+            html.setAttribute('data-theme', isDark ? base + '-dark' : base);
+            localStorage.setItem('darkMode', isDark);
         }
     </script>
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans text-gray-900 dark:text-gray-100 antialiased">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
+<body class="font-sans text-base-content antialiased">
+    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-base-200">
         <div>
-            <h1 class="text-3xl font-bold text-red-700 dark:text-red-400">GFSD Food Drive</h1>
-            <p class="text-center text-gray-500 dark:text-gray-400 mt-1">North Pole Portal</p>
+            <h1 class="text-3xl font-bold text-primary dark:text-primary">GFSD Food Drive</h1>
+            <p class="text-center text-base-content/60 mt-1">North Pole Portal</p>
         </div>
 
-        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
+        <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-base-100 shadow-md overflow-hidden sm:rounded-lg">
             {{ $slot }}
         </div>
 
-        <p class="mt-3 text-xs text-gray-400 dark:text-gray-600">{!! \App\Models\Setting::get('footer_text', 'Made in 🇨🇭') !!}</p>
+        <p class="mt-3 text-xs text-base-content/50">{!! \App\Models\Setting::get('footer_text', 'Made in 🇨🇭') !!}</p>
 
         <!-- Dark mode toggle on login page -->
         <button onclick="toggleDarkMode()" class="mt-2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" title="Toggle dark mode">

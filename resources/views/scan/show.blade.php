@@ -21,8 +21,8 @@
         @endif
 
         <!-- Child Info Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-            <div class="bg-red-700 text-white px-4 py-3 text-center">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-200 overflow-hidden mb-6">
+            <div class="bg-primary text-white px-4 py-3 text-center">
                 <span class="text-3xl font-bold">#{{ $child->family->family_number }}</span>
             </div>
             <div class="p-4 space-y-3">
@@ -84,7 +84,7 @@
         </div>
 
         <!-- Update Form -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div class="bg-white rounded-xl shadow-xs border border-gray-200 p-4">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Update Gift Status</h2>
 
             <form method="POST" action="{{ url()->signedRoute('scan.update', ['child' => $child->id]) }}" class="space-y-4">
@@ -100,7 +100,7 @@
                                 <input type="radio" name="gift_level" value="{{ $value }}" {{ $levelValue === $value ? 'checked' : '' }}
                                     class="sr-only peer">
                                 <div class="border-2 rounded-lg px-4 py-3 text-center text-sm font-medium transition
-                                    peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700
+                                    peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:text-primary
                                     border-gray-200 text-gray-700 hover:bg-gray-50">
                                     {{ $label }}
                                 </div>
@@ -108,7 +108,7 @@
                         @endforeach
                     </div>
                     @error('gift_level')
-                        <p class="text-sm text-red-600 mt-1">{{ $message }}</p>
+                        <p class="text-sm text-primary mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
@@ -116,7 +116,7 @@
                 <div>
                     <label for="gifts_received" class="block text-sm font-medium text-gray-700">Gifts Received</label>
                     <textarea name="gifts_received" id="gifts_received" rows="2"
-                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-xs focus:border-primary focus:ring-primary text-sm"
                         placeholder="e.g. Lego set, jacket, doll...">{{ old('gifts_received', $child->gifts_received) }}</textarea>
                 </div>
 
@@ -125,12 +125,12 @@
                     <label for="adopter_name" class="block text-sm font-medium text-gray-700">Adopter Name</label>
                     <input type="text" name="adopter_name" id="adopter_name"
                         value="{{ old('adopter_name', $child->adopter_name) }}"
-                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-xs focus:border-primary focus:ring-primary text-sm"
                         placeholder="Who adopted this child's gifts?">
                 </div>
 
                 <button type="submit"
-                    class="w-full py-3 bg-red-700 text-white rounded-lg font-semibold text-sm hover:bg-red-600 active:bg-red-800 transition">
+                    class="w-full py-3 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90 active:opacity-80 transition">
                     Update Gift Status
                 </button>
             </form>

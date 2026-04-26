@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en" class="" data-theme="gfsd">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,32 +13,32 @@
     </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+<body class="font-sans antialiased bg-gray-50 dark:bg-gray-900 text-base-content">
     <div class="min-h-screen">
         <!-- Header -->
-        <header class="bg-red-700 dark:bg-red-900 text-white">
+        <header class="bg-primary dark:bg-primary/30 text-white">
             <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-center">
                 <h1 class="text-3xl sm:text-4xl font-bold">GFSD Food Drive</h1>
-                <p class="text-red-200 text-lg mt-1">Family Status</p>
+                <p class="text-primary-content/80 text-lg mt-1">Family Status</p>
             </div>
         </header>
 
         <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
             <!-- Family Greeting -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 text-center">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300 text-center">
+                <h2 class="text-2xl font-bold text-base-content">
                     Hello, {{ $family->family_name }} family!
                 </h2>
                 @if($family->family_number)
-                    <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full text-sm font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+                    <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-content/80">
                         Family #{{ $family->family_number }}
                     </span>
                 @endif
             </div>
 
             <!-- Status Timeline -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">Your Status</h3>
+            <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
+                <h3 class="text-lg font-semibold text-base-content mb-6">Your Status</h3>
                 <div class="relative">
                     @foreach($steps as $i => $step)
                         <div class="flex items-start mb-8 last:mb-0">
@@ -49,7 +49,7 @@
                             @endif
 
                             <!-- Status dot -->
-                            <div class="flex-shrink-0 relative z-10">
+                            <div class="shrink-0 relative z-10">
                                 @if($step['complete'])
                                     {{-- Completed step: green checkmark --}}
                                     <div class="w-8 h-8 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center">
@@ -72,10 +72,10 @@
 
                             <!-- Step content -->
                             <div class="ml-4 flex-1">
-                                <p class="text-sm font-semibold {{ $step['complete'] ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-300' }}">
+                                <p class="text-sm font-semibold {{ $step['complete'] ? 'text-green-700 dark:text-green-400' : 'text-base-content/80' }}">
                                     {{ $step['label'] }}
                                 </p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                                <p class="text-sm text-base-content/60 mt-0.5">
                                     {{ $step['description'] }}
                                 </p>
                             </div>
@@ -86,16 +86,16 @@
 
             <!-- Children Summary Card -->
             @if($totalChildren > 0)
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Gift Collection</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
+                    <h3 class="text-lg font-semibold text-base-content mb-2">Gift Collection</h3>
                     @if($childrenWithGifts > 0)
                         <div class="flex items-center space-x-3">
-                            <div class="flex-shrink-0">
+                            <div class="shrink-0">
                                 <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"></path>
                                 </svg>
                             </div>
-                            <p class="text-gray-700 dark:text-gray-300">
+                            <p class="text-base-content/80">
                                 Gifts are being collected for
                                 <span class="font-bold text-green-600 dark:text-green-400">{{ $childrenWithGifts }}</span>
                                 of
@@ -104,11 +104,11 @@
                             </p>
                         </div>
                         <!-- Progress bar -->
-                        <div class="mt-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                        <div class="mt-3 w-full bg-base-300 rounded-full h-2.5">
                             <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full transition-all" style="width: {{ ($childrenWithGifts / $totalChildren) * 100 }}%"></div>
                         </div>
                     @else
-                        <p class="text-gray-500 dark:text-gray-400">
+                        <p class="text-base-content/60">
                             Gift collection has not started yet for your {{ $totalChildren }} {{ $totalChildren === 1 ? 'child' : 'children' }}. Check back soon!
                         </p>
                     @endif
@@ -117,10 +117,10 @@
 
             <!-- Packing Progress Card -->
             @if($packingProgress)
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Box Packing Progress</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
+                    <h3 class="text-lg font-semibold text-base-content mb-3">Box Packing Progress</h3>
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-sm text-base-content/60">
                             {{ $packingProgress['packed'] }} of {{ $packingProgress['total'] }} items packed
                         </span>
                         @php
@@ -133,7 +133,7 @@
                                 default => 'Pending',
                             };
                             $packingColor = match($ps->value) {
-                                'pending' => 'bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300',
+                                'pending' => 'bg-gray-100 dark:bg-gray-600 text-base-content/80',
                                 'in_progress' => 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
                                 'complete' => 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
                                 'verified' => 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
@@ -144,7 +144,7 @@
                             {{ $packingLabel }}
                         </span>
                     </div>
-                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                    <div class="w-full bg-base-300 rounded-full h-2.5">
                         <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full transition-all" style="width: {{ $packingProgress['percentage'] }}%"></div>
                     </div>
                     @if($packingProgress['status']->value === 'verified')
@@ -157,28 +157,28 @@
 
             <!-- Delivery Info Card -->
             @if($family->delivery_date)
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">Delivery Information</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
+                    <h3 class="text-lg font-semibold text-base-content mb-3">Delivery Information</h3>
                     <dl class="space-y-2 text-sm">
                         <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Date</dt>
-                            <dd class="font-medium text-gray-900 dark:text-gray-100">{{ $family->delivery_date }}</dd>
+                            <dt class="text-base-content/60">Date</dt>
+                            <dd class="font-medium text-base-content">{{ $family->delivery_date }}</dd>
                         </div>
                         @if($family->delivery_time)
                             <div class="flex justify-between">
-                                <dt class="text-gray-500 dark:text-gray-400">Time Window</dt>
-                                <dd class="font-medium text-gray-900 dark:text-gray-100">{{ $family->delivery_time }}</dd>
+                                <dt class="text-base-content/60">Time Window</dt>
+                                <dd class="font-medium text-base-content">{{ $family->delivery_time }}</dd>
                             </div>
                         @endif
                         @if($family->delivery_preference)
                             <div class="flex justify-between">
-                                <dt class="text-gray-500 dark:text-gray-400">Preference</dt>
-                                <dd class="font-medium text-gray-900 dark:text-gray-100">{{ $family->delivery_preference }}</dd>
+                                <dt class="text-base-content/60">Preference</dt>
+                                <dd class="font-medium text-base-content">{{ $family->delivery_preference }}</dd>
                             </div>
                         @endif
                         @if($family->delivery_status)
                             <div class="flex justify-between items-center">
-                                <dt class="text-gray-500 dark:text-gray-400">Status</dt>
+                                <dt class="text-base-content/60">Status</dt>
                                 <dd>
                                     @php $ds = $family->delivery_status; @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -194,11 +194,11 @@
             @endif
 
             <!-- Contact Card -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700 text-center">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Questions?</h3>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">
+            <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300 text-center">
+                <h3 class="text-lg font-semibold text-base-content mb-2">Questions?</h3>
+                <p class="text-base-content/60 text-sm">
                     Contact us at
-                    <a href="mailto:fooddrive@gfalls.wednet.edu" class="text-red-600 dark:text-red-400 hover:underline font-medium">
+                    <a href="mailto:fooddrive@gfalls.wednet.edu" class="text-primary dark:text-primary hover:underline font-medium">
                         fooddrive@gfalls.wednet.edu
                     </a>
                 </p>

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Shopping Lists
             </h2>
             <div class="flex items-center space-x-3">
@@ -23,19 +23,19 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-sm">
                     {{ session('success') }}
                 </div>
             @endif
 
             <!-- Filter -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Generate Shopping List</h3>
+            <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                <h3 class="text-lg font-medium text-base-content mb-4">Generate Shopping List</h3>
                 <form method="GET" action="{{ route('santa.shoppingList') }}" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Single Family</label>
-                            <select name="family_id" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Single Family</label>
+                            <select name="family_id" class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                 <option value="">All numbered families</option>
                                 @foreach($allFamilies as $f)
                                     <option value="{{ $f->id }}" {{ request('family_id') == $f->id ? 'selected' : '' }}>
@@ -45,8 +45,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">School</label>
-                            <select id="sl_school_select" class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">School</label>
+                            <select id="sl_school_select" class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                 <option value="">All Schools</option>
                                 @foreach($schoolRanges as $range)
                                     <option value="{{ $range->id }}" data-start="{{ $range->range_start }}" data-end="{{ $range->range_end }}">{{ $range->school_name }} ({{ $range->range_start }}–{{ $range->range_end }})</option>
@@ -54,29 +54,29 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range Start</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Family # Range Start</label>
                             <input type="number" name="family_number_start" id="sl_range_start" value="{{ request('family_number_start') }}"
-                                   class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 1">
+                                   class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm" placeholder="e.g. 1">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Family # Range End</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Family # Range End</label>
                             <input type="number" name="family_number_end" id="sl_range_end" value="{{ request('family_number_end') }}"
-                                   class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm" placeholder="e.g. 99">
+                                   class="w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm" placeholder="e.g. 99">
                         </div>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                        <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                             Generate
                         </button>
-                        <a href="{{ route('santa.shoppingList') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">Reset</a>
+                        <a href="{{ route('santa.shoppingList') }}" class="text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-200">Reset</a>
                     </div>
                 </form>
             </div>
 
             @if($families->count() > 0)
                 <!-- Summary -->
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
+                    <h3 class="text-lg font-medium text-base-content mb-4">
                         Aggregate Totals ({{ $families->count() }} {{ Str::plural('family', $families->count()) }})
                     </h3>
 
@@ -91,12 +91,12 @@
                         @endphp
                         @if($catTotals->count() > 0)
                             <div class="mb-4">
-                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wide mb-2">{{ $catLabel }}</h4>
+                                <h4 class="text-sm font-semibold text-base-content/80 uppercase tracking-wide mb-2">{{ $catLabel }}</h4>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                                     @foreach($catTotals as $name => $qty)
-                                        <div class="bg-gray-50 dark:bg-gray-700 rounded px-3 py-2 text-sm">
-                                            <span class="font-medium text-gray-900 dark:text-gray-100">{{ $qty }}</span>
-                                            <span class="text-gray-500 dark:text-gray-400 ml-1">{{ $name }}</span>
+                                        <div class="bg-base-200 rounded-sm px-3 py-2 text-sm">
+                                            <span class="font-medium text-base-content">{{ $qty }}</span>
+                                            <span class="text-base-content/60 ml-1">{{ $name }}</span>
                                         </div>
                                     @endforeach
                                 </div>
@@ -104,8 +104,8 @@
                         @endif
                     @endforeach
 
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <span class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                    <div class="mt-4 pt-4 border-t border-base-300">
+                        <span class="text-lg font-bold text-base-content">
                             Grand Total: {{ array_sum($totals) }} items
                         </span>
                     </div>
@@ -115,20 +115,20 @@
                 @foreach($families as $family)
                     @php $list = $shoppingLists[$family->id] ?? []; @endphp
                     @if(count($list) > 0)
-                        <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+                        <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
                             <div class="flex items-center justify-between mb-3">
-                                <h4 class="text-md font-medium text-gray-900 dark:text-gray-100">
+                                <h4 class="text-md font-medium text-base-content">
                                     #{{ $family->family_number }} — {{ $family->family_name }}
-                                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                                    <span class="text-sm font-normal text-base-content/60">
                                         ({{ $family->number_of_family_members }} members, {{ array_sum(array_column($list, 'quantity')) }} items)
                                     </span>
                                 </h4>
                             </div>
                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1">
                                 @foreach($list as $itemName => $info)
-                                    <div class="text-xs px-2 py-1 bg-gray-50 dark:bg-gray-700 rounded">
-                                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ $info['quantity'] }}</span>
-                                        <span class="text-gray-500 dark:text-gray-400">{{ $itemName }}</span>
+                                    <div class="text-xs px-2 py-1 bg-base-200 rounded-sm">
+                                        <span class="font-medium text-base-content">{{ $info['quantity'] }}</span>
+                                        <span class="text-base-content/60">{{ $itemName }}</span>
                                     </div>
                                 @endforeach
                             </div>
@@ -136,11 +136,11 @@
                     @endif
                 @endforeach
             @elseif(request()->anyFilled(['family_id', 'family_number_start']))
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center text-base-content/60">
                     No families match the selected filter.
                 </div>
             @else
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center text-gray-500 dark:text-gray-400">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center text-base-content/60">
                     Select a family or range above to generate a shopping list.
                     <br>
                     <span class="text-sm">{{ $groceryItems->count() }} grocery items configured in the formula.</span>
@@ -148,7 +148,7 @@
             @endif
 
             <div>
-                <a href="{{ route('santa.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                <a href="{{ route('santa.index') }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                     &larr; Back to Dashboard
                 </a>
             </div>

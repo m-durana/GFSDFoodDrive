@@ -2,14 +2,14 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                <h2 class="font-semibold text-xl text-base-content leading-tight">
                     Packing List:
                     @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
                         {{ $packingList->family?->family_name }}
                     @else
                         Family #{{ $packingList->family?->family_number }}
                     @endif
-                    <span class="text-sm font-normal text-gray-500 dark:text-gray-400">#{{ $packingList->family?->family_number }}</span>
+                    <span class="text-sm font-normal text-base-content/60">#{{ $packingList->family?->family_number }}</span>
                 </h2>
             </div>
             <div class="flex gap-2">
@@ -64,34 +64,34 @@
                 </div>
             @endif
             @if(session('error'))
-                <div class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm">
+                <div class="p-4 bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary/40 rounded-lg text-primary dark:text-primary text-sm">
                     {{ session('error') }}
                 </div>
             @endif
 
             <!-- Family info + progress -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="bg-base-100 rounded-lg shadow-sm p-6">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Family</h3>
-                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        <h3 class="text-sm font-medium text-base-content/60">Family</h3>
+                        <p class="mt-1 text-lg font-semibold text-base-content">
                             @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
                                 {{ $packingList->family?->family_name }}
                             @else
                                 Family #{{ $packingList->family?->family_number }}
                             @endif
                             @if($packingList->family?->is_severe_need)
-                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Severe Need</span>
+                                <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-sm text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary">Severe Need</span>
                             @endif
                         </p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                        <p class="text-sm text-base-content/60">
                             Family #{{ $packingList->family?->family_number }} |
                             {{ $packingList->family?->number_of_family_members ?? '?' }} members |
                             {{ $packingList->family?->children?->count() ?? 0 }} children
                         </p>
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                        <h3 class="text-sm font-medium text-base-content/60">Status</h3>
                         @php
                             $statusColors = [
                                 'pending' => 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-300',
@@ -104,58 +104,58 @@
                             {{ $packingList->status->label() }}
                         </span>
                         @if($packingList->verified_at)
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <p class="text-xs text-base-content/60 mt-1">
                                 Verified by {{ $packingList->verifier?->first_name }} at {{ $packingList->verified_at->format('M j, g:ia') }}
                             </p>
                         @endif
                     </div>
                     <div>
-                        <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Progress</h3>
+                        <h3 class="text-sm font-medium text-base-content/60">Progress</h3>
                         <div class="mt-2">
                             <div class="flex items-center gap-3">
                                 <div class="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-3">
                                     <div class="bg-green-500 h-3 rounded-full transition-all" style="width: {{ $progress['percentage'] }}%"></div>
                                 </div>
-                                <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $progress['percentage'] }}%</span>
+                                <span class="text-sm font-medium text-base-content/80">{{ $progress['percentage'] }}%</span>
                             </div>
-                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $progress['packed'] }} of {{ $progress['total'] }} items packed</p>
+                            <p class="text-xs text-base-content/60 mt-1">{{ $progress['packed'] }} of {{ $progress['total'] }} items packed</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Notes -->
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="bg-base-100 rounded-lg shadow-sm p-6">
                 <form method="POST" action="{{ route('packing.updateNotes', $packingList) }}" class="flex gap-3">
                     @csrf
                     <input type="text" name="notes" value="{{ $packingList->notes }}" placeholder="Coordinator notes (special requirements, dietary restrictions, etc.)"
-                        class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
+                        class="flex-1 rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-300 shadow-xs focus:border-primary focus:ring-primary text-sm">
                     <button type="submit" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm rounded-md transition">Save Notes</button>
                 </form>
             </div>
 
             <!-- Food Items -->
             @if($foodItems->count())
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden" x-data="sortTable()">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                <div class="bg-base-100 rounded-lg shadow-sm overflow-hidden" x-data="sortTable()">
+                    <div class="px-6 py-4 border-b border-base-300">
+                        <h3 class="text-lg font-medium text-base-content">
                             Food Items
-                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            <span class="text-sm font-normal text-base-content/60">
                                 ({{ $foodItems->filter(fn($i) => $i->isPacked())->count() }}/{{ $foodItems->count() }} packed)
                             </span>
                         </h3>
                     </div>
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
                                 <x-sort-th key="category">Category</x-sort-th>
                                 <x-sort-th key="item">Item</x-sort-th>
                                 <x-sort-th key="qty">Qty</x-sort-th>
                                 <x-sort-th key="status">Status</x-sort-th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-base-content/60 uppercase">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             @foreach($foodItems->sortBy('sort_order') as $item)
                                 @include('santa.packing._item-row', ['item' => $item, 'packingList' => $packingList])
                             @endforeach
@@ -166,38 +166,38 @@
 
             <!-- Gift Items -->
             @if($giftItems->count())
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden" x-data="sortTable()">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                <div class="bg-base-100 rounded-lg shadow-sm overflow-hidden" x-data="sortTable()">
+                    <div class="px-6 py-4 border-b border-base-300">
+                        <h3 class="text-lg font-medium text-base-content">
                             Gift Items
-                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            <span class="text-sm font-normal text-base-content/60">
                                 ({{ $giftItems->filter(fn($i) => $i->isPacked())->count() }}/{{ $giftItems->count() }} packed)
                             </span>
                         </h3>
                     </div>
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
                                 <x-sort-th key="child">Child</x-sort-th>
                                 <x-sort-th key="description">Description</x-sort-th>
                                 <x-sort-th key="qty">Qty</x-sort-th>
                                 <x-sort-th key="status">Status</x-sort-th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-base-content/60 uppercase">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             @foreach($giftItems->sortBy('sort_order') as $item)
-                                <tr class="{{ $item->isPacked() ? 'bg-green-50/50 dark:bg-green-900/10' : ($item->status === \App\Enums\PackingItemStatus::Unfulfilled ? 'bg-red-50/50 dark:bg-red-900/10' : '') }}">
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-gray-100" data-sort-value="{{ $item->child ? ($item->child->gender ?? 'Child') . ' ' . $item->child->age : '' }}">
+                                <tr class="{{ $item->isPacked() ? 'bg-green-50/50 dark:bg-green-900/10' : ($item->status === \App\Enums\PackingItemStatus::Unfulfilled ? 'bg-primary/5/50 dark:bg-primary/30/10' : '') }}">
+                                    <td class="px-4 py-2 text-sm text-base-content" data-sort-value="{{ $item->child ? ($item->child->gender ?? 'Child') . ' ' . $item->child->age : '' }}">
                                         @if($item->child)
                                             {{ $item->child->gender ?? 'Child' }}, age {{ $item->child->age }}
                                         @else
                                             —
                                         @endif
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300" data-sort-value="{{ $item->description }}">{{ $item->description }}</td>
+                                    <td class="px-4 py-2 text-sm text-base-content/80" data-sort-value="{{ $item->description }}">{{ $item->description }}</td>
                                     <td class="px-4 py-2 text-center text-sm" data-sort-value="{{ $item->quantity_packed }}">
-                                        <span class="{{ $item->quantity_packed >= $item->quantity_needed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400' }}">
+                                        <span class="{{ $item->quantity_packed >= $item->quantity_needed ? 'text-green-600 dark:text-green-400 font-medium' : 'text-base-content/60' }}">
                                             {{ $item->quantity_packed }}/{{ $item->quantity_needed }}
                                         </span>
                                     </td>
@@ -223,26 +223,26 @@
 
             <!-- Baby Supplies -->
             @if($babyItems->count())
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden" x-data="sortTable()">
-                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                <div class="bg-base-100 rounded-lg shadow-sm overflow-hidden" x-data="sortTable()">
+                    <div class="px-6 py-4 border-b border-base-300">
+                        <h3 class="text-lg font-medium text-base-content">
                             Baby Supplies
-                            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+                            <span class="text-sm font-normal text-base-content/60">
                                 ({{ $babyItems->filter(fn($i) => $i->isPacked())->count() }}/{{ $babyItems->count() }} packed)
                             </span>
                         </h3>
                     </div>
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
                                 <x-sort-th key="category">Category</x-sort-th>
                                 <x-sort-th key="item">Item</x-sort-th>
                                 <x-sort-th key="qty">Qty</x-sort-th>
                                 <x-sort-th key="status">Status</x-sort-th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-base-content/60 uppercase">Action</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             @foreach($babyItems->sortBy('sort_order') as $item)
                                 @include('santa.packing._item-row', ['item' => $item, 'packingList' => $packingList])
                             @endforeach
@@ -252,8 +252,8 @@
             @endif
 
             <div class="flex justify-between items-center">
-                <a href="{{ route('packing.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:underline">&larr; Back to all lists</a>
-                <div class="text-xs text-gray-400 dark:text-gray-500">
+                <a href="{{ route('packing.index') }}" class="text-sm text-base-content/60 hover:underline">&larr; Back to all lists</a>
+                <div class="text-xs text-base-content/50">
                     QR Token: {{ $packingList->qr_token }}
                 </div>
             </div>

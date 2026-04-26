@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-base-content leading-tight">
             Gift History — #{{ $child->family->family_number ?? '?' }} {{ $child->gender }}, age {{ $child->age }}
         </h2>
     </x-slot>
@@ -47,38 +47,38 @@
             </div>
 
             <!-- Transaction History -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Warehouse Transaction History</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">All warehouse transactions linked to this child</p>
+            <div class="bg-base-100 shadow-xs sm:rounded-lg">
+                <div class="p-4 border-b border-base-300">
+                    <h3 class="text-lg font-medium text-base-content">Warehouse Transaction History</h3>
+                    <p class="text-sm text-base-content/60">All warehouse transactions linked to this child</p>
                 </div>
 
                 @if($transactions->isEmpty())
-                    <div class="p-8 text-center text-gray-500 dark:text-gray-400">
+                    <div class="p-8 text-center text-base-content/60">
                         No warehouse transactions recorded for this child.
                     </div>
                 @else
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700">
-                                    <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Date</th>
-                                    <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Category</th>
-                                    <th class="text-right py-3 px-4 text-gray-500 dark:text-gray-400">Qty</th>
-                                    <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Source</th>
-                                    <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Scanned By</th>
-                                    <th class="text-left py-3 px-4 text-gray-500 dark:text-gray-400">Notes</th>
+                                <tr class="border-b border-base-300">
+                                    <th class="text-left py-3 px-4 text-base-content/60">Date</th>
+                                    <th class="text-left py-3 px-4 text-base-content/60">Category</th>
+                                    <th class="text-right py-3 px-4 text-base-content/60">Qty</th>
+                                    <th class="text-left py-3 px-4 text-base-content/60">Source</th>
+                                    <th class="text-left py-3 px-4 text-base-content/60">Scanned By</th>
+                                    <th class="text-left py-3 px-4 text-base-content/60">Notes</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($transactions as $tx)
                                     <tr class="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                        <td class="py-2 px-4 text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ $tx->created_at->format('M j, g:ia') }}</td>
-                                        <td class="py-2 px-4 text-gray-900 dark:text-gray-100">{{ $tx->category?->name ?? '—' }}</td>
-                                        <td class="text-right py-2 px-4 font-medium text-gray-900 dark:text-gray-100">{{ $tx->quantity }}</td>
-                                        <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $tx->source ?? '—' }}</td>
-                                        <td class="py-2 px-4 text-gray-600 dark:text-gray-400">{{ $tx->scanner?->username ?? '—' }}</td>
-                                        <td class="py-2 px-4 text-gray-500 dark:text-gray-400">{{ $tx->notes ?? '' }}</td>
+                                        <td class="py-2 px-4 text-base-content/70 whitespace-nowrap">{{ $tx->created_at->format('M j, g:ia') }}</td>
+                                        <td class="py-2 px-4 text-base-content">{{ $tx->category?->name ?? '—' }}</td>
+                                        <td class="text-right py-2 px-4 font-medium text-base-content">{{ $tx->quantity }}</td>
+                                        <td class="py-2 px-4 text-base-content/70">{{ $tx->source ?? '—' }}</td>
+                                        <td class="py-2 px-4 text-base-content/70">{{ $tx->scanner?->username ?? '—' }}</td>
+                                        <td class="py-2 px-4 text-base-content/60">{{ $tx->notes ?? '' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

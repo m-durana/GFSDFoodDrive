@@ -88,15 +88,15 @@
             <div class="w-full max-w-2xl">
                 <div class="flex items-center justify-center gap-3 mb-3">
                     <p class="text-sm text-gray-500">Select a gift category (or press shortcut key):</p>
-                    <button onclick="enterReassignMode()" id="reassign-btn" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Reassign Shortcuts</button>
-                    <button onclick="exportShortcuts()" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Export</button>
-                    <label class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600 cursor-pointer">
+                    <button onclick="enterReassignMode()" id="reassign-btn" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded-sm hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Reassign Shortcuts</button>
+                    <button onclick="exportShortcuts()" class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded-sm hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600">Export</button>
+                    <label class="text-xs px-2 py-1 bg-gray-700 text-gray-400 rounded-sm hover:bg-gray-600 hover:text-gray-200 transition border border-gray-600 cursor-pointer">
                         Import
                         <input type="file" accept=".json" onchange="importShortcuts(event)" class="hidden">
                     </label>
                 </div>
                 <div id="reassign-banner" class="hidden mb-3 text-center text-sm text-yellow-400 bg-yellow-900/30 border border-yellow-700 rounded-lg px-4 py-2">
-                    Reassign mode: click a category, then press a key (a-z, 0-9). Press <kbd class="px-1 bg-gray-700 rounded">Esc</kbd> to finish.
+                    Reassign mode: click a category, then press a key (a-z, 0-9). Press <kbd class="px-1 bg-gray-700 rounded-sm">Esc</kbd> to finish.
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kiosk-categories">
                     @php $defaultKeys = array_merge(range('a','z'), array_map('strval', range(0,9))); @endphp
@@ -127,7 +127,7 @@
         </div>
 
         {{-- Right: Persistent Sidebar — Additional Details --}}
-        <div id="details-sidebar" class="w-72 flex-shrink-0 bg-gray-800 border-l border-gray-700 p-4 space-y-4 overflow-y-auto sticky top-0 h-screen">
+        <div id="details-sidebar" class="w-72 shrink-0 bg-gray-800 border-l border-gray-700 p-4 space-y-4 overflow-y-auto sticky top-0 h-screen">
             <div class="flex items-center justify-between">
                 <h3 class="text-sm font-medium text-gray-300">Additional Details</h3>
                 <span id="details-active-badge" class="hidden px-2 py-0.5 bg-purple-600 text-white text-xs rounded-full">Active</span>
@@ -482,7 +482,7 @@
         }
 
         function showFeedback(msg, color) {
-            const colors = { purple: 'text-purple-400', green: 'text-green-400', red: 'text-red-400', yellow: 'text-yellow-400' };
+            const colors = { purple: 'text-purple-400', green: 'text-green-400', red: 'text-primary', yellow: 'text-yellow-400' };
             feedback.className = 'w-full max-w-lg text-center text-lg min-h-[60px] font-medium ' + (colors[color] || 'text-gray-400');
             feedback.textContent = msg;
             setTimeout(() => { feedback.textContent = ''; feedback.className = 'w-full max-w-lg text-center text-lg min-h-[60px]'; }, 3000);

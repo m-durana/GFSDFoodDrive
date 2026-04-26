@@ -37,7 +37,7 @@
     <body class="bg-gray-50 min-h-screen" x-data="packingApp()" x-init="init()">
         {{-- Volunteer Check-In (non-logged-in users) --}}
         @guest
-        <div x-show="!volunteerName" x-transition class="fixed inset-0 bg-gray-900/95 z-[60] flex items-center justify-center px-4">
+        <div x-show="!volunteerName" x-transition class="fixed inset-0 bg-gray-900/95 z-60 flex items-center justify-center px-4">
             <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
                 <h2 class="text-lg font-bold text-gray-900 mb-1">Welcome, Volunteer!</h2>
                 <p class="text-sm text-gray-500 mb-5">Enter your name to start packing.</p>
@@ -115,7 +115,7 @@
 
         {{-- Scan result toast --}}
         <div x-show="toast.show" x-transition
-             :class="toast.success ? 'bg-green-500' : 'bg-red-500'"
+             :class="toast.success ? 'bg-green-500' : 'bg-primary'"
              class="fixed top-16 left-4 right-4 z-50 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-center"
              x-text="toast.message">
         </div>
@@ -129,23 +129,23 @@
                         Food Items (<span x-text="foodItems.length"></span>)
                     </h2>
                     <template x-for="item in foodItems" :key="item.id">
-                        <div :class="isPacked(item) ? 'item-packed' : (item.status === 'unfulfilled' ? 'border-red-200 bg-red-50' : '')"
+                        <div :class="isPacked(item) ? 'item-packed' : (item.status === 'unfulfilled' ? 'border-primary/30 bg-primary/5' : '')"
                              :id="'item-' + item.id"
                              class="bg-white rounded-lg border px-3 py-2.5 flex items-center gap-3">
                             <button @click="quickPackItem(item)"
                                     :disabled="isPacked(item) || item.status === 'unfulfilled'"
-                                    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
-                                    :class="isPacked(item) ? 'bg-green-500 border-green-500 text-white' : (item.status === 'unfulfilled' ? 'border-red-300 bg-red-100' : 'border-gray-300 hover:border-blue-400')">
+                                    class="shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
+                                    :class="isPacked(item) ? 'bg-green-500 border-green-500 text-white' : (item.status === 'unfulfilled' ? 'border-primary/40 bg-primary/10' : 'border-gray-300 hover:border-blue-400')">
                                 <svg x-show="isPacked(item)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                <span x-show="item.status === 'unfulfilled' && !isPacked(item)" class="text-red-400 text-xs font-bold">!</span>
+                                <span x-show="item.status === 'unfulfilled' && !isPacked(item)" class="text-primary text-xs font-bold">!</span>
                             </button>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate" x-text="item.description"></p>
                                 <p class="text-xs text-gray-500" x-text="item.category || ''"></p>
                             </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center gap-2 shrink-0">
                                 <button x-show="!isPacked(item)" @click="openSubstitutionDrawer(item)"
-                                        class="text-xs text-yellow-600 hover:text-yellow-700 font-medium px-1.5 py-0.5 border border-yellow-300 rounded">
+                                        class="text-xs text-yellow-600 hover:text-yellow-700 font-medium px-1.5 py-0.5 border border-yellow-300 rounded-sm">
                                     Sub
                                 </button>
                                 <div class="text-sm font-medium text-right"
@@ -165,23 +165,23 @@
                         Gifts (<span x-text="giftItems.length"></span>)
                     </h2>
                     <template x-for="item in giftItems" :key="item.id">
-                        <div :class="isPacked(item) ? 'item-packed' : (item.status === 'unfulfilled' ? 'border-red-200 bg-red-50' : '')"
+                        <div :class="isPacked(item) ? 'item-packed' : (item.status === 'unfulfilled' ? 'border-primary/30 bg-primary/5' : '')"
                              :id="'item-' + item.id"
                              class="bg-white rounded-lg border px-3 py-2.5 flex items-center gap-3">
                             <button @click="quickPackItem(item)"
                                     :disabled="isPacked(item) || item.status === 'unfulfilled'"
-                                    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
-                                    :class="isPacked(item) ? 'bg-green-500 border-green-500 text-white' : (item.status === 'unfulfilled' ? 'border-red-300 bg-red-100' : 'border-gray-300 hover:border-blue-400')">
+                                    class="shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
+                                    :class="isPacked(item) ? 'bg-green-500 border-green-500 text-white' : (item.status === 'unfulfilled' ? 'border-primary/40 bg-primary/10' : 'border-gray-300 hover:border-blue-400')">
                                 <svg x-show="isPacked(item)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-                                <span x-show="item.status === 'unfulfilled' && !isPacked(item)" class="text-red-400 text-xs font-bold">!</span>
+                                <span x-show="item.status === 'unfulfilled' && !isPacked(item)" class="text-primary text-xs font-bold">!</span>
                             </button>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate" x-text="item.description"></p>
-                                <span x-show="item.status === 'unfulfilled'" class="text-xs text-red-600 font-medium">Unfulfilled</span>
+                                <span x-show="item.status === 'unfulfilled'" class="text-xs text-primary font-medium">Unfulfilled</span>
                             </div>
-                            <div class="flex items-center gap-2 flex-shrink-0">
+                            <div class="flex items-center gap-2 shrink-0">
                                 <button x-show="!isPacked(item)" @click="openSubstitutionDrawer(item)"
-                                        class="text-xs text-yellow-600 hover:text-yellow-700 font-medium px-1.5 py-0.5 border border-yellow-300 rounded">
+                                        class="text-xs text-yellow-600 hover:text-yellow-700 font-medium px-1.5 py-0.5 border border-yellow-300 rounded-sm">
                                     Sub
                                 </button>
                                 <div class="text-sm font-medium text-right"
@@ -206,14 +206,14 @@
                              class="bg-white rounded-lg border px-3 py-2.5 flex items-center gap-3">
                             <button @click="quickPackItem(item)"
                                     :disabled="isPacked(item)"
-                                    class="flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
+                                    class="shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition"
                                     :class="isPacked(item) ? 'bg-green-500 border-green-500 text-white' : 'border-gray-300 hover:border-blue-400'">
                                 <svg x-show="isPacked(item)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
                             </button>
                             <div class="flex-1 min-w-0">
                                 <p class="text-sm font-medium text-gray-900 truncate" x-text="item.description"></p>
                             </div>
-                            <div class="text-sm font-medium text-right flex-shrink-0"
+                            <div class="text-sm font-medium text-right shrink-0"
                                  :class="item.quantity_packed >= item.quantity_needed ? 'text-green-600' : 'text-gray-500'">
                                 <span x-text="item.quantity_packed"></span>/<span x-text="item.quantity_needed"></span>
                             </div>
@@ -273,7 +273,7 @@
                 </template>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes <span class="text-primary">*</span></label>
                     <textarea x-model="substitution.notes" rows="2" placeholder="Why this substitution?"
                               class="w-full text-sm border rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
@@ -606,7 +606,7 @@
     {{-- Authenticated general scanner — show list of active packing lists --}}
     <x-app-layout>
         <x-slot name="header">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Mobile Packing Scanner
             </h2>
         </x-slot>
@@ -614,12 +614,12 @@
         <div class="py-12">
             <div class="max-w-lg mx-auto sm:px-6 lg:px-8 space-y-6">
                 {{-- QR scan option --}}
-                <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6 text-center">
-                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-500 dark:text-gray-400 mb-3">
+                <div class="bg-base-100 shadow-xs sm:rounded-lg p-6 text-center">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-base-200 rounded-lg text-sm text-base-content/60 mb-3">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" /></svg>
                         Scan a packing list QR code to begin
                     </div>
-                    <p class="text-xs text-gray-400 dark:text-gray-500">Or select a list below to start packing</p>
+                    <p class="text-xs text-base-content/50">Or select a list below to start packing</p>
                 </div>
 
                 {{-- Active packing lists --}}
@@ -632,17 +632,17 @@
                 @endphp
 
                 @if($activeLists->count())
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg overflow-hidden">
-                        <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Active Packing Lists ({{ $activeLists->count() }})</h3>
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg overflow-hidden">
+                        <div class="px-4 py-3 border-b border-base-300">
+                            <h3 class="text-sm font-semibold text-base-content/80">Active Packing Lists ({{ $activeLists->count() }})</h3>
                         </div>
-                        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <div class="divide-y divide-base-300">
                             @foreach($activeLists as $list)
                                 <a href="{{ route('warehouse.mobile-scan', ['token' => $list->qr_token]) }}"
                                    class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Family #{{ $list->family?->family_number }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                                        <p class="text-sm font-medium text-base-content">Family #{{ $list->family?->family_number }}</p>
+                                        <p class="text-xs text-base-content/60">
                                             {{ $list->items_count ?? $list->items()->count() }} items
                                             &middot;
                                             {{ $list->status->label() }}
@@ -665,9 +665,9 @@
                         </div>
                     </div>
                 @else
-                    <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-8 text-center">
-                        <p class="text-gray-500 dark:text-gray-400">No active packing lists. Generate packing lists from the
-                            <a href="{{ route('packing.index') }}" class="text-red-600 dark:text-red-400 hover:underline">packing dashboard</a>.
+                    <div class="bg-base-100 shadow-xs sm:rounded-lg p-8 text-center">
+                        <p class="text-base-content/60">No active packing lists. Generate packing lists from the
+                            <a href="{{ route('packing.index') }}" class="text-primary dark:text-primary hover:underline">packing dashboard</a>.
                         </p>
                     </div>
                 @endif

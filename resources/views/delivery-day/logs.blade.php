@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Delivery Logs
             </h2>
             <a href="{{ route('delivery.index') }}"
@@ -15,39 +15,39 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Date filter -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-4">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg p-4">
                 <form method="GET" action="{{ route('delivery.logs') }}" class="flex items-end space-x-3">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Date</label>
-                        <select name="date" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                        <label class="block text-xs font-medium text-base-content/60 mb-1">Date</label>
+                        <select name="date" class="rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                             <option value="">All dates</option>
                             @foreach($logDates as $date)
                                 <option value="{{ $date }}" {{ request('date') == $date ? 'selected' : '' }}>{{ $date }}</option>
                             @endforeach
                         </select>
                     </div>
-                    <button type="submit" class="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-medium transition">
+                    <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                         Filter
                     </button>
-                    <a href="{{ route('delivery.logs') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700">Reset</a>
+                    <a href="{{ route('delivery.logs') }}" class="text-sm text-base-content/60 hover:text-gray-700">Reset</a>
                 </form>
             </div>
 
             <!-- Logs table -->
-            <div class="bg-white dark:bg-gray-800 shadow-sm sm:rounded-lg p-6">
+            <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
                 @if($logs->count() > 0)
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
+                        <table class="min-w-full divide-y divide-base-300">
+                            <thead class="bg-base-200">
                                 <tr>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Time</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Family</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">By</th>
-                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Notes</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Time</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Family</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Status</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">By</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-base-content/60 uppercase">Notes</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="divide-y divide-base-300">
                                 @foreach($logs as $log)
                                     <tr>
                                         <td class="px-3 py-2 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
@@ -67,7 +67,7 @@
                                                 $logStatusColors = [
                                                     'delivered' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
                                                     'left_at_door' => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-                                                    'no_answer' => 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+                                                    'no_answer' => 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary',
                                                     'attempted' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                                                     'pending' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
                                                     'in_transit' => 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
@@ -94,12 +94,12 @@
                         {{ $logs->withQueryString()->links() }}
                     </div>
                 @else
-                    <p class="text-center text-gray-500 dark:text-gray-400 py-8">No delivery logs yet.</p>
+                    <p class="text-center text-base-content/60 py-8">No delivery logs yet.</p>
                 @endif
             </div>
 
             <div>
-                <a href="{{ route('delivery.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                <a href="{{ route('delivery.index') }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                     &larr; Back to Delivery Day
                 </a>
             </div>

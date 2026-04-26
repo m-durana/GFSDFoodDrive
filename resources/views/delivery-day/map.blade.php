@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Live Delivery Map
             </h2>
             <a href="{{ route('delivery.index') }}"
@@ -17,19 +17,19 @@
                 <!-- Filter sidebar -->
                 <div class="w-56 shrink-0 space-y-3" id="sidebar">
                     <!-- Legend -->
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
-                        <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Status</h4>
+                    <div class="bg-base-100 shadow-xs rounded-lg p-3">
+                        <h4 class="text-xs font-semibold text-base-content/80 mb-2">Status</h4>
                         <div class="space-y-1.5">
                             <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                <input type="checkbox" class="status-filter rounded text-yellow-500" value="pending" checked>
+                                <input type="checkbox" class="status-filter rounded-sm text-yellow-500" value="pending" checked>
                                 <span class="w-3 h-3 rounded-full bg-yellow-500"></span> Pending
                             </label>
                             <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                <input type="checkbox" class="status-filter rounded text-orange-500" value="in_transit" checked>
+                                <input type="checkbox" class="status-filter rounded-sm text-orange-500" value="in_transit" checked>
                                 <span class="w-3 h-3 rounded-full bg-orange-500"></span> In Transit
                             </label>
                             <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                <input type="checkbox" class="status-filter rounded text-green-500" value="delivered" checked>
+                                <input type="checkbox" class="status-filter rounded-sm text-green-500" value="delivered" checked>
                                 <span class="w-3 h-3 rounded-full bg-green-500"></span> Delivered
                             </label>
                         </div>
@@ -37,16 +37,16 @@
 
                     <!-- Team filters -->
                     @if($teams->count() > 0)
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
-                            <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Teams</h4>
+                        <div class="bg-base-100 shadow-xs rounded-lg p-3">
+                            <h4 class="text-xs font-semibold text-base-content/80 mb-2">Teams</h4>
                             <div class="space-y-1.5">
                                 <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                    <input type="checkbox" class="team-filter rounded" value="" checked>
+                                    <input type="checkbox" class="team-filter rounded-sm" value="" checked>
                                     <span class="w-3 h-3 rounded-full bg-gray-400"></span> All / Unassigned
                                 </label>
                                 @foreach($teams as $team)
                                     <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                        <input type="checkbox" class="team-filter rounded" value="{{ $team->id }}" checked>
+                                        <input type="checkbox" class="team-filter rounded-sm" value="{{ $team->id }}" checked>
                                         <span class="w-3 h-3 rounded-full" style="background: {{ $team->color ?? '#6b7280' }}"></span>
                                         {{ $team->name }}
                                     </label>
@@ -57,12 +57,12 @@
 
                     <!-- Route filters -->
                     @if($routes->count() > 0)
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
-                            <h4 class="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Routes</h4>
+                        <div class="bg-base-100 shadow-xs rounded-lg p-3">
+                            <h4 class="text-xs font-semibold text-base-content/80 mb-2">Routes</h4>
                             <div class="space-y-1.5">
                                 @foreach($routes as $route)
                                     <label class="flex items-center gap-2 text-xs cursor-pointer">
-                                        <input type="checkbox" class="route-filter rounded" value="{{ $route->id }}" checked>
+                                        <input type="checkbox" class="route-filter rounded-sm" value="{{ $route->id }}" checked>
                                         {{ $route->name }}
                                     </label>
                                 @endforeach
@@ -70,25 +70,25 @@
                         </div>
                     @endif
 
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-3">
+                    <div class="bg-base-100 shadow-xs rounded-lg p-3">
                         <label class="flex items-center gap-2 text-xs cursor-pointer">
-                            <input type="checkbox" id="showRouteLines" class="rounded" checked>
+                            <input type="checkbox" id="showRouteLines" class="rounded-sm" checked>
                             Show route lines
                         </label>
                         <label class="flex items-center gap-2 text-xs cursor-pointer mt-1.5">
-                            <input type="checkbox" id="showDrivers" class="rounded" checked>
+                            <input type="checkbox" id="showDrivers" class="rounded-sm" checked>
                             Show drivers
                         </label>
                     </div>
 
-                    <div class="text-xs text-gray-400 dark:text-gray-500 px-1" id="last-update">Updating...</div>
+                    <div class="text-xs text-base-content/50 px-1" id="last-update">Updating...</div>
                 </div>
 
                 <!-- Map -->
                 <div class="flex-1">
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden relative" style="height: 75vh;">
+                    <div class="bg-base-100 shadow-xs rounded-lg overflow-hidden relative" style="height: 75vh;">
                         <div id="map" style="width: 100%; height: 100%;"></div>
-                        <div id="no-data-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100/80 dark:bg-gray-800/80 z-[1000]">
+                        <div id="no-data-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100/80 dark:bg-gray-800/80 z-1000">
                             <div class="text-center p-8">
                                 <p class="text-lg font-medium text-gray-600 dark:text-gray-300">No geocoded families</p>
                                 <p class="text-sm text-gray-400 mt-2">
@@ -103,7 +103,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-4 right-4 z-[2000] hidden">
+    <div id="toast" class="fixed bottom-4 right-4 z-2000 hidden">
         <div class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
     </div>
 

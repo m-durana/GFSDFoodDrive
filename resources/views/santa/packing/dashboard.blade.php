@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Packing Dashboard
             </h2>
             <div class="flex items-center gap-2">
@@ -24,7 +24,7 @@
             <template x-if="stats.fulfillment_alert === true">
                 <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                     <div class="flex items-center gap-3">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                        <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                             <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
                         </div>
                         <div>
@@ -41,49 +41,49 @@
 
             {{-- Row 1: KPI Cards --}}
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-900 dark:text-gray-100" x-text="stats.total_families">-</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Families</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content" x-text="stats.total_families">-</div>
+                    <div class="text-xs text-base-content/60 mt-1">Total Families</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-gray-500 dark:text-gray-400" x-text="stats.not_started">-</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Not Started</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-base-content/60" x-text="stats.not_started">-</div>
+                    <div class="text-xs text-base-content/60 mt-1">Not Started</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400" x-text="stats.in_progress">-</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">In Progress</div>
+                    <div class="text-xs text-base-content/60 mt-1">In Progress</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" x-text="stats.packed">-</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Complete / QA Ready</div>
+                    <div class="text-xs text-base-content/60 mt-1">Complete / QA Ready</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
                     <div class="text-2xl font-bold text-green-600 dark:text-green-400" x-text="stats.verified">-</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Verified</div>
+                    <div class="text-xs text-base-content/60 mt-1">Verified</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-                    <div class="text-2xl font-bold text-red-600 dark:text-red-400"><span x-text="stats.fulfillment_rate">-</span>%</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Fulfillment Rate</div>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-4">
+                    <div class="text-2xl font-bold text-primary dark:text-primary"><span x-text="stats.fulfillment_rate">-</span>%</div>
+                    <div class="text-xs text-base-content/60 mt-1">Fulfillment Rate</div>
                 </div>
             </div>
 
             {{-- Unfulfilled Slots Alert --}}
             <template x-if="stats.unfulfilled_items > 0">
-                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div class="bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary/40 rounded-lg p-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+                            <div class="shrink-0 w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/30/40 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-primary dark:text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-red-800 dark:text-red-300">
+                                <p class="text-sm font-semibold text-primary dark:text-primary">
                                     <span x-text="stats.unfulfilled_items"></span> Unfulfilled Slots across
                                     <span x-text="stats.unfulfilled_families"></span> families
                                 </p>
-                                <p class="text-xs text-red-600 dark:text-red-400">Items needing coordinator review (dietary conflicts, missing gifts, etc.)</p>
+                                <p class="text-xs text-primary dark:text-primary">Items needing coordinator review (dietary conflicts, missing gifts, etc.)</p>
                             </div>
                         </div>
-                        <a href="{{ route('packing.index', ['status' => 'unfulfilled']) }}" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition">
+                        <a href="{{ route('packing.index', ['status' => 'unfulfilled']) }}" class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-primary text-white hover:bg-primary transition">
                             View Affected
                         </a>
                     </div>
@@ -92,14 +92,14 @@
 
             {{-- Row 2: Charts --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Status Breakdown</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-medium text-base-content/80 mb-4">Status Breakdown</h3>
                     <div class="relative" style="height: 260px">
                         <canvas id="statusChart"></canvas>
                     </div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Category Progress</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-medium text-base-content/80 mb-4">Category Progress</h3>
                     <div class="relative" style="height: 260px">
                         <canvas id="categoryChart"></canvas>
                     </div>
@@ -109,27 +109,27 @@
             {{-- Row 3: Global Metrics + Session/QA --}}
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {{-- Today's Metrics with Trend --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Today's Metrics</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-medium text-base-content/80 mb-4">Today's Metrics</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <div class="text-3xl font-bold text-gray-900 dark:text-gray-100" x-text="stats.total_items_packed_today">0</div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Items Packed Today</div>
+                            <div class="text-3xl font-bold text-base-content" x-text="stats.total_items_packed_today">0</div>
+                            <div class="text-xs text-base-content/60 mt-1">Items Packed Today</div>
                         </div>
                         <div>
                             <div class="flex items-center gap-1">
-                                <span class="text-3xl font-bold text-gray-900 dark:text-gray-100" x-text="stats.overall_items_per_hour">0</span>
+                                <span class="text-3xl font-bold text-base-content" x-text="stats.overall_items_per_hour">0</span>
                                 <template x-if="stats.trend?.trend_direction === 'up'">
                                     <svg class="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" /></svg>
                                 </template>
                                 <template x-if="stats.trend?.trend_direction === 'down'">
-                                    <svg class="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5l15 15m0 0V8.25m0 11.25H8.25" /></svg>
+                                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5l15 15m0 0V8.25m0 11.25H8.25" /></svg>
                                 </template>
                                 <template x-if="stats.trend?.trend_direction === 'flat'">
                                     <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3" /></svg>
                                 </template>
                             </div>
-                            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Items / Hour
+                            <div class="text-xs text-base-content/60 mt-1">Items / Hour
                                 <span x-show="stats.trend" class="text-gray-400" x-text="'vs yesterday'"></span>
                             </div>
                         </div>
@@ -137,9 +137,9 @@
                 </div>
 
                 {{-- Volunteer Sessions --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Volunteer Activity</h3>
+                        <h3 class="text-sm font-medium text-base-content/80">Volunteer Activity</h3>
                         <template x-if="stats.trend?.active_sessions > 0">
                             <span class="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
@@ -148,18 +148,18 @@
                         </template>
                     </div>
                     <div class="space-y-3">
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <div class="text-sm text-base-content/70">
                             <span x-text="stats.trend?.today_sessions_count || 0"></span> sessions today
                         </div>
-                        <div class="text-sm text-gray-600 dark:text-gray-400">
+                        <div class="text-sm text-base-content/70">
                             <span x-text="(stats.volunteers || []).length"></span> volunteers active today
                         </div>
                     </div>
                 </div>
 
                 {{-- QA Ready --}}
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Ready for QA Verification</h3>
+                <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
+                    <h3 class="text-sm font-medium text-base-content/80 mb-4">Ready for QA Verification</h3>
                     <template x-if="stats.packed > 0">
                         <div>
                             <div class="flex items-center gap-2 mb-3">
@@ -175,19 +175,19 @@
                         </div>
                     </template>
                     <template x-if="stats.packed == 0">
-                        <p class="text-sm text-gray-500 dark:text-gray-400">No lists awaiting QA verification.</p>
+                        <p class="text-sm text-base-content/60">No lists awaiting QA verification.</p>
                     </template>
                 </div>
             </div>
 
             {{-- Row 4: Volunteer Stats --}}
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 overflow-hidden">
                 <div class="p-6 pb-2">
-                    <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300">Volunteer Activity (Today)</h3>
+                    <h3 class="text-sm font-medium text-base-content/80">Volunteer Activity (Today)</h3>
                 </div>
                 <div class="overflow-x-auto" x-data="sortTable()">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
+                    <table class="min-w-full divide-y divide-base-300">
+                        <thead class="bg-base-200">
                             <tr>
                                 <x-sort-th key="name">Volunteer</x-sort-th>
                                 <x-sort-th key="items_packed">Items Packed</x-sort-th>
@@ -196,19 +196,19 @@
                                 <x-sort-th key="last_packed_at">Last Active</x-sort-th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="divide-y divide-base-300">
                             <template x-for="v in stats.volunteers || []" :key="v.id">
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100" x-text="v.name" data-sort-value="v.name"></td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100" x-text="v.items_packed" :data-sort-value="v.items_packed"></td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100" x-text="v.lists_worked" :data-sort-value="v.lists_worked"></td>
-                                    <td class="px-6 py-3 text-sm text-gray-900 dark:text-gray-100" x-text="v.items_per_hour" :data-sort-value="v.items_per_hour"></td>
-                                    <td class="px-6 py-3 text-sm text-gray-500 dark:text-gray-400" x-text="v.last_packed_at ? new Date(v.last_packed_at).toLocaleTimeString() : '-'"></td>
+                                    <td class="px-6 py-3 text-sm text-base-content" x-text="v.name" data-sort-value="v.name"></td>
+                                    <td class="px-6 py-3 text-sm text-base-content" x-text="v.items_packed" :data-sort-value="v.items_packed"></td>
+                                    <td class="px-6 py-3 text-sm text-base-content" x-text="v.lists_worked" :data-sort-value="v.lists_worked"></td>
+                                    <td class="px-6 py-3 text-sm text-base-content" x-text="v.items_per_hour" :data-sort-value="v.items_per_hour"></td>
+                                    <td class="px-6 py-3 text-sm text-base-content/60" x-text="v.last_packed_at ? new Date(v.last_packed_at).toLocaleTimeString() : '-'"></td>
                                 </tr>
                             </template>
                             <template x-if="!stats.volunteers || stats.volunteers.length === 0">
                                 <tr>
-                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">No volunteer activity recorded today.</td>
+                                    <td colspan="5" class="px-6 py-4 text-center text-sm text-base-content/60">No volunteer activity recorded today.</td>
                                 </tr>
                             </template>
                         </tbody>
@@ -217,7 +217,7 @@
             </div>
 
             {{-- Auto-refresh indicator --}}
-            <div class="text-center text-xs text-gray-400 dark:text-gray-500">
+            <div class="text-center text-xs text-base-content/50">
                 Auto-refreshes every 20 seconds &middot; Last updated: <span x-text="lastUpdated"></span>
             </div>
         </div>
@@ -230,7 +230,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100 translate-x-0"
                      x-transition:leave-end="opacity-0 translate-x-4">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                     <span class="text-sm" x-text="toast.message"></span>
                 </div>
             </template>

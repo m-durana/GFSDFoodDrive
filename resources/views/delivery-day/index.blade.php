@@ -1,18 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 Delivery Day
                 <x-hint key="delivery-dispatch" text="Manage deliveries in real-time. Assign drivers to auto-create optimized routes, track progress on the live map, and update delivery statuses." />
                 <x-live-indicator class="ml-3" />
             </h2>
             <div class="flex items-center gap-2">
                 <button onclick="openQuickAssign()"
-                   class="inline-flex items-center px-3 py-1.5 bg-red-700 text-white rounded-md hover:bg-red-600 text-xs font-medium transition">
+                   class="inline-flex items-center px-3 py-1.5 bg-primary text-white rounded-md hover:opacity-90 text-xs font-medium transition">
                     <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Assign Driver
                     @if($routingStats['eligible'] > 0)
-                        <span class="ml-1.5 bg-red-900 text-red-200 text-[10px] px-1.5 py-0.5 rounded-full">{{ $routingStats['eligible'] }}</span>
+                        <span class="ml-1.5 bg-primary/30 text-primary-content/80 text-[10px] px-1.5 py-0.5 rounded-full">{{ $routingStats['eligible'] }}</span>
                     @endif
                 </button>
                 {{-- Location sharing toggle --}}
@@ -35,37 +35,37 @@
         <div class="max-w-[1600px] mx-auto sm:px-4 lg:px-6 space-y-3">
 
             @if(session('success'))
-                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded text-sm">
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 px-4 py-3 rounded-sm text-sm">
                     {{ session('success') }}
                 </div>
             @endif
             @if(session('error'))
-                <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded text-sm">
+                <div class="bg-primary/5 dark:bg-primary/20 border border-primary/30 dark:border-primary text-primary dark:text-primary px-4 py-3 rounded-sm text-sm">
                     {{ session('error') }}
                 </div>
             @endif
 
             <!-- Stats cards -->
             <div class="grid grid-cols-5 gap-2">
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2.5 text-center">
-                    <div class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ $stats['total'] }}</div>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Total</div>
+                <div class="bg-base-100 shadow-xs rounded-lg p-2.5 text-center">
+                    <div class="text-xl font-bold text-base-content">{{ $stats['total'] }}</div>
+                    <div class="text-[10px] text-base-content/60 uppercase tracking-wide">Total</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2.5 text-center">
+                <div class="bg-base-100 shadow-xs rounded-lg p-2.5 text-center">
                     <div class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ $stats['needs_delivery'] }}</div>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Need Delivery</div>
+                    <div class="text-[10px] text-base-content/60 uppercase tracking-wide">Need Delivery</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2.5 text-center">
+                <div class="bg-base-100 shadow-xs rounded-lg p-2.5 text-center">
                     <div class="text-xl font-bold text-yellow-600 dark:text-yellow-400">{{ $stats['pending'] }}</div>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Pending</div>
+                    <div class="text-[10px] text-base-content/60 uppercase tracking-wide">Pending</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2.5 text-center">
+                <div class="bg-base-100 shadow-xs rounded-lg p-2.5 text-center">
                     <div class="text-xl font-bold text-orange-600 dark:text-orange-400">{{ $stats['in_transit'] }}</div>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">In Transit</div>
+                    <div class="text-[10px] text-base-content/60 uppercase tracking-wide">In Transit</div>
                 </div>
-                <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-2.5 text-center">
+                <div class="bg-base-100 shadow-xs rounded-lg p-2.5 text-center">
                     <div class="text-xl font-bold text-green-600 dark:text-green-400">{{ $stats['delivered'] }}</div>
-                    <div class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wide">Delivered</div>
+                    <div class="text-[10px] text-base-content/60 uppercase tracking-wide">Delivered</div>
                 </div>
             </div>
 
@@ -74,15 +74,15 @@
 
                 <!-- Left: Live Map -->
                 <div class="w-full lg:w-1/2 xl:w-7/12 flex flex-col min-h-0">
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
-                        <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
-                            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">Live Map</span>
+                    <div class="bg-base-100 shadow-xs rounded-lg overflow-hidden flex-1 flex flex-col min-h-0">
+                        <div class="px-3 py-2 border-b border-base-300 flex items-center justify-between shrink-0">
+                            <span class="text-xs font-medium text-base-content/80">Live Map</span>
                             <div class="flex items-center gap-3 text-[10px] text-gray-400">
                                 <label class="flex items-center gap-1 cursor-pointer">
-                                    <input type="checkbox" id="showRouteLines" class="rounded w-3 h-3" checked> Routes
+                                    <input type="checkbox" id="showRouteLines" class="rounded-sm w-3 h-3" checked> Routes
                                 </label>
                                 <label class="flex items-center gap-1 cursor-pointer">
-                                    <input type="checkbox" id="showDrivers" class="rounded w-3 h-3" checked> Drivers
+                                    <input type="checkbox" id="showDrivers" class="rounded-sm w-3 h-3" checked> Drivers
                                 </label>
                                 <span id="map-last-update" class="text-gray-500">Loading...</span>
                             </div>
@@ -95,16 +95,16 @@
                 <div class="w-full lg:w-1/2 xl:w-5/12 flex flex-col min-h-0 overflow-y-auto space-y-3">
 
                     <!-- Filter bar (compact) -->
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg px-3 py-2 shrink-0">
+                    <div class="bg-base-100 shadow-xs rounded-lg px-3 py-2 shrink-0">
                         <form method="GET" action="{{ route('delivery.index') }}" class="flex items-center gap-2">
-                            <select name="status" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-xs py-1.5">
+                            <select name="status" class="rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-xs py-1.5">
                                 <option value="">All Statuses</option>
                                 <option value="needs_delivery" {{ request('status') == 'needs_delivery' ? 'selected' : '' }}>Needs Delivery</option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
                                 <option value="in_transit" {{ request('status') == 'in_transit' ? 'selected' : '' }}>In Transit</option>
                                 <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>Delivered</option>
                             </select>
-                            <button type="submit" class="px-3 py-1.5 bg-red-700 text-white rounded-md hover:bg-red-600 text-xs font-medium transition">Filter</button>
+                            <button type="submit" class="px-3 py-1.5 bg-primary text-white rounded-md hover:opacity-90 text-xs font-medium transition">Filter</button>
                             @if(request('status'))
                                 <a href="{{ route('delivery.index') }}" class="text-xs text-gray-400 hover:text-gray-600">Clear</a>
                             @endif
@@ -118,13 +118,13 @@
                             $routeTotal = $route->families->count();
                             $routePct = $routeTotal > 0 ? round(($routeDone / $routeTotal) * 100) : 0;
                         @endphp
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden">
+                        <div class="bg-base-100 shadow-xs rounded-lg overflow-hidden">
                             <!-- Route header -->
                             <div class="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
                                 <div class="flex items-center justify-between">
                                     <div class="min-w-0">
-                                        <div class="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{{ $route->display_name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        <div class="text-sm font-semibold text-base-content truncate">{{ $route->display_name }}</div>
+                                        <div class="text-xs text-base-content/60">
                                             {{ $route->driver ? $route->driver->first_name : ($route->driver_name ?? 'No driver') }}
                                             &middot; {{ $route->formattedMeta() }}
                                             &middot; {{ $routeDone }}/{{ $routeTotal }}
@@ -135,7 +135,7 @@
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:underline px-1" title="Open driver view">Driver</a>
                                         <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => showToast('Link copied!'))"
                                             class="text-xs text-gray-400 hover:text-gray-600 px-1" title="Copy driver link">Copy</button>
-                                        <span class="text-xs font-mono text-gray-500 dark:text-gray-400 px-1" title="Driver PIN">PIN {{ $route->driver_pin }}</span>
+                                        <span class="text-xs font-mono text-base-content/60 px-1" title="Driver PIN">PIN {{ $route->driver_pin }}</span>
                                         <form method="POST" action="{{ route('delivery.markRouteReturning', $route) }}" class="inline" onsubmit="return confirm('Mark as returning?')">
                                             @csrf
                                             <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline px-1" title="Mark returning">Return</button>
@@ -143,12 +143,12 @@
                                         <button type="button" onclick="recalcRoute({{ $route->id }}, this)" class="text-xs text-orange-500 hover:underline px-1" title="Recalculate">Recalc</button>
                                         <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" class="inline" onsubmit="return confirm('Delete route?')">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="text-xs text-red-500 hover:underline px-1" title="Delete route">Del</button>
+                                            <button type="submit" class="text-xs text-primary hover:underline px-1" title="Delete route">Del</button>
                                         </form>
                                     </div>
                                 </div>
                                 @if($routeTotal > 0)
-                                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-1.5">
+                                    <div class="w-full bg-base-300 rounded-full h-1 mt-1.5">
                                         <div class="bg-green-500 h-1 rounded-full transition-all" style="width: {{ $routePct }}%"></div>
                                     </div>
                                 @endif
@@ -163,9 +163,9 @@
                             @endif
                         </div>
                     @empty
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 text-center">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">No routes yet.</p>
-                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Click "Assign Driver" to create your first route.</p>
+                        <div class="bg-base-100 shadow-xs rounded-lg p-6 text-center">
+                            <p class="text-sm text-base-content/60">No routes yet.</p>
+                            <p class="text-xs text-base-content/50 mt-1">Click "Assign Driver" to create your first route.</p>
                         </div>
                     @endforelse
 
@@ -184,7 +184,7 @@
                                         @endif
                                     </p>
                                 </div>
-                                <button onclick="openQuickAssign()" class="px-3 py-1.5 bg-red-700 text-white rounded-md hover:bg-red-600 text-xs font-medium transition shrink-0">
+                                <button onclick="openQuickAssign()" class="px-3 py-1.5 bg-primary text-white rounded-md hover:opacity-90 text-xs font-medium transition shrink-0">
                                     Assign Driver
                                 </button>
                             </div>
@@ -192,7 +192,7 @@
                     @endif
 
                     @if($routes->every(fn($r) => $r->families->isEmpty()) && $unroutedEligible->isEmpty() && !request('status'))
-                        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 text-center text-gray-400 dark:text-gray-500 text-sm">
+                        <div class="bg-base-100 shadow-xs rounded-lg p-6 text-center text-base-content/50 text-sm">
                             No families match the selected filters.
                         </div>
                     @endif
@@ -200,7 +200,7 @@
             </div>
 
             <div class="pt-1">
-                <a href="{{ route('santa.index') }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition">
+                <a href="{{ route('santa.index') }}" class="text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">
                     &larr; Back to Dashboard
                 </a>
             </div>
@@ -211,21 +211,21 @@
     <div id="quick-assign-modal" class="fixed inset-0 z-50 hidden">
         <div class="fixed inset-0 bg-black/50" onclick="closeQuickAssign()"></div>
         <div class="fixed inset-0 flex items-center justify-center p-4">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div class="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
                 <button onclick="closeQuickAssign()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-xl">&times;</button>
 
                 {{-- Step 1: Enter driver info --}}
                 <div id="qa-step-form">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Create Delivery Route</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    <h3 class="text-lg font-semibold text-base-content mb-1">Create Delivery Route</h3>
+                    <p class="text-sm text-base-content/60 mb-4">
                         Enter a driver name and number of families. The system finds nearby families and creates an optimized route.
                     </p>
 
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Assign Driver</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Assign Driver</label>
                             <select id="qa-driver-user" onchange="prefillDriverName(this)"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                                 <option value="">— Type name below —</option>
                                 @foreach($drivers as $driver)
                                     <option value="{{ $driver->id }}" data-name="{{ $driver->first_name }} {{ $driver->last_name }}">{{ $driver->first_name }} {{ $driver->last_name }}</option>
@@ -233,22 +233,22 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Driver Name</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Driver Name</label>
                             <input type="text" id="qa-driver-name" placeholder="e.g. John Smith" required
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Families per route</label>
+                            <label class="block text-sm font-medium text-base-content/80 mb-1">Families per route</label>
                             <input type="number" id="qa-batch-size" value="3" min="1" max="25"
-                                class="block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm text-sm">
+                                class="block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs text-sm">
                         </div>
                         <div class="flex items-center gap-2">
-                            <input type="checkbox" id="qa-use-location" class="rounded border-gray-300 text-red-600 shadow-sm">
-                            <label for="qa-use-location" class="text-sm text-gray-700 dark:text-gray-300">Use my location as starting point</label>
+                            <input type="checkbox" id="qa-use-location" class="rounded-sm border-gray-300 text-primary shadow-xs">
+                            <label for="qa-use-location" class="text-sm text-base-content/80">Use my location as starting point</label>
                         </div>
 
                         <button onclick="submitQuickAssign()" id="qa-submit-btn"
-                            class="w-full px-4 py-2.5 bg-red-700 text-white rounded-md hover:bg-red-600 text-sm font-semibold transition">
+                            class="w-full px-4 py-2.5 bg-primary text-white rounded-md hover:opacity-90 text-sm font-semibold transition">
                             Create Route
                         </button>
                     </div>
@@ -256,7 +256,7 @@
 
                 {{-- Step 2: Loading --}}
                 <div id="qa-step-loading" class="hidden text-center py-8">
-                    <div class="inline-block w-8 h-8 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-3"></div>
+                    <div class="inline-block w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-3"></div>
                     <p class="text-sm text-gray-600 dark:text-gray-300">Creating optimized route...</p>
                 </div>
 
@@ -268,40 +268,40 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Route Created!</h3>
+                        <h3 class="text-lg font-semibold text-base-content">Route Created!</h3>
                     </div>
 
-                    <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 space-y-2">
+                    <div class="bg-base-200 rounded-lg p-4 mb-4 space-y-2">
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500 dark:text-gray-400">Route</span>
-                            <span class="font-medium text-gray-900 dark:text-gray-100" id="qa-result-name"></span>
+                            <span class="text-base-content/60">Route</span>
+                            <span class="font-medium text-base-content" id="qa-result-name"></span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500 dark:text-gray-400">Families</span>
-                            <span class="font-medium text-gray-900 dark:text-gray-100" id="qa-result-stops"></span>
+                            <span class="text-base-content/60">Families</span>
+                            <span class="font-medium text-base-content" id="qa-result-stops"></span>
                         </div>
                         <div class="flex justify-between text-sm">
-                            <span class="text-gray-500 dark:text-gray-400">Driver PIN</span>
-                            <span class="font-mono font-medium text-gray-900 dark:text-gray-100" id="qa-result-pin"></span>
+                            <span class="text-base-content/60">Driver PIN</span>
+                            <span class="font-mono font-medium text-base-content" id="qa-result-pin"></span>
                         </div>
                     </div>
 
                     <div id="qa-suggestions" class="hidden mb-4">
                         <div class="flex items-center justify-between mb-2">
                             <p class="text-sm font-medium text-gray-700 dark:text-gray-200">Nearby Families</p>
-                            <span class="text-xs text-gray-500 dark:text-gray-400">Add to this route?</span>
+                            <span class="text-xs text-base-content/60">Add to this route?</span>
                         </div>
-                        <div id="qa-suggestion-list" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-2 bg-white dark:bg-gray-800"></div>
+                        <div id="qa-suggestion-list" class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-2 bg-base-100"></div>
                         <button onclick="addSuggestedFamilies()" id="qa-add-suggestions-btn"
                             class="mt-2 w-full px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition">
                             Add Selected
                         </button>
                     </div>
 
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Send this link to the driver:</p>
+                    <p class="text-sm text-base-content/70 mb-3">Send this link to the driver:</p>
                     <div class="flex gap-2 mb-4">
                         <input type="text" id="qa-result-url" readonly
-                            class="flex-1 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 text-sm bg-gray-50">
+                            class="flex-1 rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 text-sm bg-gray-50">
                         <button onclick="copyDriverLink()" id="qa-copy-btn"
                             class="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 text-sm font-medium transition">
                             Copy
@@ -322,13 +322,13 @@
 
                 {{-- Error --}}
                 <div id="qa-step-error" class="hidden text-center py-6">
-                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 mb-2">
-                        <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 dark:bg-primary/20 mb-2">
+                        <svg class="w-6 h-6 text-primary dark:text-primary" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">Could not create route</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4" id="qa-error-message"></p>
+                    <h3 class="text-lg font-semibold text-base-content mb-1">Could not create route</h3>
+                    <p class="text-sm text-base-content/60 mb-4" id="qa-error-message"></p>
                     <button onclick="resetQuickAssign()" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md text-sm font-medium">
                         Try Again
                     </button>
@@ -340,22 +340,22 @@
     {{-- Logs Drawer --}}
     <div id="log-drawer" class="fixed inset-0 z-50 hidden">
         <div class="fixed inset-0 bg-black/40" onclick="closeLogDrawer()"></div>
-        <div class="fixed top-0 right-0 bottom-0 w-full max-w-lg bg-white dark:bg-gray-800 shadow-2xl flex flex-col">
-            <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
-                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Recent Delivery Logs</h3>
+        <div class="fixed top-0 right-0 bottom-0 w-full max-w-lg bg-base-100 shadow-2xl flex flex-col">
+            <div class="px-4 py-3 border-b border-base-300 flex items-center justify-between shrink-0">
+                <h3 class="text-sm font-semibold text-base-content">Recent Delivery Logs</h3>
                 <button onclick="closeLogDrawer()" class="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
             </div>
             <div id="log-drawer-content" class="flex-1 overflow-y-auto p-4">
                 <div class="text-center text-gray-400 py-8">Loading...</div>
             </div>
-            <div class="px-4 py-2 border-t border-gray-200 dark:border-gray-700 shrink-0">
+            <div class="px-4 py-2 border-t border-base-300 shrink-0">
                 <a href="{{ route('delivery.logs') }}" class="text-xs text-blue-600 dark:text-blue-400 hover:underline">View all logs &rarr;</a>
             </div>
         </div>
     </div>
 
     <!-- Toast notification -->
-    <div id="toast" class="fixed bottom-4 right-4 z-[60] hidden">
+    <div id="toast" class="fixed bottom-4 right-4 z-60 hidden">
         <div class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
     </div>
 
@@ -491,7 +491,7 @@
                     }
                 })
                 .catch(() => {
-                    document.getElementById('log-drawer-content').innerHTML = '<p class="text-red-400 text-sm text-center py-8">Failed to load logs.</p>';
+                    document.getElementById('log-drawer-content').innerHTML = '<p class="text-primary text-sm text-center py-8">Failed to load logs.</p>';
                 });
         }
 
@@ -696,7 +696,7 @@
                     <input type="checkbox" class="mt-1" value="${s.id}">
                     <div>
                         <div class="font-medium">#${s.number} ${s.name}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">${s.address}</div>
+                        <div class="text-xs text-base-content/60">${s.address}</div>
                         <div class="text-xs text-gray-400">~${s.distance_miles} mi away</div>
                     </div>
                 `;

@@ -1,26 +1,26 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            <h2 class="font-semibold text-xl text-base-content leading-tight">
                 {{ $current['title'] }}
             </h2>
-            <a href="{{ route('help.index') }}" class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <a href="{{ route('help.index') }}" class="text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-200">
                 &larr; All Topics
             </a>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="max-w-[90rem] mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-360 mx-auto sm:px-6 lg:px-8">
             <div class="flex gap-8">
                 {{-- Sidebar: Table of Contents from article headings --}}
                 <nav class="hidden lg:block w-56 shrink-0">
                     <div class="sticky top-20">
-                        <a href="{{ route('help.index') }}" class="flex items-center gap-1 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 mb-4 font-medium">
+                        <a href="{{ route('help.index') }}" class="flex items-center gap-1 text-sm text-primary dark:text-primary hover:text-primary dark:hover:text-primary mb-4 font-medium">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" /></svg>
                             Back to Help
                         </a>
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">On this page</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/50 mb-2">On this page</p>
                         <div id="toc" class="space-y-0.5">
                             {{-- Populated by JS from rendered headings --}}
                         </div>
@@ -29,7 +29,7 @@
 
                 {{-- Content --}}
                 <div class="flex-1 min-w-0">
-                    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6 sm:p-8">
+                    <div class="bg-base-100 shadow-xs rounded-lg p-6 sm:p-8">
                         <style>
                             .wiki-content { color: #374151; line-height: 1.85; font-size: 0.95rem; }
                             .wiki-content h2, .wiki-content h3, .wiki-content h4 { color: #111827; font-weight: 600; margin-top: 2em; margin-bottom: 0.6em; }
@@ -64,19 +64,19 @@
 
                         {{-- Category FAQs --}}
                         @if(!empty($faqs))
-                            <div class="mt-10 pt-8 border-t border-gray-200 dark:border-gray-700">
-                                <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">Frequently Asked Questions</h2>
+                            <div class="mt-10 pt-8 border-t border-base-300">
+                                <h2 class="text-xl font-bold text-base-content mb-4">Frequently Asked Questions</h2>
                                 <div class="space-y-2">
                                     @foreach($faqs as $faq)
-                                        <div x-data="{ open: false }" class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                                        <div x-data="{ open: false }" class="border border-base-300 rounded-lg overflow-hidden">
                                             <button @click="open = !open" class="w-full flex items-center justify-between px-5 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                                <span class="font-medium text-sm text-gray-900 dark:text-gray-100">{{ $faq['q'] }}</span>
+                                                <span class="font-medium text-sm text-base-content">{{ $faq['q'] }}</span>
                                                 <svg :class="open && 'rotate-180'" class="w-4 h-4 text-gray-400 shrink-0 ml-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
                                                 </svg>
                                             </button>
                                             <div x-show="open" x-collapse>
-                                                <div class="px-5 pb-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-3">
+                                                <div class="px-5 pb-3 text-sm text-base-content/70 leading-relaxed border-t border-gray-100 dark:border-gray-700 pt-3">
                                                     {{ $faq['a'] }}
                                                 </div>
                                             </div>
@@ -106,8 +106,8 @@
                 a.href = '#' + id;
                 a.textContent = h.textContent;
                 a.className = h.tagName === 'H3'
-                    ? 'block pl-3 py-1 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition truncate'
-                    : 'block py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition truncate';
+                    ? 'block pl-3 py-1 text-xs text-base-content/50 hover:text-gray-700 dark:hover:text-gray-300 transition truncate'
+                    : 'block py-1 text-sm text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition truncate';
                 a.addEventListener('click', function(e) {
                     e.preventDefault();
                     h.scrollIntoView({ behavior: 'smooth', block: 'start' });
