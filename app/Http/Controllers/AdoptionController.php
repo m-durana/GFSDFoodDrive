@@ -9,6 +9,7 @@ use App\Notifications\Adopter;
 use App\Notifications\AdoptionConfirmation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -93,24 +94,36 @@ class AdoptionController extends Controller
             'adopter_phone' => ['nullable', 'string', 'max:255'],
         ]);
 
-        // Race condition guard: re-check availability
-        if ($child->adoption_token !== null || !$child->family || !$child->family->family_number) {
-            return redirect()->route('adopt.index')
-                ->with('error', 'Sorry, this tag has already been adopted by someone else.');
-        }
-
         $deadline = Setting::get('adopt_a_tag_deadline');
         $token = Str::random(32);
 
-        $child->update([
-            'adopter_name' => $request->adopter_name,
-            'adopter_email' => $request->adopter_email,
-            'adopter_phone' => $request->adopter_phone,
-            'adopted_at' => now(),
-            'adoption_token' => $token,
-            'gift_level' => GiftLevel::Partial,
-            'adoption_deadline' => $deadline ?: now()->addDays(14)->toDateString(),
-        ]);
+        $claimed = DB::transaction(function () use ($child, $request, $deadline, $token) {
+            $lockedChild = Child::whereKey($child->id)
+                ->with('family:id,family_number')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedChild->adoption_token !== null || !$lockedChild->family || !$lockedChild->family->family_number) {
+                return null;
+            }
+
+            $lockedChild->update([
+                'adopter_name' => $request->adopter_name,
+                'adopter_email' => $request->adopter_email,
+                'adopter_phone' => $request->adopter_phone,
+                'adopted_at' => now(),
+                'adoption_token' => $token,
+                'gift_level' => GiftLevel::Partial,
+                'adoption_deadline' => $deadline ?: now()->addDays(14)->toDateString(),
+            ]);
+
+            return $lockedChild->fresh();
+        });
+
+        if (!$claimed) {
+            return redirect()->route('adopt.index')
+                ->with('error', 'Sorry, this tag has already been adopted by someone else.');
+        }
 
         // Send confirmation notification if enabled
         if (Setting::get('notifications_enabled', '0') === '1') {
@@ -119,7 +132,7 @@ class AdoptionController extends Controller
                 $request->adopter_phone ?? '',
                 $request->adopter_name,
             );
-            $adopter->notify(new AdoptionConfirmation($child, $token));
+            $adopter->notify(new AdoptionConfirmation($claimed, $token));
         }
 
         return redirect()->route('adopt.confirmation', $token);

@@ -17,7 +17,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8" x-data="packingDashboard()" x-init="fetchStats()">
+    <div class="py-8" x-data="packingDashboard()" x-init="init()">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             {{-- Fulfillment Alert Banner --}}
@@ -250,7 +250,24 @@
                 categoryChart: null,
                 interval: null,
 
+                init() {
+                    this.fetchStats();
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.hidden && this.interval) {
+                            clearInterval(this.interval);
+                            this.interval = null;
+                            return;
+                        }
+
+                        if (!document.hidden) {
+                            this.fetchStats();
+                        }
+                    });
+                },
+
                 async fetchStats() {
+                    if (document.hidden) return;
+
                     try {
                         const res = await fetch('/api/packing/stats');
                         this.stats = await res.json();

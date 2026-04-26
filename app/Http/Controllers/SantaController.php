@@ -352,7 +352,7 @@ class SantaController extends Controller
                 return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
             }
             return redirect()->route('santa.settings')
-                ->with('success', 'Email sending failed: ' . $e->getMessage());
+                ->with('error', 'Email sending failed: ' . $e->getMessage());
         }
     }
 
@@ -1520,8 +1520,8 @@ class SantaController extends Controller
     public function randomizeUserAvatar(Request $request, User $user): RedirectResponse|JsonResponse
     {
         $seed = uniqid('avatar_');
-        $avatarUrl = "https://api.dicebear.com/7.x/adventurer/svg?seed={$seed}";
-        $user->update(['avatar_path' => $avatarUrl]);
+        $user->update(['avatar_path' => 'dicebear:' . $seed]);
+        $avatarUrl = $user->fresh()->avatar_url;
 
         if ($request->expectsJson()) {
             return response()->json(['avatar_url' => $avatarUrl]);

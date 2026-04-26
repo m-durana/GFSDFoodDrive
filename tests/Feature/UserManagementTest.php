@@ -181,4 +181,22 @@ class UserManagementTest extends TestCase
         $response->assertRedirect();
         $this->assertEquals(0, $user->fresh()->permission);
     }
+
+    public function test_admin_randomize_avatar_uses_dicebear_seed_storage(): void
+    {
+        $user = User::create([
+            'username' => 'avatar_me',
+            'first_name' => 'Avatar',
+            'last_name' => 'User',
+            'password' => 'password123',
+            'permission' => 8,
+        ]);
+
+        $response = $this->actingAs($this->santa)
+            ->postJson(route('santa.randomizeUserAvatar', $user));
+
+        $response->assertOk();
+        $response->assertJsonPath('avatar_url', fn ($url) => str_contains($url, 'api.dicebear.com/9.x/notionists-neutral/svg'));
+        $this->assertStringStartsWith('dicebear:avatar_', $user->fresh()->avatar_path);
+    }
 }

@@ -6,6 +6,9 @@ use App\Models\Setting;
 use App\Models\SettingAuditLog;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class SettingsTest extends TestCase
@@ -93,6 +96,49 @@ class SettingsTest extends TestCase
         ]);
     }
 
+    public function test_operational_secrets_are_encrypted_and_not_prefilled(): void
+    {
+        $response = $this->actingAs($this->santa)->post('/santa/settings', [
+            'season_year' => '2026',
+            'twilio_sid' => 'AC123',
+            'twilio_token' => 'twilio-secret',
+            'openrouteservice_key' => 'ors-secret',
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertSame('AC123', Setting::get('twilio_sid'));
+        $this->assertSame('twilio-secret', Setting::get('twilio_token'));
+        $this->assertSame('ors-secret', Setting::get('openrouteservice_key'));
+        $this->assertNotSame('AC123', DB::table('settings')->where('key', 'twilio_sid')->value('value'));
+        $this->assertNotSame('twilio-secret', DB::table('settings')->where('key', 'twilio_token')->value('value'));
+        $this->assertNotSame('ors-secret', DB::table('settings')->where('key', 'openrouteservice_key')->value('value'));
+
+        $settingsPage = $this->actingAs($this->santa)->get('/santa/settings');
+        $settingsPage->assertOk();
+        $settingsPage->assertDontSee('twilio-secret');
+        $settingsPage->assertDontSee('ors-secret');
+    }
+
+    public function test_operational_secret_migration_encrypts_existing_plaintext_rows(): void
+    {
+        DB::table('settings')->insert([
+            'key' => 'openrouteservice_key',
+            'value' => 'plaintext-ors',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $migration = require database_path('migrations/2026_04_26_000005_encrypt_operational_secret_settings.php');
+        $migration->up();
+
+        $stored = DB::table('settings')->where('key', 'openrouteservice_key')->value('value');
+        $this->assertNotSame('plaintext-ors', $stored);
+        $this->assertSame('plaintext-ors', Crypt::decryptString($stored));
+        Setting::clearCache();
+        $this->assertSame('plaintext-ors', Setting::get('openrouteservice_key'));
+    }
+
     public function test_settings_delete_writes_audit_log(): void
     {
         Setting::set('google_client_id', 'client-id');
@@ -120,6 +166,19 @@ class SettingsTest extends TestCase
             'old_value' => '[redacted]',
             'new_value' => null,
         ]);
+    }
+
+    public function test_test_email_failure_uses_error_flash(): void
+    {
+        Mail::shouldReceive('raw')
+            ->once()
+            ->andThrow(new \RuntimeException('SMTP down'));
+
+        $response = $this->actingAs($this->santa)->post(route('santa.testEmail'));
+
+        $response->assertRedirect(route('santa.settings'));
+        $response->assertSessionHas('error', 'Email sending failed: SMTP down');
+        $response->assertSessionMissing('success');
     }
 
     public function test_setting_model_get_returns_default(): void

@@ -108,6 +108,40 @@ class AdoptionTest extends TestCase
         $this->assertEquals(GiftLevel::Partial, $this->child->gift_level);
     }
 
+    public function test_homepage_uses_adopt_a_tag_feature_flag(): void
+    {
+        Setting::set('adoption_enabled', '1');
+        Setting::set('adopt_a_tag_enabled', '0');
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertDontSee(route('adopt.index'));
+
+        Setting::set('adopt_a_tag_enabled', '1');
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee(route('adopt.index'));
+    }
+
+    public function test_claim_rechecks_availability_under_lock(): void
+    {
+        Setting::set('adopt_a_tag_enabled', '1');
+        $this->child->update(['adoption_token' => 'already-claimed']);
+
+        $response = $this->post(route('adopt.claim', $this->child), [
+            'adopter_name' => 'Late Donor',
+            'adopter_email' => 'late@example.com',
+        ]);
+
+        $response->assertRedirect(route('adopt.index'));
+        $response->assertSessionHas('error');
+        $this->assertDatabaseMissing('children', [
+            'id' => $this->child->id,
+            'adopter_email' => 'late@example.com',
+        ]);
+    }
+
     public function test_already_adopted_child_cannot_be_claimed(): void
     {
         Setting::set('adopt_a_tag_enabled', '1');

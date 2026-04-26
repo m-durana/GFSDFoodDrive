@@ -394,7 +394,7 @@ class WarehouseService
                 return $cached === false ? null : $cached;
             }
 
-            $response = Http::withoutVerifying()->withHeaders([
+            $response = Http::withHeaders([
                 'User-Agent' => 'GFSDFoodDrive/1.0',
             ])->timeout(5)->get("https://world.openfoodfacts.org/api/v0/product/{$normalized}.json");
 
@@ -413,7 +413,7 @@ class WarehouseService
             }
 
             // Fallback to v2 endpoint if v0 fails
-            $v2 = Http::withoutVerifying()->withHeaders([
+            $v2 = Http::withHeaders([
                 'User-Agent' => 'GFSDFoodDrive/1.0',
             ])->timeout(5)->get("https://world.openfoodfacts.org/api/v2/product/{$normalized}.json");
 

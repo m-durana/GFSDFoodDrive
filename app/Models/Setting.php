@@ -15,6 +15,9 @@ class Setting extends Model
 
     private const ENCRYPTED_KEYS = [
         'google_client_secret',
+        'openrouteservice_key',
+        'twilio_sid',
+        'twilio_token',
     ];
 
     /**

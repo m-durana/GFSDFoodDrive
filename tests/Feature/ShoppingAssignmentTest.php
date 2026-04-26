@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Family;
 use App\Models\GroceryItem;
 use App\Models\ShoppingAssignment;
+use App\Models\ShoppingCheck;
 use App\Models\User;
 use App\Services\PackingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -162,5 +163,72 @@ class ShoppingAssignmentTest extends TestCase
         $list = $assignment->getShoppingList();
         $this->assertArrayHasKey('canned', $list);
         $this->assertEquals(4, $list['canned']['Canned Beans']);
+    }
+
+    public function test_shopping_toggle_rejects_item_outside_assignment(): void
+    {
+        $assignment = ShoppingAssignment::create([
+            'user_id' => $this->coordinator->id,
+            'split_type' => 'family_range',
+            'family_start' => 1,
+            'family_end' => 10,
+        ]);
+
+        $response = $this->postJson("/api/shopping/{$assignment->token}/check", [
+            'item_key' => 'Not On The List',
+            'ninja_name' => 'Nina',
+        ]);
+
+        $response->assertUnprocessable();
+        $this->assertDatabaseCount('shopping_checks', 0);
+    }
+
+    public function test_shopping_toggle_preserves_existing_check_until_explicit_toggle_off(): void
+    {
+        $this->seed(\Database\Seeders\WarehouseCategorySeeder::class);
+
+        $family = Family::create([
+            'user_id' => $this->santa->id,
+            'family_name' => 'Toggle Family',
+            'address' => '123 Test St',
+            'phone1' => '555-1234',
+            'family_number' => 7,
+            'number_of_family_members' => 4,
+            'number_of_adults' => 2,
+            'number_of_children' => 2,
+        ]);
+
+        GroceryItem::create([
+            'name' => 'Canned Beans',
+            'category' => 'canned',
+            'qty_1' => 1, 'qty_2' => 2, 'qty_3' => 3, 'qty_4' => 4,
+            'qty_5' => 5, 'qty_6' => 6, 'qty_7' => 7, 'qty_8' => 8,
+            'sort_order' => 1,
+        ]);
+
+        app(PackingService::class)->generatePackingList($family);
+
+        $assignment = ShoppingAssignment::create([
+            'user_id' => $this->coordinator->id,
+            'split_type' => 'family_range',
+            'family_start' => 1,
+            'family_end' => 10,
+        ]);
+
+        $this->postJson("/api/shopping/{$assignment->token}/check", [
+            'item_key' => 'Canned Beans',
+            'ninja_name' => 'Nina',
+        ])->assertOk();
+
+        $check = ShoppingCheck::first();
+        $this->assertSame('Nina', $check->checked_by);
+        $this->assertNotNull($check->checked_at);
+
+        $this->postJson("/api/shopping/{$assignment->token}/check", [
+            'item_key' => 'Canned Beans',
+            'ninja_name' => 'Nina',
+        ])->assertOk();
+
+        $this->assertDatabaseCount('shopping_checks', 0);
     }
 }
