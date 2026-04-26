@@ -45,7 +45,7 @@
 </style>
 
 {{-- Welcome prompt (shown once on first login) --}}
-<div id="tour-welcome" class="fixed inset-0 z-9999 hidden">
+<div id="tour-welcome" class="fixed inset-0 z-[9999] hidden">
     <div class="fixed inset-0 bg-black/50"></div>
     <div class="fixed inset-0 flex items-center justify-center p-4">
         <div class="bg-base-100 rounded-xl shadow-2xl max-w-sm w-full p-6 text-center relative">

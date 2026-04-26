@@ -88,7 +88,7 @@
                 <div class="flex-1">
                     <div class="bg-base-100 shadow-xs rounded-lg overflow-hidden relative" style="height: 75vh;">
                         <div id="map" style="width: 100%; height: 100%;"></div>
-                        <div id="no-data-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100/80 dark:bg-gray-800/80 z-1000">
+                        <div id="no-data-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-gray-100/80 dark:bg-gray-800/80 z-[1000]">
                             <div class="text-center p-8">
                                 <p class="text-lg font-medium text-gray-600 dark:text-gray-300">No geocoded families</p>
                                 <p class="text-sm text-gray-400 mt-2">
@@ -103,7 +103,7 @@
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-4 right-4 z-2000 hidden">
+    <div id="toast" class="fixed bottom-4 right-4 z-[2000] hidden">
         <div class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium"></div>
     </div>
 
