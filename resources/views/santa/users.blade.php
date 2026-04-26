@@ -172,7 +172,7 @@
                                             <td class="px-3 py-2" x-data="{ avatarUrl: '{{ $u->avatar_url }}' }">
                                                 <div class="flex items-center gap-1">
                                                     <img :src="avatarUrl" alt="" class="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-gray-600">
-                                                    <button type="button" @click="fetch('{{ route('santa.randomizeUserAvatar', $u) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } }).then(r => r.json()).then(d => avatarUrl = d.avatar_url)" class="text-gray-400 hover:text-blue-500 transition" title="Randomize avatar">
+                                                    <button type="button" @click="fetch('{{ route('santa.randomizeUserAvatar', $u) }}', { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } }).then(async r => { const d = await r.json(); if (!r.ok) throw new Error(d.message || 'Could not randomize avatar.'); return d; }).then(d => { avatarUrl = d.avatar_url; $dispatch('show-toast', { message: 'Avatar randomized.', type: 'success' }); }).catch(e => $dispatch('show-toast', { message: e.message, type: 'error' }))" class="text-gray-400 hover:text-blue-500 transition" title="Randomize avatar">
                                                         <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
                                                     </button>
                                                 </div>
@@ -289,7 +289,8 @@
     <div x-data="{ toasts: [] }" @show-toast.window="toasts.push($event.detail); setTimeout(() => toasts.shift(), 3000)"
         class="fixed bottom-4 right-4 z-50 space-y-2">
         <template x-for="(toast, i) in toasts" :key="i">
-            <div x-transition class="px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white bg-green-600 max-w-sm">
+            <div x-transition class="px-4 py-3 rounded-lg shadow-lg text-sm font-medium text-white max-w-sm"
+                 :class="toast.type === 'error' ? 'bg-red-600' : 'bg-green-600'">
                 <span x-text="toast.message"></span>
             </div>
         </template>

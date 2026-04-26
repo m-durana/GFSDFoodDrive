@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ShoppingAssignment;
 use App\Models\ShoppingCheck;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ShoppingApiController extends Controller
 {
@@ -60,20 +63,36 @@ class ShoppingApiController extends Controller
             'ninja_name' => ['required', 'string', 'max:255'],
         ]);
 
-        $existing = ShoppingCheck::where('shopping_assignment_id', $assignment->id)
-            ->where('item_key', $request->item_key)
-            ->first();
-
-        if ($existing) {
-            $existing->delete();
-        } else {
-            ShoppingCheck::create([
-                'shopping_assignment_id' => $assignment->id,
-                'item_key' => $request->item_key,
-                'checked_by' => $request->ninja_name,
-                'checked_at' => now(),
+        if (! in_array($request->item_key, $this->validItemKeys($assignment), true)) {
+            throw ValidationException::withMessages([
+                'item_key' => 'This item is not part of the shopping assignment.',
             ]);
         }
+
+        DB::transaction(function () use ($assignment, $request) {
+            $existing = ShoppingCheck::where('shopping_assignment_id', $assignment->id)
+                ->where('item_key', $request->item_key)
+                ->lockForUpdate()
+                ->first();
+
+            if ($existing) {
+                $existing->delete();
+                return;
+            }
+
+            try {
+                ShoppingCheck::create([
+                    'shopping_assignment_id' => $assignment->id,
+                    'item_key' => $request->item_key,
+                    'checked_by' => $request->ninja_name,
+                    'checked_at' => now(),
+                ]);
+            } catch (QueryException $e) {
+                if ($e->getCode() !== '23000') {
+                    throw $e;
+                }
+            }
+        });
 
         // Return updated checks
         $checks = $assignment->checks()->get()->keyBy('item_key');
@@ -86,5 +105,17 @@ class ShoppingApiController extends Controller
         }
 
         return response()->json(['checks' => $checksData]);
+    }
+
+    private function validItemKeys(ShoppingAssignment $assignment): array
+    {
+        $keys = [];
+        foreach ($assignment->getShoppingList() as $categoryItems) {
+            foreach ($categoryItems as $itemName => $qty) {
+                $keys[] = (string) $itemName;
+            }
+        }
+
+        return array_values(array_unique($keys));
     }
 }

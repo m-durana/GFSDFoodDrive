@@ -9,6 +9,7 @@ use App\Models\PackingList;
 use App\Services\PackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PackingApiController extends Controller
 {
@@ -223,7 +224,9 @@ class PackingApiController extends Controller
      */
     public function stats(): JsonResponse
     {
-        return response()->json($this->packingService->getDashboardStats());
+        return response()->json(Cache::remember('packing_dashboard_stats', now()->addSeconds(5), function () {
+            return $this->packingService->getDashboardStats();
+        }));
     }
 
     /**

@@ -303,17 +303,16 @@ class DeliveryDayController extends Controller
             ]);
 
         // Route polylines — real route geometry when available
+        $teamColors = DeliveryTeam::pluck('color', 'id');
         $routes = DeliveryRoute::with(['families' => fn($q) => $q
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->orderBy('route_order')
             ->select('id', 'delivery_route_id', 'latitude', 'longitude', 'route_order', 'delivery_team_id'),
-        ])->get()->map(function ($route) {
+        ])->get()->map(function ($route) use ($teamColors) {
             // Get team color from the first family's team, or default
             $teamId = $route->families->first()?->delivery_team_id;
-            $color = $teamId
-                ? DeliveryTeam::where('id', $teamId)->value('color') ?? '#dc2626'
-                : '#dc2626';
+            $color = $teamId ? ($teamColors[$teamId] ?? '#dc2626') : '#dc2626';
 
             return [
                 'id' => $route->id,

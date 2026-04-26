@@ -436,13 +436,14 @@
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label for="twilio_sid" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Account SID</label>
-                                            <input type="text" name="twilio_sid" id="twilio_sid" value="{{ \App\Models\Setting::get('twilio_sid', '') }}"
+                                            <input type="text" name="twilio_sid" id="twilio_sid" value=""
                                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm"
-                                                placeholder="ACxxxxxxxx">
+                                                placeholder="{{ \App\Models\Setting::get('twilio_sid', '') ? 'Leave blank to keep current SID' : 'ACxxxxxxxx' }}">
                                         </div>
                                         <div>
                                             <label for="twilio_token" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Auth Token</label>
-                                            <input type="password" name="twilio_token" id="twilio_token" value="{{ \App\Models\Setting::get('twilio_token', '') }}"
+                                            <input type="password" name="twilio_token" id="twilio_token" value=""
+                                                placeholder="{{ \App\Models\Setting::get('twilio_token', '') ? 'Leave blank to keep current token' : '' }}"
                                                 class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm">
                                         </div>
                                         <div>
@@ -612,9 +613,9 @@
                                 <div>
                                     <label for="openrouteservice_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">API Key</label>
                                     <input type="text" name="openrouteservice_key" id="openrouteservice_key"
-                                        value="{{ \App\Models\Setting::get('openrouteservice_key', '') }}"
+                                        value=""
                                         class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 shadow-sm focus:border-red-500 focus:ring-red-500 sm:text-sm font-mono"
-                                        placeholder="Your ORS API key">
+                                        placeholder="{{ \App\Models\Setting::get('openrouteservice_key', '') ? 'Leave blank to keep current API key' : 'Your ORS API key' }}">
                                 </div>
                             </div>
                         </div>

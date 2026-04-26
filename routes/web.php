@@ -50,7 +50,7 @@ if (! app()->environment('production')) {
 // Root route: show public homepage for everyone
 Route::get('/', function () {
     $selfRegistrationEnabled = \App\Models\Setting::get('self_registration_enabled', false);
-    $adoptionEnabled = \App\Models\Setting::get('adoption_enabled', true);
+    $adoptionEnabled = \App\Models\Setting::get('adopt_a_tag_enabled', '0') === '1';
     return view('welcome', compact('selfRegistrationEnabled', 'adoptionEnabled'));
 })->name('home');
 
@@ -217,10 +217,10 @@ Route::get('/shopping/{family_number}', [ShoppingController::class, 'checklist']
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('auth.google');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('auth.google.callback');
 Route::get('/auth/google/request', [GoogleController::class, 'requestAccess'])->name('auth.google.request');
-Route::post('/auth/google/request', [GoogleController::class, 'submitRequest'])->name('auth.google.submitRequest');
+Route::post('/auth/google/request', [GoogleController::class, 'submitRequest'])->middleware('throttle:public-form-submit')->name('auth.google.submitRequest');
 
 // Family Status Page (public when enabled)
-Route::get('/family-status/{token}', [FamilyStatusController::class, 'show'])->name('family.status');
+Route::get('/family-status/{token}', [FamilyStatusController::class, 'show'])->middleware('throttle:public-token-read')->name('family.status');
 
 // Adopt-a-Tag Portal (public when enabled)
 Route::get('/adopt', [AdoptionController::class, 'index'])->name('adopt.index');
@@ -234,15 +234,15 @@ Route::get('/delivery/route/{token}', [DeliveryRouteController::class, 'driverVi
 Route::post('/delivery/route/{token}/verify', [DeliveryRouteController::class, 'verifyDriverPin'])
     ->middleware('throttle:5,1')
     ->name('delivery.verifyDriverPin');
-Route::post('/delivery/route/{token}/complete/{stopOrder}', [DeliveryRouteController::class, 'completeStop'])->name('delivery.completeStop');
-Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->name('delivery.routeData');
-Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->name('delivery.updateDriverLocation');
-Route::post('/delivery/route/{token}/heading/{stopOrder}', [DeliveryRouteController::class, 'markHeading'])->name('delivery.markHeading');
-Route::post('/delivery/route/{token}/returning', [DeliveryRouteController::class, 'markReturning'])->name('delivery.markReturning');
+Route::post('/delivery/route/{token}/complete/{stopOrder}', [DeliveryRouteController::class, 'completeStop'])->middleware('throttle:public-token-write')->name('delivery.completeStop');
+Route::get('/delivery/route/{token}/data', [DeliveryRouteController::class, 'routeData'])->middleware('throttle:public-token-read')->name('delivery.routeData');
+Route::post('/delivery/route/{token}/location', [DeliveryRouteController::class, 'updateDriverLocation'])->middleware('throttle:driver-location')->name('delivery.updateDriverLocation');
+Route::post('/delivery/route/{token}/heading/{stopOrder}', [DeliveryRouteController::class, 'markHeading'])->middleware('throttle:public-token-write')->name('delivery.markHeading');
+Route::post('/delivery/route/{token}/returning', [DeliveryRouteController::class, 'markReturning'])->middleware('throttle:public-token-write')->name('delivery.markReturning');
 
 // Self-service family registration (public when enabled by admin)
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
-Route::post('/register-family', [SelfServiceController::class, 'store'])->name('self-service.store');
+Route::post('/register-family', [SelfServiceController::class, 'store'])->middleware('throttle:public-form-submit')->name('self-service.store');
 Route::get('/register-family/success', [SelfServiceController::class, 'success'])->name('self-service.success');
 
 // Warehouse routes: accessible by Coordinator and Santa roles
