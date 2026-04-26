@@ -5,8 +5,8 @@ use App\Http\Controllers\ShoppingApiController;
 use App\Http\Middleware\PackingSystemEnabled;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('shopping/{token}')->middleware('throttle:public-token-read')->group(function () {
-    Route::get('/', [ShoppingApiController::class, 'show']);
+Route::prefix('shopping/{token}')->group(function () {
+    Route::get('/', [ShoppingApiController::class, 'show'])->middleware('throttle:public-token-read');
     Route::post('/check', [ShoppingApiController::class, 'toggle'])->middleware('throttle:public-token-write');
 });
 

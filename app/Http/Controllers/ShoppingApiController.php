@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ShoppingAssignment;
 use App\Models\ShoppingCheck;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -87,10 +87,8 @@ class ShoppingApiController extends Controller
                     'checked_by' => $request->ninja_name,
                     'checked_at' => now(),
                 ]);
-            } catch (QueryException $e) {
-                if ($e->getCode() !== '23000') {
-                    throw $e;
-                }
+            } catch (UniqueConstraintViolationException) {
+                // Another request checked this item between our lookup and insert.
             }
         });
 
