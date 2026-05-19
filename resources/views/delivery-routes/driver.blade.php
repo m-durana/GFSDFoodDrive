@@ -202,6 +202,10 @@
                 body: JSON.stringify({}),
                 credentials: 'same-origin',
             })
+            .then(r => {
+                if (!r.ok) throw new Error('Server error ' + r.status);
+                return r;
+            })
             .then(() => {
                 const card = document.querySelector(`[data-stop-id="${stopOrder}"]`);
                 // Remove heading-to from all other cards
@@ -218,7 +222,10 @@
                     document.getElementById('heading-to-text').textContent = 'Heading to ' + label;
                 }
             })
-            .catch(() => {});
+            .catch(err => {
+                console.warn('markHeading failed', err);
+                showToast('Could not update status: ' + err.message);
+            });
         }
 
         function applyStopDelivered(stopOrder) {
@@ -246,10 +253,15 @@
         }
 
         // ── 15s polling for live updates ────────────────────────
+        let pollFailureCount = 0;
         function pollRouteData() {
             fetch(routeDataUrl)
-                .then(r => r.json())
+                .then(r => {
+                    if (!r.ok) throw new Error('HTTP ' + r.status);
+                    return r.json();
+                })
                 .then(data => {
+                    pollFailureCount = 0;
                     data.stops.forEach(stop => {
                     const card = document.querySelector(`[data-stop-id="${stop.order}"]`);
                         if (!card) return;
@@ -261,7 +273,13 @@
                     // Update map markers
                     updateMapMarkers(data.stops);
                 })
-                .catch(() => {});
+                .catch(err => {
+                    pollFailureCount++;
+                    console.warn('pollRouteData failed (' + pollFailureCount + ')', err);
+                    if (pollFailureCount === 3) {
+                        showToast('Lost connection — live updates paused.');
+                    }
+                });
         }
         setInterval(pollRouteData, 15000);
 
@@ -289,7 +307,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-                    }).catch(() => {});
+                    }).catch(err => console.warn('location post failed', err));
                 },
                 err => {
                     document.getElementById('location-status').textContent = 'Location error: ' + err.message;

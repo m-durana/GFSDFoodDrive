@@ -454,7 +454,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
                         body: JSON.stringify({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-                    }).catch(() => {});
+                    }).catch(err => console.warn('updateLocation failed', err));
                 },
                 err => {
                     showToast('Location access denied', 'red');
