@@ -20,7 +20,7 @@
             <div class="mt-8 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
                 &copy; {{ date('Y') }} {{ $orgName }}. All rights reserved.
                 <span class="mx-1">&middot;</span>
-                <span>{!! $footerText !!}</span>
+                <span>{{ $footerText }}</span>
             </div>
         </div>
     </footer>
@@ -37,7 +37,7 @@
             <div class="mt-4 pt-4 border-t border-gray-800 text-center text-xs text-gray-500">
                 &copy; {{ date('Y') }} {{ $orgName }}.
                 <span class="mx-1">&middot;</span>
-                <span>{!! $footerText !!}</span>
+                <span>{{ $footerText }}</span>
             </div>
         </div>
     </footer>
@@ -60,6 +60,6 @@
     <footer class="py-4 text-center text-xs text-base-content/50">
         <span>GFSD Food Drive &copy; {{ date('Y') }}</span>
         <span class="mx-1">&middot;</span>
-        <span>{!! $footerText !!}</span>
+        <span>{{ $footerText }}</span>
     </footer>
 @endif

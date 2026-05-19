@@ -48,7 +48,7 @@
             {{ $slot }}
         </div>
 
-        <p class="mt-3 text-xs text-base-content/50">{!! \App\Models\Setting::get('footer_text', 'Made in 🇨🇭') !!}</p>
+        <p class="mt-3 text-xs text-base-content/50">{{ \App\Models\Setting::get('footer_text', 'Made in 🇨🇭') }}</p>
 
         <!-- Dark mode toggle on login page -->
         <button onclick="toggleDarkMode()" class="mt-2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition" title="Toggle dark mode">

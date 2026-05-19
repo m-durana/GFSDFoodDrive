@@ -591,6 +591,19 @@ class UIImprovementsTest extends TestCase
         $this->assertEquals('Test Footer 2026', Setting::get('footer_text'));
     }
 
+    public function test_footer_text_is_html_escaped_when_rendered(): void
+    {
+        // S-24 regression: footer_text used to render with {!! !!} (raw HTML),
+        // allowing Santa-level XSS into every page footer (including login).
+        Setting::set('footer_text', '<script>alert("xss")</script>');
+        Setting::clearCache();
+
+        $response = $this->get(route('login'));
+        $response->assertOk();
+        $response->assertDontSee('<script>alert("xss")</script>', false);
+        $response->assertSee('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', false);
+    }
+
     public function test_backup_interval_hours_setting_persists(): void
     {
         Setting::set('backup_interval_hours', '8');
