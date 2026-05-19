@@ -612,7 +612,7 @@
                                 </p>
                                 <div>
                                     <label for="openrouteservice_key" class="block text-sm font-medium text-base-content/80">API Key</label>
-                                    <input type="text" name="openrouteservice_key" id="openrouteservice_key"
+                                    <input type="password" name="openrouteservice_key" id="openrouteservice_key"
                                         value=""
                                         class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm font-mono"
                                         placeholder="{{ \App\Models\Setting::get('openrouteservice_key', '') ? 'Leave blank to keep current API key' : 'Your ORS API key' }}">
