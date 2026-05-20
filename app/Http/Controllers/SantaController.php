@@ -250,10 +250,52 @@ class SantaController extends Controller
         // Packing System
         Setting::set('packing_system_enabled', $request->boolean('packing_system_enabled') ? '1' : '0');
         Setting::set('packing_fulfillment_alert_threshold', $request->input('packing_fulfillment_alert_threshold', '80'));
-        Setting::set('packing_show_names', $request->boolean('packing_show_names') ? '1' : '0');
+        // packing_show_names setting retired 2026-05-20 (replaced by User::canSeePii()). Don't write.
 
         // Coordinator positions
         Setting::set('coordinator_positions', $request->input('coordinator_positions', ''));
+
+        // Role-level sudoer (REL-47 extension). Only persist when the form
+        // actually rendered this section (sudoer_roles_present hidden marker).
+        if ($request->boolean('sudoer_roles_present')) {
+            $picked = $request->input('sudoer_roles', []);
+            $allowed = ['system_coordinator', 'coordinator', 'family', 'ninja'];
+            $clean = array_values(array_intersect((array) $picked, $allowed));
+            Setting::set('sudoer_roles', json_encode($clean));
+            \App\Models\User::clearSudoerRolesCache();
+        }
+
+        // Coordinator → section permission map (REL-44). Parsed from the
+        // textarea format "Position Name = section-a,section-b" per line.
+        if ($request->exists('coordinator_section_map_raw')) {
+            $raw = trim((string) $request->input('coordinator_section_map_raw', ''));
+            if ($raw === '') {
+                Setting::forget('coordinator_section_map');
+            } else {
+                $valid = array_keys(\App\Support\CoordinatorSections::SECTIONS);
+                $parsed = [];
+                foreach (preg_split('/\r?\n/', $raw) as $line) {
+                    $line = trim($line);
+                    if ($line === '' || ! str_contains($line, '=')) {
+                        continue;
+                    }
+                    [$pos, $secs] = array_map('trim', explode('=', $line, 2));
+                    if ($pos === '') {
+                        continue;
+                    }
+                    $cleanSecs = array_values(array_intersect(
+                        array_map('trim', explode(',', $secs)),
+                        $valid
+                    ));
+                    $parsed[$pos] = $cleanSecs;
+                }
+                Setting::set('coordinator_section_map', json_encode($parsed));
+            }
+        }
+
+        // Driver privacy + security
+        Setting::set('drivers_can_see_phone', $request->boolean('drivers_can_see_phone') ? '1' : '0');
+        Setting::set('driver_pin_lockout_enabled', $request->boolean('driver_pin_lockout_enabled') ? '1' : '0');
 
         // OpenRouteService API key
         if ($request->filled('openrouteservice_key')) {
@@ -1280,9 +1322,13 @@ class SantaController extends Controller
     {
         $roleToPermission = [
             'family' => 7, 'advisor' => 7,
+            'ninja' => 7,
             'coordinator' => 8,
+            'system_coordinator' => 8,
             'santa' => 9,
         ];
+
+        $positionRoles = ['coordinator', 'system_coordinator', 'santa'];
 
         $user = User::create([
             'username' => $request->username,
@@ -1291,7 +1337,7 @@ class SantaController extends Controller
             'password' => $request->password,
             'permission' => $roleToPermission[$request->role],
             'school_source' => $request->role !== 'santa' ? $request->school_source : null,
-            'position' => $request->role === 'coordinator' || $request->role === 'santa' ? $request->position : null,
+            'position' => in_array($request->role, $positionRoles, true) ? $request->position : null,
         ]);
 
         // Assign Spatie role if package is installed
@@ -1312,7 +1358,9 @@ class SantaController extends Controller
     {
         $roleToPermission = [
             'family' => 7,
+            'ninja' => 7,
             'coordinator' => 8,
+            'system_coordinator' => 8,
             'santa' => 9,
             'inactive' => 0,
         ];
@@ -1337,7 +1385,7 @@ class SantaController extends Controller
             'last_name' => $request->last_name,
             'permission' => $roleToPermission[$request->role],
             'school_source' => $request->role !== 'santa' ? $request->school_source : null,
-            'position' => in_array($request->role, ['coordinator', 'santa']) ? $request->position : null,
+            'position' => in_array($request->role, ['coordinator', 'system_coordinator', 'santa'], true) ? $request->position : null,
         ];
 
         // Only update password if one was provided
@@ -1363,7 +1411,9 @@ class SantaController extends Controller
     {
         $roleToPermission = [
             'family' => 7,
+            'ninja' => 7,
             'coordinator' => 8,
+            'system_coordinator' => 8,
             'santa' => 9,
             'inactive' => 0,
         ];
@@ -1387,9 +1437,11 @@ class SantaController extends Controller
                 'last_name' => $userData['last_name'] ?? $user->last_name,
                 'permission' => $roleToPermission[$role] ?? 7,
                 'school_source' => $role !== 'santa' ? ($userData['school_source'] ?? null) : null,
-                'position' => in_array($role, ['coordinator', 'santa']) ? ($userData['position'] ?? null) : null,
+                'position' => in_array($role, ['coordinator', 'system_coordinator', 'santa'], true) ? ($userData['position'] ?? null) : null,
                 'force_show_on_website' => isset($userData['force_show_on_website']),
                 'avatar_restricted' => isset($userData['avatar_restricted']),
+                // Sudoer is meaningless for the real Santa tier (they already have full access).
+                'is_sudoer' => $role === 'santa' ? false : in_array($userData['is_sudoer'] ?? '0', ['1', 1, true, 'true'], true),
             ];
 
             if (!empty($userData['password'])) {

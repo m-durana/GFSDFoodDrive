@@ -282,31 +282,46 @@ Route::get('/register-family', [SelfServiceController::class, 'create'])->name('
 Route::post('/register-family', [SelfServiceController::class, 'store'])->middleware('throttle:public-form-submit')->name('self-service.store');
 Route::get('/register-family/success', [SelfServiceController::class, 'success'])->name('self-service.success');
 
-// Warehouse routes: accessible by Coordinator and Santa roles
+// Warehouse routes: accessible by Coordinator and Santa roles.
+// Within the group, individual subgroups are scoped to specific sections
+// (Santa + System Coordinator always pass — see CoordinatorSection middleware).
 Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('warehouse')->name('warehouse.')->group(function () {
-    Route::get('/', [WarehouseController::class, 'index'])->name('index');
-    Route::get('/receive', [WarehouseController::class, 'receive'])->name('receive');
-    Route::post('/receive', [WarehouseController::class, 'store'])->name('store');
-    Route::get('/inventory', [WarehouseController::class, 'inventory'])->name('inventory');
-    Route::get('/transactions', [WarehouseController::class, 'transactions'])->name('transactions');
-    Route::get('/barcode/{barcode}', [WarehouseController::class, 'lookupBarcode'])->name('barcode.lookup');
-    Route::get('/gift-dropoff/{child}', [WarehouseController::class, 'giftDropoff'])->name('gift.dropoff');
-    Route::post('/gift-dropoff/{child}', [WarehouseController::class, 'confirmGiftDropoff'])->name('gift.dropoff.confirm');
-    Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
-    Route::get('/kiosk/gifts', [WarehouseController::class, 'giftKiosk'])->name('kiosk.gifts');
-    Route::get('/gifts-intake', [WarehouseController::class, 'giftsIntake'])->name('gifts-intake');
-    Route::get('/child/{child}/gifts', [WarehouseController::class, 'childGifts'])->name('child.gifts');
-    Route::get('/items/{item}', [WarehouseController::class, 'itemDetail'])->name('item.detail');
-    Route::put('/items/{item}/location', [WarehouseController::class, 'updateItemLocation'])->name('item.location');
-    Route::delete('/items/{item}/remove', [WarehouseController::class, 'removeItem'])->name('item.remove');
 
-    // Gift Bank
-    Route::get('/gift-bank', [GiftBankController::class, 'index'])->name('gift-bank');
-    Route::post('/gift-bank', [GiftBankController::class, 'store'])->name('gift-bank.store');
-    Route::post('/gift-bank/{item}/assign/{child}', [GiftBankController::class, 'assign'])->name('gift-bank.assign');
-    Route::post('/gift-bank/{item}/unassign', [GiftBankController::class, 'unassign'])->name('gift-bank.unassign');
-    Route::delete('/gift-bank/{item}', [GiftBankController::class, 'destroy'])->name('gift-bank.destroy');
-    Route::get('/gift-bank/suggestions/{child}', [GiftBankController::class, 'suggestions'])->name('gift-bank.suggestions');
+    // Generic warehouse views (index, inventory, barcode lookup) — open to
+    // anyone in food OR giving-tree, since both sections walk into the building.
+    Route::middleware('section:food,giving-tree')->group(function () {
+        Route::get('/', [WarehouseController::class, 'index'])->name('index');
+        Route::get('/inventory', [WarehouseController::class, 'inventory'])->name('inventory');
+        Route::get('/transactions', [WarehouseController::class, 'transactions'])->name('transactions');
+        Route::get('/barcode/{barcode}', [WarehouseController::class, 'lookupBarcode'])->name('barcode.lookup');
+        Route::get('/items/{item}', [WarehouseController::class, 'itemDetail'])->name('item.detail');
+        Route::put('/items/{item}/location', [WarehouseController::class, 'updateItemLocation'])->name('item.location');
+        Route::delete('/items/{item}/remove', [WarehouseController::class, 'removeItem'])->name('item.remove');
+    });
+
+    // Food intake + kiosk — Food section only.
+    Route::middleware('section:food')->group(function () {
+        Route::get('/receive', [WarehouseController::class, 'receive'])->name('receive');
+        Route::post('/receive', [WarehouseController::class, 'store'])->name('store');
+        Route::get('/kiosk', [WarehouseController::class, 'kiosk'])->name('kiosk');
+    });
+
+    // Gift drop-off + gift kiosk + gift intake + child gifts — Giving Tree only.
+    Route::middleware('section:giving-tree')->group(function () {
+        Route::get('/gift-dropoff/{child}', [WarehouseController::class, 'giftDropoff'])->name('gift.dropoff');
+        Route::post('/gift-dropoff/{child}', [WarehouseController::class, 'confirmGiftDropoff'])->name('gift.dropoff.confirm');
+        Route::get('/kiosk/gifts', [WarehouseController::class, 'giftKiosk'])->name('kiosk.gifts');
+        Route::get('/gifts-intake', [WarehouseController::class, 'giftsIntake'])->name('gifts-intake');
+        Route::get('/child/{child}/gifts', [WarehouseController::class, 'childGifts'])->name('child.gifts');
+
+        // Gift Bank — also Giving Tree.
+        Route::get('/gift-bank', [GiftBankController::class, 'index'])->name('gift-bank');
+        Route::post('/gift-bank', [GiftBankController::class, 'store'])->name('gift-bank.store');
+        Route::post('/gift-bank/{item}/assign/{child}', [GiftBankController::class, 'assign'])->name('gift-bank.assign');
+        Route::post('/gift-bank/{item}/unassign', [GiftBankController::class, 'unassign'])->name('gift-bank.unassign');
+        Route::delete('/gift-bank/{item}', [GiftBankController::class, 'destroy'])->name('gift-bank.destroy');
+        Route::get('/gift-bank/suggestions/{child}', [GiftBankController::class, 'suggestions'])->name('gift-bank.suggestions');
+    });
 });
 
 // Mobile scanner (public — QR token on packing list provides access)
@@ -320,7 +335,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/help/{topic}', [HelpController::class, 'show'])->name('help.show');
 });
 
-// Delivery Day map & location: Coordinator field-leads + Santa (C-06)
+// Delivery Day map & location: Coordinator field-leads + Santa (C-06).
+// Open to any Coordinator (field-lead duty is cross-functional); PII redaction
+// in the controller protects names/addresses for non-PII coordinators.
 Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('delivery-day')->name('delivery.')->group(function () {
     Route::get('/map', [DeliveryDayController::class, 'map'])->name('map');
     Route::get('/map-data', [DeliveryDayController::class, 'mapData'])->name('mapData');
@@ -342,8 +359,8 @@ Route::middleware(['auth', 'permission:santa'])->prefix('delivery-day')->name('d
     Route::post('/routes/{deliveryRoute}/mark-returning', [DeliveryDayController::class, 'markRouteReturning'])->name('markRouteReturning');
 });
 
-// Packing list routes
-Route::middleware(['auth', 'permission:coordinator,santa', \App\Http\Middleware\PackingSystemEnabled::class])->prefix('santa/packing')->name('packing.')->group(function () {
+// Packing list routes — Packing section.
+Route::middleware(['auth', 'permission:coordinator,santa', 'section:packing', \App\Http\Middleware\PackingSystemEnabled::class])->prefix('santa/packing')->name('packing.')->group(function () {
     Route::get('/', [PackingController::class, 'index'])->name('index');
     Route::get('/dashboard', [PackingController::class, 'dashboard'])->name('dashboard');
     Route::get('/summary', [PackingController::class, 'summary'])->name('summary');

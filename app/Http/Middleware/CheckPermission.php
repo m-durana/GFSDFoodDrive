@@ -26,6 +26,12 @@ class CheckPermission
 
         $user = $request->user();
 
+        // Sudoer flag elevates any user to Santa-equivalent access. Every
+        // mutating request is captured by LogMutatingActivity middleware.
+        if (in_array('santa', $roles, true) && $user->isSanta()) {
+            return $next($request);
+        }
+
         // Check Spatie roles if the trait is loaded
         if (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($roles)) {
             return $next($request);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Setting;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -15,12 +16,18 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $positions = array_values(array_filter(array_map(
+            'trim',
+            explode(',', Setting::get('coordinator_positions', ''))
+        )));
+
         return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'password' => ['nullable', Password::min(8)],
-            'role' => ['required', 'string', 'in:family,coordinator,santa,inactive'],
+            'role' => ['required', 'string', 'in:family,coordinator,system_coordinator,santa,ninja,inactive'],
             'school_source' => ['nullable', 'string', 'max:255'],
+            'position' => ['nullable', 'string', 'max:255', Rule::in($positions)],
         ];
     }
 }

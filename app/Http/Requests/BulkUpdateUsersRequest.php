@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class BulkUpdateUsersRequest extends FormRequest
@@ -16,13 +18,19 @@ class BulkUpdateUsersRequest extends FormRequest
 
     public function rules(): array
     {
+        $positions = array_values(array_filter(array_map(
+            'trim',
+            explode(',', Setting::get('coordinator_positions', ''))
+        )));
+
         return [
             'users' => ['required', 'array'],
             'users.*.first_name' => ['required', 'string', 'max:255'],
             'users.*.last_name' => ['required', 'string', 'max:255'],
-            'users.*.role' => ['required', 'string', 'in:family,coordinator,santa,inactive'],
+            'users.*.role' => ['required', 'string', 'in:family,coordinator,system_coordinator,santa,ninja,inactive'],
             'users.*.school_source' => ['nullable', 'string', 'max:255'],
-            'users.*.position' => ['nullable', 'string', 'max:255'],
+            'users.*.position' => ['nullable', 'string', 'max:255', Rule::in($positions)],
+            'users.*.is_sudoer' => ['nullable', 'in:0,1,true,false'],
             'users.*.password' => ['nullable', 'string', Password::min(8)],
         ];
     }

@@ -30,9 +30,11 @@ class RoleSeeder extends Seeder
         $Role = \Spatie\Permission\Models\Role::class;
         $Role::findOrCreate('self_service', 'web');
         $Role::findOrCreate('family', 'web');
+        $Role::findOrCreate('ninja', 'web');
         $Role::findOrCreate('coordinator', 'web');
+        $Role::findOrCreate('system_coordinator', 'web');
         $Role::findOrCreate('santa', 'web');
 
-        $this->command->info('Roles created: self_service, family, coordinator, santa');
+        $this->command->info('Roles created: self_service, family, ninja, coordinator, system_coordinator, santa');
     }
 }

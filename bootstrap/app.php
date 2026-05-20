@@ -14,8 +14,17 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
+            'section' => \App\Http\Middleware\CoordinatorSection::class,
         ]);
+        // Audit every state-changing request by an authenticated user.
+        // Sudoer actions are tagged separately. See LogMutatingActivity.
+        $middleware->appendToGroup('web', \App\Http\Middleware\LogMutatingActivity::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // REL-11 Sentry — DSN in .env (SENTRY_LARAVEL_DSN).
+        $exceptions->reportable(function (\Throwable $e) {
+            if (app()->bound('sentry')) {
+                app('sentry')->captureException($e);
+            }
+        });
     })->create();

@@ -295,6 +295,88 @@
                             </div>
                         </div>
 
+                        <!-- Role-level Sudoer (REL-47 extension) -->
+                        <div id="sudoer-roles" class="bg-base-100 shadow-xs sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6 space-y-3">
+                                <h3 class="text-lg font-medium text-base-content">Roles with Santa-equivalent access (sudoer roles)</h3>
+                                <p class="text-sm text-base-content/60">
+                                    Every user who holds one of the ticked roles immediately gains Santa-equivalent permissions for as long as the box stays checked. Every mutating request (POST/PUT/PATCH/DELETE) is audit-logged with the <code>is_sudoer</code> flag. Use sparingly.
+                                </p>
+                                @php
+                                    $sudoerRoles = \App\Models\User::sudoerRolesList();
+                                    $availableRoles = ['system_coordinator', 'coordinator', 'family', 'ninja'];
+                                @endphp
+                                <div class="flex flex-col gap-2">
+                                    <input type="hidden" name="sudoer_roles_present" value="1">
+                                    @foreach($availableRoles as $role)
+                                        <label class="inline-flex items-center gap-2 text-sm">
+                                            <input type="checkbox" name="sudoer_roles[]" value="{{ $role }}"
+                                                {{ in_array($role, $sudoerRoles, true) ? 'checked' : '' }}
+                                                class="rounded-sm border-base-300 text-rose-600 shadow-xs">
+                                            <span>
+                                                <span class="font-medium">{{ $role }}</span>
+                                                @if($role === 'system_coordinator')
+                                                    <span class="text-xs text-base-content/60">— the Coordinator subgroup with PII access (position name: "System Engineer")</span>
+                                                @endif
+                                            </span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coordinator Section Permission Map (REL-44) -->
+                        <div id="coordinator-section-map" class="bg-base-100 shadow-xs sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6 space-y-3">
+                                <h3 class="text-lg font-medium text-base-content">Coordinator → Section permission map</h3>
+                                <p class="text-sm text-base-content/60">
+                                    Maps each coordinator position to the sections of the app they can access. Santa and System Coordinator always see everything; this only governs other Coordinators. Sections:
+                                    <code class="text-xs">giving-tree, food, packing, delivery, business, media</code>.
+                                </p>
+                                <p class="text-xs text-base-content/60">Format: one position per line, then <code>=</code>, then a comma-separated list of section slugs. Leave blank to reset to defaults.</p>
+                                @php
+                                    $rawMap = \App\Models\Setting::get('coordinator_section_map', null);
+                                    $decoded = $rawMap ? json_decode($rawMap, true) : \App\Support\CoordinatorSections::DEFAULT_MAP;
+                                    $textValue = '';
+                                    if (is_array($decoded)) {
+                                        foreach ($decoded as $pos => $secs) {
+                                            $textValue .= $pos . ' = ' . (is_array($secs) ? implode(',', $secs) : $secs) . "\n";
+                                        }
+                                    }
+                                @endphp
+                                <textarea name="coordinator_section_map_raw" rows="8"
+                                    class="block w-full rounded-md border-base-300 dark:bg-gray-700 dark:text-gray-100 shadow-xs focus:border-primary focus:ring-primary sm:text-sm font-mono"
+                                    placeholder="Giving Tree Coordinator = giving-tree&#10;Food Manager = food,packing">{{ trim($textValue) }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Driver Privacy & Security -->
+                        <div id="driver-privacy" class="bg-base-100 shadow-xs sm:rounded-lg mt-6 scroll-mt-20">
+                            <div class="p-6 space-y-4">
+                                <h3 class="text-lg font-medium text-base-content">Driver privacy &amp; security</h3>
+                                <label class="flex items-center gap-3 text-sm">
+                                    <input type="hidden" name="drivers_can_see_phone" value="0">
+                                    <input type="checkbox" name="drivers_can_see_phone" value="1"
+                                        class="checkbox checkbox-sm"
+                                        {{ \App\Models\Setting::get('drivers_can_see_phone', '0') === '1' ? 'checked' : '' }}>
+                                    <span>
+                                        <span class="font-medium">Show family phone numbers to drivers</span>
+                                        <span class="block text-xs text-base-content/60">When off, drivers see only the family number + (tap-to-reveal) address.</span>
+                                    </span>
+                                </label>
+                                <label class="flex items-center gap-3 text-sm">
+                                    <input type="hidden" name="driver_pin_lockout_enabled" value="0">
+                                    <input type="checkbox" name="driver_pin_lockout_enabled" value="1"
+                                        class="checkbox checkbox-sm"
+                                        {{ \App\Models\Setting::get('driver_pin_lockout_enabled', '1') === '1' ? 'checked' : '' }}>
+                                    <span>
+                                        <span class="font-medium">Lock out PIN brute-force attempts</span>
+                                        <span class="block text-xs text-base-content/60">Lock the driver-PIN screen for 15 minutes after 5 failed attempts (per IP, per route).</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Paper Size -->
                         <div id="paper-size" class="bg-base-100 shadow-xs sm:rounded-lg mt-6 scroll-mt-20">
                             <div class="p-6">
@@ -569,16 +651,9 @@
                                             Show an alert on the packing dashboard when the fulfillment rate drops below this percentage.
                                         </p>
                                     </div>
-                                    <div>
-                                        <label class="inline-flex items-center">
-                                            <input type="checkbox" name="packing_show_names" value="1" {{ Setting::get('packing_show_names', '1') === '1' ? 'checked' : '' }}
-                                                class="rounded-sm border-base-300 text-primary shadow-xs focus:ring-primary">
-                                            <span class="ml-2 text-sm text-base-content/80">Show family names in packing views</span>
-                                        </label>
-                                        <p class="mt-1 text-xs text-base-content/60">
-                                            When disabled, packing lists, index, and print views show "Family #NNN" instead of the family name.
-                                        </p>
-                                    </div>
+                                    {{-- packing_show_names setting retired 2026-05-20 — replaced by the
+                                         User::canSeePii() rule (Santa + System Coordinator only see real names).
+                                         See PROJECT_OVERVIEW.md §3.2 for the privacy model. --}}
                                 </div>
                             </div>
                         </div>

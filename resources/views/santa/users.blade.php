@@ -251,6 +251,15 @@
                                                             class="rounded-sm border-base-300 text-primary dark:text-primary shadow-xs disabled:cursor-not-allowed">
                                                         <span class="text-base-content/80">Lock avatar</span>
                                                     </label>
+                                                    {{-- Sudoer flag: grants Santa-equivalent access while on. Every mutating
+                                                         request is tagged in the audit log (LogSudoActivity middleware). --}}
+                                                    <label class="inline-flex items-center gap-1 whitespace-nowrap" :class="role === 'santa' ? 'opacity-40' : ''" title="Grant Santa-equivalent permissions. Every action is audit-logged.">
+                                                        <input type="hidden" name="users[{{ $u->id }}][is_sudoer]" value="0">
+                                                        <input type="checkbox" name="users[{{ $u->id }}][is_sudoer]" value="1" {{ $u->is_sudoer ? 'checked' : '' }}
+                                                            :disabled="role === 'santa'"
+                                                            class="rounded-sm border-base-300 text-rose-600 shadow-xs disabled:cursor-not-allowed">
+                                                        <span class="text-rose-700 dark:text-rose-300 font-medium">Sudo (Santa-equiv)</span>
+                                                    </label>
                                                 </div>
                                             </td>
                                             <!-- Actions -->
