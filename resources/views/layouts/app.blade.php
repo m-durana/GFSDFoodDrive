@@ -8,6 +8,7 @@
     <title>{{ config('app.name', 'GFSD Food Drive') }}</title>
 
     @include('partials.favicon')
+    @include('partials.pwa')
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
