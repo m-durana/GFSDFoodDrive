@@ -215,12 +215,8 @@ class DeliveryDayController extends Controller
         ]);
     }
 
-    public function addLog(Request $request, Family $family): RedirectResponse
+    public function addLog(\App\Http\Requests\AddDeliveryLogRequest $request, Family $family): RedirectResponse
     {
-        $request->validate([
-            'status' => ['required', 'string', \Illuminate\Validation\Rule::in(\App\Enums\DeliveryLogStatus::values())],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
 
         DB::transaction(function () use ($request, $family) {
             $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
