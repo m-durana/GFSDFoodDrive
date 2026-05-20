@@ -22,6 +22,7 @@ class DeliveryOnTheWay
             $message .= "\n\nTrack: {$statusUrl}";
         }
 
-        return SmsService::send($phone, $message);
+        SmsService::dispatch($phone, $message);
+        return true;
     }
 }

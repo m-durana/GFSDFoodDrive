@@ -63,7 +63,7 @@ class DeliveryRouteController extends Controller
                 ]);
             }
             $route->update(['stop_count' => count($request->family_ids)]);
-            $this->routePlanning->refreshRouteGeometry($route->fresh());
+            \App\Jobs\RefreshRouteGeometryJob::dispatch($route->id);
         }
 
         return redirect()->route('delivery.index', ['tab' => 'routes'])

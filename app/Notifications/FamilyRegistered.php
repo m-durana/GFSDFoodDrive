@@ -22,6 +22,7 @@ class FamilyRegistered
             $message .= "\n\nTrack your status: {$statusUrl}";
         }
 
-        return SmsService::send($phone, $message);
+        SmsService::dispatch($phone, $message);
+        return true;
     }
 }

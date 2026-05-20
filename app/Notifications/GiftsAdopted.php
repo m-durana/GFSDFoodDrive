@@ -26,6 +26,7 @@ class GiftsAdopted
             $message .= "\n\nStatus: {$statusUrl}";
         }
 
-        return SmsService::send($phone, $message);
+        SmsService::dispatch($phone, $message);
+        return true;
     }
 }

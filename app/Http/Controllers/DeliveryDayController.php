@@ -539,7 +539,7 @@ class DeliveryDayController extends Controller
 
             return $added;
         });
-        $this->routePlanning->refreshRouteGeometry($deliveryRoute->fresh());
+        \App\Jobs\RefreshRouteGeometryJob::dispatch($deliveryRoute->id);
         $deliveryRoute->refresh();
 
         return response()->json([

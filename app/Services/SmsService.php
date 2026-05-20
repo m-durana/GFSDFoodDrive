@@ -2,11 +2,30 @@
 
 namespace App\Services;
 
+use App\Jobs\SendSmsJob;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
+    /**
+     * Queue an SMS for background delivery via SendSmsJob. Use this from
+     * request-thread code (observers, controllers, notifications). In tests
+     * QUEUE_CONNECTION=sync means it runs inline; in prod it goes through
+     * the configured queue driver.
+     */
+    public static function dispatch(string $to, string $message): void
+    {
+        if (! static::isAvailable()) {
+            return;
+        }
+        $normalized = static::normalizePhone($to);
+        if (! $normalized) {
+            return;
+        }
+        SendSmsJob::dispatch($normalized, $message);
+    }
+
     /**
      * Check if SMS is configured and enabled.
      */

@@ -16,6 +16,7 @@ class DeliveryComplete
         $message = "Hi {$name}! Your gifts from the GFSD Food Drive have been delivered. "
             . "Happy holidays from the Granite Falls community!";
 
-        return SmsService::send($phone, $message);
+        SmsService::dispatch($phone, $message);
+        return true;
     }
 }
