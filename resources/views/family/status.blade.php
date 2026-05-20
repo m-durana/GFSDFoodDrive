@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="" data-theme="gfsd">
+<html lang="{{ app()->getLocale() }}" class="" data-theme="gfsd">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Family Status - GFSD Food Drive</title>
+    <title>{{ __('Family Status') }} - {{ __('GFSD Food Drive') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     <script>
@@ -18,8 +18,14 @@
         <!-- Header -->
         <header class="bg-primary dark:bg-primary/30 text-white">
             <div class="max-w-2xl mx-auto px-4 sm:px-6 py-8 text-center">
-                <h1 class="text-3xl sm:text-4xl font-bold">GFSD Food Drive</h1>
-                <p class="text-primary-content/80 text-lg mt-1">Family Status</p>
+                <div class="flex justify-end mb-2">
+                    @php $other = app()->getLocale() === 'es' ? 'en' : 'es'; @endphp
+                    <a href="?{{ http_build_query(array_merge(request()->query(), ['lang' => $other])) }}" class="text-primary-content/80 hover:text-white text-xs underline">
+                        {{ $other === 'es' ? 'Español' : 'English' }}
+                    </a>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold">{{ __('GFSD Food Drive') }}</h1>
+                <p class="text-primary-content/80 text-lg mt-1">{{ __('Family Status') }}</p>
             </div>
         </header>
 
@@ -27,18 +33,18 @@
             <!-- Family Greeting -->
             <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300 text-center">
                 <h2 class="text-2xl font-bold text-base-content">
-                    Hello, {{ $family->family_name }} family!
+                    {{ __('Hello, :name family!', ['name' => $family->family_name]) }}
                 </h2>
                 @if($family->family_number)
                     <span class="inline-flex items-center mt-2 px-3 py-1 rounded-full text-sm font-medium bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-content/80">
-                        Family #{{ $family->family_number }}
+                        {{ __('Family #:n', ['n' => $family->family_number]) }}
                     </span>
                 @endif
             </div>
 
             <!-- Status Timeline -->
             <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
-                <h3 class="text-lg font-semibold text-base-content mb-6">Your Status</h3>
+                <h3 class="text-lg font-semibold text-base-content mb-6">{{ __('Your Status') }}</h3>
                 <div class="relative">
                     @foreach($steps as $i => $step)
                         <div class="flex items-start mb-8 last:mb-0">
@@ -87,7 +93,7 @@
             <!-- Children Summary Card -->
             @if($totalChildren > 0)
                 <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
-                    <h3 class="text-lg font-semibold text-base-content mb-2">Gift Collection</h3>
+                    <h3 class="text-lg font-semibold text-base-content mb-2">{{ __('Gift Collection') }}</h3>
                     @if($childrenWithGifts > 0)
                         <div class="flex items-center space-x-3">
                             <div class="shrink-0">
@@ -96,11 +102,11 @@
                                 </svg>
                             </div>
                             <p class="text-base-content/80">
-                                Gifts are being collected for
-                                <span class="font-bold text-green-600 dark:text-green-400">{{ $childrenWithGifts }}</span>
-                                of
-                                <span class="font-bold">{{ $totalChildren }}</span>
-                                {{ $totalChildren === 1 ? 'child' : 'children' }}.
+                                {!! __('Gifts are being collected for :with of :total :children.', [
+                                    'with' => '<span class="font-bold text-green-600 dark:text-green-400">'.$childrenWithGifts.'</span>',
+                                    'total' => '<span class="font-bold">'.$totalChildren.'</span>',
+                                    'children' => $totalChildren === 1 ? __('child') : __('children'),
+                                ]) !!}
                             </p>
                         </div>
                         <!-- Progress bar -->
@@ -109,7 +115,10 @@
                         </div>
                     @else
                         <p class="text-base-content/60">
-                            Gift collection has not started yet for your {{ $totalChildren }} {{ $totalChildren === 1 ? 'child' : 'children' }}. Check back soon!
+                            {{ __('Gift collection has not started yet for your :total :children. Check back soon!', [
+                                'total' => $totalChildren,
+                                'children' => $totalChildren === 1 ? __('child') : __('children'),
+                            ]) }}
                         </p>
                     @endif
                 </div>
@@ -118,19 +127,19 @@
             <!-- Packing Progress Card -->
             @if($packingProgress)
                 <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
-                    <h3 class="text-lg font-semibold text-base-content mb-3">Box Packing Progress</h3>
+                    <h3 class="text-lg font-semibold text-base-content mb-3">{{ __('Box Packing Progress') }}</h3>
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm text-base-content/60">
-                            {{ $packingProgress['packed'] }} of {{ $packingProgress['total'] }} items packed
+                            {{ __(':packed of :total items packed', ['packed' => $packingProgress['packed'], 'total' => $packingProgress['total']]) }}
                         </span>
                         @php
                             $ps = $packingProgress['status'];
                             $packingLabel = match($ps->value) {
-                                'pending' => 'Not Started',
-                                'in_progress' => 'In Progress',
-                                'complete' => 'Complete',
-                                'verified' => 'Verified',
-                                default => 'Pending',
+                                'pending' => __('Not Started'),
+                                'in_progress' => __('In Progress'),
+                                'complete' => __('Complete'),
+                                'verified' => __('Verified'),
+                                default => __('Pending'),
                             };
                             $packingColor = match($ps->value) {
                                 'pending' => 'bg-gray-100 dark:bg-gray-600 text-base-content/80',
@@ -148,9 +157,9 @@
                         <div class="bg-green-500 dark:bg-green-600 h-2.5 rounded-full transition-all" style="width: {{ $packingProgress['percentage'] }}%"></div>
                     </div>
                     @if($packingProgress['status']->value === 'verified')
-                        <p class="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">Your box has been packed and verified!</p>
+                        <p class="mt-2 text-sm text-green-600 dark:text-green-400 font-medium">{{ __('Your box has been packed and verified!') }}</p>
                     @elseif($packingProgress['status']->value === 'complete')
-                        <p class="mt-2 text-sm text-blue-600 dark:text-blue-400">Your box is packed and awaiting verification.</p>
+                        <p class="mt-2 text-sm text-blue-600 dark:text-blue-400">{{ __('Your box is packed and awaiting verification.') }}</p>
                     @endif
                 </div>
             @endif
@@ -158,27 +167,27 @@
             <!-- Delivery Info Card -->
             @if($family->delivery_date)
                 <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300">
-                    <h3 class="text-lg font-semibold text-base-content mb-3">Delivery Information</h3>
+                    <h3 class="text-lg font-semibold text-base-content mb-3">{{ __('Delivery Information') }}</h3>
                     <dl class="space-y-2 text-sm">
                         <div class="flex justify-between">
-                            <dt class="text-base-content/60">Date</dt>
+                            <dt class="text-base-content/60">{{ __('Date') }}</dt>
                             <dd class="font-medium text-base-content">{{ $family->delivery_date }}</dd>
                         </div>
                         @if($family->delivery_time)
                             <div class="flex justify-between">
-                                <dt class="text-base-content/60">Time Window</dt>
+                                <dt class="text-base-content/60">{{ __('Time Window') }}</dt>
                                 <dd class="font-medium text-base-content">{{ $family->delivery_time }}</dd>
                             </div>
                         @endif
                         @if($family->delivery_preference)
                             <div class="flex justify-between">
-                                <dt class="text-base-content/60">Preference</dt>
+                                <dt class="text-base-content/60">{{ __('Preference') }}</dt>
                                 <dd class="font-medium text-base-content">{{ $family->delivery_preference }}</dd>
                             </div>
                         @endif
                         @if($family->delivery_status)
                             <div class="flex justify-between items-center">
-                                <dt class="text-base-content/60">Status</dt>
+                                <dt class="text-base-content/60">{{ __('Status') }}</dt>
                                 <dd>
                                     @php $ds = $family->delivery_status; @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
@@ -195,9 +204,9 @@
 
             <!-- Contact Card -->
             <div class="bg-base-100 rounded-lg shadow-xs p-6 border border-base-300 text-center">
-                <h3 class="text-lg font-semibold text-base-content mb-2">Questions?</h3>
+                <h3 class="text-lg font-semibold text-base-content mb-2">{{ __('Questions?') }}</h3>
                 <p class="text-base-content/60 text-sm">
-                    Contact us at
+                    {{ __('Contact us at') }}
                     <a href="mailto:fooddrive@gfalls.wednet.edu" class="text-primary dark:text-primary hover:underline font-medium">
                         fooddrive@gfalls.wednet.edu
                     </a>

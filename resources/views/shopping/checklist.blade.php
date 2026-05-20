@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" id="shopping-html">
+<html lang="{{ app()->getLocale() }}" id="shopping-html">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Shopping List — Family #{{ $family->family_number }}</title>
+    <title>{{ __('Shopping List') }} — {{ __('Family #:n', ['n' => $family->family_number]) }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     {{-- REL-40: opt into Tailwind class-based dark mode so prefers-color-scheme
          and the manual toggle below can both flip via the `dark` class on <html>. --}}
@@ -26,18 +26,22 @@
         <div class="bg-blue-700 dark:bg-blue-900 text-white rounded-xl p-4 mb-4 shadow-xs">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-xl font-bold">Family #{{ $family->family_number }}</h1>
-                    <p class="text-white/80 text-sm">{{ $family->number_of_family_members }} members</p>
+                    <h1 class="text-xl font-bold">{{ __('Family #:n', ['n' => $family->family_number]) }}</h1>
+                    <p class="text-white/80 text-sm">{{ __(':n members', ['n' => $family->number_of_family_members]) }}</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <button type="button" id="dark-toggle" aria-label="Toggle dark mode"
+                    @php $other = app()->getLocale() === 'es' ? 'en' : 'es'; @endphp
+                    <a href="?{{ http_build_query(array_merge(request()->query(), ['lang' => $other])) }}" class="text-white/80 hover:text-white text-xs underline">
+                        {{ $other === 'es' ? 'ES' : 'EN' }}
+                    </a>
+                    <button type="button" id="dark-toggle" aria-label="{{ __('Toggle dark mode') }}"
                         class="text-white/80 hover:text-white text-lg leading-none w-8 h-8 rounded-full hover:bg-white/10 transition">
                         <span class="dark:hidden">&#9790;</span>
                         <span class="hidden dark:inline">&#9728;</span>
                     </button>
                     <div class="text-right">
                         <div class="text-3xl font-bold" id="progress-count">0</div>
-                        <div class="text-white/80 text-xs">of {{ $totalItems }} items</div>
+                        <div class="text-white/80 text-xs">{{ __('of :n items', ['n' => $totalItems]) }}</div>
                     </div>
                 </div>
             </div>
@@ -49,15 +53,15 @@
 
         @if(count($grouped) === 0)
             <div class="bg-white dark:bg-gray-800 rounded-xl p-6 text-center text-gray-500 dark:text-gray-400 shadow-xs">
-                No items in the shopping list for this family.
+                {{ __('No items in the shopping list for this family.') }}
             </div>
         @else
             @php
                 $categoryLabels = [
-                    'canned' => 'Canned Goods',
-                    'dry' => 'Dry Goods',
-                    'personal' => 'Personal Care',
-                    'condiment' => 'Condiments & Extras',
+                    'canned' => __('Canned Goods'),
+                    'dry' => __('Dry Goods'),
+                    'personal' => __('Personal Care'),
+                    'condiment' => __('Condiments & Extras'),
                 ];
                 $categoryColors = [
                     'canned' => 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/40 dark:text-orange-200 dark:border-orange-800',
@@ -97,7 +101,7 @@
         <!-- Reset button -->
         <div class="mt-6 mb-8 text-center">
             <button onclick="resetChecklist()" class="text-sm text-gray-400 dark:text-gray-500 hover:text-primary dark:hover:text-gray-200 transition">
-                Reset Checklist
+                {{ __('Reset Checklist') }}
             </button>
         </div>
     </div>
@@ -154,7 +158,7 @@
         }
 
         function resetChecklist() {
-            if (confirm('Reset all checked items?')) {
+            if (confirm({!! json_encode(__('Reset all checked items?')) !!})) {
                 localStorage.removeItem(STORAGE_KEY);
                 updateProgress();
             }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="{{ app()->getLocale() }}" class="">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Adopt a Tag - GFSD Food Drive</title>
+    <title>{{ __('Adopt a Tag') }} - {{ __('GFSD Food Drive') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     <script>
@@ -18,8 +18,14 @@
         <!-- Header -->
         <header class="bg-primary dark:bg-primary/30 text-white">
             <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <a href="{{ route('adopt.index') }}" class="text-primary-content/80 hover:text-white text-sm transition">&larr; Back to all tags</a>
-                <h1 class="text-2xl font-bold mt-2">Adopt a Tag</h1>
+                <div class="flex justify-end mb-2">
+                    @php $other = app()->getLocale() === 'es' ? 'en' : 'es'; @endphp
+                    <a href="?{{ http_build_query(array_merge(request()->query(), ['lang' => $other])) }}" class="text-primary-content/80 hover:text-white text-xs underline">
+                        {{ $other === 'es' ? 'Español' : 'English' }}
+                    </a>
+                </div>
+                <a href="{{ route('adopt.index') }}" class="text-primary-content/80 hover:text-white text-sm transition">&larr; {{ __('Back to all tags') }}</a>
+                <h1 class="text-2xl font-bold mt-2">{{ __('Adopt a Tag') }}</h1>
             </div>
         </header>
 
@@ -29,9 +35,9 @@
                 <div class="flex items-center space-x-4 mb-6">
                     <x-gender-icon :gender="$child->gender" size="lg" />
                     <div>
-                        <h2 class="text-xl font-bold">{{ strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child') }}, Age {{ $child->age ?? '?' }}</h2>
+                        <h2 class="text-xl font-bold">{{ __(strtolower($child->gender ?? '') === 'other' ? 'Child' : ($child->gender ?? 'Child')) }}, {{ __('Age :age', ['age' => $child->age ?? '?']) }}</h2>
                         <p class="text-sm text-base-content/60">
-                            Family #{{ $child->family->family_number }}
+                            {{ __('Family #:n', ['n' => $child->family->family_number]) }}
                             @if($child->school) &middot; {{ $child->school }} @endif
                         </p>
                     </div>
@@ -40,42 +46,42 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     @if($child->clothes_size)
                         <div>
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">Clothing Size</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('Clothing Size') }}</h4>
                             <p class="text-sm">{{ $child->clothes_size }}</p>
                         </div>
                     @endif
 
                     @if($child->clothing_styles)
                         <div>
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">Clothing Styles</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('Clothing Styles') }}</h4>
                             <p class="text-sm">{{ $child->clothing_styles }}</p>
                         </div>
                     @endif
 
                     @if($child->clothing_options)
                         <div>
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">Clothing Preferences</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('Clothing Preferences') }}</h4>
                             <p class="text-sm">{{ $child->clothing_options }}</p>
                         </div>
                     @endif
 
                     @if($child->all_sizes)
                         <div>
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">All Sizes</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('All Sizes') }}</h4>
                             <p class="text-sm">{{ $child->all_sizes }}</p>
                         </div>
                     @endif
 
                     @if($child->toy_ideas)
                         <div class="sm:col-span-2">
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">Toy Ideas / Interests</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('Toy Ideas / Interests') }}</h4>
                             <p class="text-sm">{{ $child->toy_ideas }}</p>
                         </div>
                     @endif
 
                     @if($child->gift_preferences)
                         <div class="sm:col-span-2">
-                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">Gift Preferences</h4>
+                            <h4 class="text-xs font-semibold uppercase text-base-content/60 mb-1">{{ __('Gift Preferences') }}</h4>
                             <p class="text-sm">{{ $child->gift_preferences }}</p>
                         </div>
                     @endif
@@ -90,18 +96,18 @@
             @endphp
             <div class="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4 mb-6">
                 <p class="text-sm text-amber-800 dark:text-amber-200">
-                    Please bring in all gifts <strong>UNWRAPPED</strong> with this tag attached{!! $deadline ? ' by <strong>' . e($deadline) . '</strong>' : '' !!}.
+                    {!! __('Please bring in all gifts :unwrapped with this tag attached', ['unwrapped' => '<strong>'.__('UNWRAPPED').'</strong>']) !!}{!! $deadline ? ' '.__('by').' <strong>' . e($deadline) . '</strong>' : '' !!}.
                     @if($contactEmail)
-                        Questions? Email us at: <a href="mailto:{{ $contactEmail }}" class="underline">{{ $contactEmail }}</a>{{ $contactPhone ? " or contact us at: {$contactPhone}" : '' }}.
+                        {!! __('Questions? Email us at: :email', ['email' => '<a href="mailto:'.$contactEmail.'" class="underline">'.$contactEmail.'</a>']) !!}{{ $contactPhone ? ' '.__('or contact us at: :phone', ['phone' => $contactPhone]) : '' }}.
                     @endif
                 </p>
             </div>
 
             <!-- Claim Form -->
             <div class="bg-base-100 rounded-lg shadow-xs border border-base-300 p-6">
-                <h3 class="text-lg font-semibold mb-4">Adopt This Tag</h3>
+                <h3 class="text-lg font-semibold mb-4">{{ __('Adopt This Tag') }}</h3>
                 <p class="text-sm text-base-content/70 mb-4">
-                    By adopting this tag, you agree to purchase a gift for this child and drop it off before the deadline.
+                    {{ __('By adopting this tag, you agree to purchase a gift for this child and drop it off before the deadline.') }}
                 </p>
 
                 <form method="POST" action="{{ route('adopt.claim', $child) }}">
@@ -109,7 +115,7 @@
 
                     <div class="space-y-4">
                         <div>
-                            <label for="adopter_name" class="block text-sm font-medium text-base-content/80">Your Name *</label>
+                            <label for="adopter_name" class="block text-sm font-medium text-base-content/80">{{ __('Your Name *') }}</label>
                             <input type="text" id="adopter_name" name="adopter_name" value="{{ old('adopter_name') }}" required
                                 class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 shadow-xs focus:border-primary focus:ring-primary sm:text-sm"
                                 placeholder="Jane Smith">
@@ -119,7 +125,7 @@
                         </div>
 
                         <div>
-                            <label for="adopter_email" class="block text-sm font-medium text-base-content/80">Email *</label>
+                            <label for="adopter_email" class="block text-sm font-medium text-base-content/80">{{ __('Email *') }}</label>
                             <input type="email" id="adopter_email" name="adopter_email" value="{{ old('adopter_email') }}" required
                                 class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 shadow-xs focus:border-primary focus:ring-primary sm:text-sm"
                                 placeholder="jane@example.com">
@@ -130,7 +136,7 @@
 
                         @if(\App\Models\Setting::get('notifications_enabled', '0') === '1' && \App\Models\Setting::get('twilio_sid'))
                             <div>
-                                <label for="adopter_phone" class="block text-sm font-medium text-base-content/80">Phone <span class="text-gray-400 font-normal">(optional, for SMS updates)</span></label>
+                                <label for="adopter_phone" class="block text-sm font-medium text-base-content/80">{{ __('Phone') }} <span class="text-gray-400 font-normal">{{ __('(optional, for SMS updates)') }}</span></label>
                                 <input type="tel" id="adopter_phone" name="adopter_phone" value="{{ old('adopter_phone') }}"
                                     class="mt-1 block w-full rounded-md border-base-300 dark:bg-gray-700 shadow-xs focus:border-primary focus:ring-primary sm:text-sm"
                                     placeholder="(360) 555-1234">
@@ -145,7 +151,7 @@
                         @enderror
 
                         <button type="submit" class="w-full px-6 py-3 bg-primary text-white rounded-md hover:opacity-90 font-medium transition text-center">
-                            Adopt This Tag
+                            {{ __('Adopt This Tag') }}
                         </button>
                     </div>
                 </form>
@@ -154,9 +160,9 @@
 
         <x-site-footer variant="dark">
             <x-slot name="links">
-                <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
-                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">All Tags</a>
-                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+                <a href="{{ route('home') }}" class="hover:text-white transition">{{ __('Home') }}</a>
+                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">{{ __('All Tags') }}</a>
+                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">{{ __('Contact') }}</a>
             </x-slot>
         </x-site-footer>
     </div>

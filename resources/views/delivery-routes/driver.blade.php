@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $route->name }} - Delivery Route</title>
+    <title>{{ $route->name }} - {{ __('Delivery Route') }}</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -36,7 +36,11 @@
                     <p class="text-xs text-primary-content/80 mt-0.5" id="heading-to-text"></p>
                 </div>
                 <div class="flex flex-col items-end text-xs text-primary-content">
-                    <span class="uppercase tracking-wider">Driver View</span>
+                    @php $other = app()->getLocale() === 'es' ? 'en' : 'es'; @endphp
+                    <a href="?{{ http_build_query(array_merge(request()->query(), ['lang' => $other])) }}" class="text-primary-content/80 hover:text-white text-xs underline mb-0.5">
+                        {{ $other === 'es' ? 'ES' : 'EN' }}
+                    </a>
+                    <span class="uppercase tracking-wider">{{ __('Driver View') }}</span>
                     <span class="font-semibold">{{ now()->format('M j') }}</span>
                 </div>
             </div>
@@ -47,7 +51,7 @@
 
         <!-- Map -->
         <div class="bg-white rounded-2xl shadow-xs overflow-hidden border border-slate-200">
-            <div class="px-4 py-2 border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">Route Map</div>
+            <div class="px-4 py-2 border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">{{ __('Route Map') }}</div>
             <div id="route-map"></div>
         </div>
 
@@ -59,7 +63,7 @@
             $pct = $total > 0 ? round(($delivered / $total) * 100) : 0;
         @endphp
         <div class="flex items-center justify-between text-sm mb-1">
-            <span class="font-medium text-slate-700">Progress</span>
+            <span class="font-medium text-slate-700">{{ __('Progress') }}</span>
             <span class="text-slate-500" id="progress-text">{{ $delivered }}/{{ $total }} ({{ $pct }}%)</span>
         </div>
         <div class="w-full bg-slate-200 rounded-full h-2">
@@ -70,11 +74,11 @@
         <!-- Location sharing banner -->
         <div class="bg-white rounded-2xl shadow-xs border border-slate-200 px-4 py-3 flex items-center justify-between" id="location-banner">
             <div class="text-xs text-slate-600">
-                <div class="font-semibold text-slate-700 mb-0.5">Location Sharing</div>
-                <div id="location-status">Location sharing: tap Start</div>
+                <div class="font-semibold text-slate-700 mb-0.5">{{ __('Location Sharing') }}</div>
+                <div id="location-status">{{ __('Location sharing: tap Start') }}</div>
             </div>
             <button onclick="toggleLocationSharing()" id="location-btn"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold">Start</button>
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold">{{ __('Start') }}</button>
         </div>
 
         <!-- Stops List -->
@@ -93,9 +97,9 @@
                                 {!! $isDone ? '&#10003;' : $family->route_order !!}
                             </span>
                             <div>
-                                <div class="font-semibold text-slate-900">Stop {{ $family->route_order }} · Family #{{ $family->family_number }}</div>
+                                <div class="font-semibold text-slate-900">{{ __('Stop :n', ['n' => $family->route_order]) }} · {{ __('Family #:n', ['n' => $family->family_number]) }}</div>
                                 <details class="text-xs text-slate-500 mt-0.5">
-                                    <summary class="cursor-pointer text-blue-600 underline list-none">Show address</summary>
+                                    <summary class="cursor-pointer text-blue-600 underline list-none">{{ __('Show address') }}</summary>
                                     <span class="mt-0.5 block">{{ $family->address }}</span>
                                 </details>
                                 @if(($driversCanSeePhone ?? false) && ($family->phone1 || $family->phone2))
@@ -107,12 +111,19 @@
                             </div>
                         </div>
                     </div>
+                    @php
+                        $statusLabel = match($status) {
+                            'delivered' => __('Delivered'),
+                            'in_transit' => __('In transit'),
+                            default => __('Pending'),
+                        };
+                    @endphp
                     <span class="stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium
                         {{ $status === 'delivered' ? 'bg-emerald-100 text-emerald-800' : '' }}
                         {{ $status === 'in_transit' ? 'bg-blue-100 text-blue-800' : '' }}
                         {{ $status === 'pending' ? 'bg-slate-100 text-slate-800' : '' }}
                         ">
-                        {{ ucfirst(str_replace('_', ' ', $status)) }}
+                        {{ $statusLabel }}
                     </span>
                 </div>
 
@@ -122,13 +133,13 @@
                         onclick="markHeading('{{ $route->access_token }}', {{ $family->route_order }})"
                         class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold">
                         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
-                        Navigate
+                        {{ __('Navigate') }}
                     </a>
 
                     <button type="button" class="deliver-btn inline-flex items-center px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold {{ $isDone ? 'hidden' : '' }}"
                         onclick="markStopDelivered('{{ $route->access_token }}', {{ $family->route_order }}, this)">
                         <svg class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
-                        Delivered
+                        {{ __('Delivered') }}
                     </button>
 
                     {{-- Fallback form for no-JS --}}
@@ -136,7 +147,7 @@
                         <form method="POST" action="{{ route('delivery.completeStop', [$route->access_token, $family->route_order]) }}">
                             @csrf
                             <button type="submit" class="inline-flex items-center px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold">
-                                Delivered
+                                {{ __('Delivered') }}
                             </button>
                         </form>
                     </noscript>
@@ -149,9 +160,9 @@
         <div class="bg-white rounded-2xl shadow-xs border border-slate-200 px-4 py-3 text-center">
             <button onclick="markReturning()" id="returning-btn"
                 class="px-6 py-3 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-500 transition">
-                All Done — Heading Back
+                {{ __('All Done — Heading Back') }}
             </button>
-            <p class="text-xs text-slate-400 mt-1">Tap when all deliveries are complete and you're returning.</p>
+            <p class="text-xs text-slate-400 mt-1">{{ __("Tap when all deliveries are complete and you're returning.") }}</p>
         </div>
     </div>
 
@@ -159,6 +170,27 @@
     <script>
         const routeToken = @json($route->access_token);
         const routeDataUrl = @json(route('delivery.routeData', $route->access_token));
+        const I18N = {!! json_encode([
+            'mark_delivered' => __('Mark as delivered?'),
+            'marked_delivered' => __('Marked delivered!'),
+            'delivered' => __('Delivered'),
+            'in_transit' => __('In transit'),
+            'heading_to' => __('Heading to'),
+            'route_returning_confirm' => __('Mark this route as returning (all deliveries done)?'),
+            'route_marked_returning' => __('Route marked as returning!'),
+            'returning' => __('Returning...'),
+            'all_done' => __('All Done — Heading Back'),
+            'lost_connection' => __('Lost connection — live updates paused.'),
+            'sharing_stopped' => __('Location sharing: stopped'),
+            'geo_unsupported' => __('Geolocation not supported'),
+            'stop' => __('Stop'),
+            'start' => __('Start'),
+            'sharing' => __('Sharing location...'),
+            'sharing_pos' => __('Sharing:'),
+            'location_error' => __('Location error:'),
+            'could_not_update' => __('Could not update status:'),
+            'error_prefix' => __('Error:'),
+        ]) !!};
 
         // ── Toast ───────────────────────────────────────────────
         function showToast(msg) {
@@ -170,7 +202,7 @@
 
         // ── Mark delivered via fetch ────────────────────────────
         function markStopDelivered(token, stopOrder, btn) {
-            if (!confirm('Mark as delivered?')) return;
+            if (!confirm(I18N.mark_delivered)) return;
             btn.disabled = true;
             btn.textContent = '...';
 
@@ -189,13 +221,13 @@
                 return r.json();
             })
             .then(data => {
-                showToast('Marked delivered!');
+                showToast(I18N.marked_delivered);
                 applyStopDelivered(stopOrder);
             })
             .catch(err => {
                 btn.disabled = false;
-                btn.textContent = 'Delivered';
-                showToast('Error: ' + err.message);
+                btn.textContent = I18N.delivered;
+                showToast(I18N.error_prefix + ' ' + err.message);
             });
         }
 
@@ -224,16 +256,16 @@
                     const badge = card.querySelector('.stop-status-badge');
                     if (badge) {
                         badge.className = 'stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
-                        badge.textContent = 'In transit';
+                        badge.textContent = I18N.in_transit;
                     }
                     // Update "heading to" text in header
                     const label = card.querySelector('.font-semibold.text-slate-900')?.textContent || '';
-                    document.getElementById('heading-to-text').textContent = 'Heading to ' + label;
+                    document.getElementById('heading-to-text').textContent = I18N.heading_to + ' ' + label;
                 }
             })
             .catch(err => {
                 console.warn('markHeading failed', err);
-                showToast('Could not update status: ' + err.message);
+                showToast(I18N.could_not_update + ' ' + err.message);
             });
         }
 
@@ -246,7 +278,7 @@
             const order = card.querySelector('.stop-order');
             if (order) { order.classList.remove('bg-primary'); order.classList.add('bg-emerald-500'); order.innerHTML = '&#10003;'; }
             const badge = card.querySelector('.stop-status-badge');
-            if (badge) { badge.className = 'stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800'; badge.textContent = 'Delivered'; }
+            if (badge) { badge.className = 'stop-status-badge inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800'; badge.textContent = I18N.delivered; }
             const btn = card.querySelector('.deliver-btn');
             if (btn) btn.classList.add('hidden');
             updateProgressFromDom();
@@ -286,7 +318,7 @@
                     pollFailureCount++;
                     console.warn('pollRouteData failed (' + pollFailureCount + ')', err);
                     if (pollFailureCount === 3) {
-                        showToast('Lost connection — live updates paused.');
+                        showToast(I18N.lost_connection);
                     }
                 });
         }
@@ -298,20 +330,20 @@
             if (locationWatchId !== null) {
                 navigator.geolocation.clearWatch(locationWatchId);
                 locationWatchId = null;
-                document.getElementById('location-btn').textContent = 'Start';
-                document.getElementById('location-status').textContent = 'Location sharing: stopped';
+                document.getElementById('location-btn').textContent = I18N.start;
+                document.getElementById('location-status').textContent = I18N.sharing_stopped;
                 return;
             }
             if (!navigator.geolocation) {
-                document.getElementById('location-status').textContent = 'Geolocation not supported';
+                document.getElementById('location-status').textContent = I18N.geo_unsupported;
                 return;
             }
-            document.getElementById('location-btn').textContent = 'Stop';
-            document.getElementById('location-status').textContent = 'Sharing location...';
+            document.getElementById('location-btn').textContent = I18N.stop;
+            document.getElementById('location-status').textContent = I18N.sharing;
             locationWatchId = navigator.geolocation.watchPosition(
                 pos => {
                     document.getElementById('location-status').textContent =
-                        `Sharing: ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
+                        `${I18N.sharing_pos} ${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`;
                     fetch(`/delivery/route/${routeToken}/location`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -319,7 +351,7 @@
                     }).catch(err => console.warn('location post failed', err));
                 },
                 err => {
-                    document.getElementById('location-status').textContent = 'Location error: ' + err.message;
+                    document.getElementById('location-status').textContent = I18N.location_error + ' ' + err.message;
                 },
                 { enableHighAccuracy: true, maximumAge: 10000 }
             );
@@ -327,7 +359,7 @@
 
         // ── Mark Returning ────────────────────────────────────
         function markReturning() {
-            if (!confirm('Mark this route as returning (all deliveries done)?')) return;
+            if (!confirm(I18N.route_returning_confirm)) return;
             const btn = document.getElementById('returning-btn');
             btn.disabled = true;
             btn.textContent = '...';
@@ -340,12 +372,12 @@
             })
             .then(r => r.json())
             .then(data => {
-                showToast('Route marked as returning!');
-                btn.textContent = 'Returning...';
+                showToast(I18N.route_marked_returning);
+                btn.textContent = I18N.returning;
                 btn.classList.remove('bg-indigo-600', 'hover:bg-indigo-500');
                 btn.classList.add('bg-green-600');
             })
-            .catch(() => { btn.disabled = false; btn.textContent = 'All Done — Heading Back'; });
+            .catch(() => { btn.disabled = false; btn.textContent = I18N.all_done; });
         }
 
         // ── Map ─────────────────────────────────────────────────
@@ -386,7 +418,7 @@
                         html: '<div style="background:#333;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;">S</div>',
                         iconSize: [24, 24], iconAnchor: [12, 12],
                     })
-                }).addTo(map).bindPopup('Start/End');
+                }).addTo(map).bindPopup('{{ __('Start/End') }}');
                 bounds.push(startLatLng);
                 polyline.push(startLatLng);
             @endif
@@ -400,7 +432,7 @@
                         html: `<div style="background:${color};color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;${isDone ? 'opacity:0.6;' : ''}">${isDone ? '&#10003;' : s.order}</div>`,
                         iconSize: [24, 24], iconAnchor: [12, 12],
                     })
-                }).addTo(map).bindPopup(`Stop ${s.order}`);
+                }).addTo(map).bindPopup(`${I18N.stop} ${s.order}`);
                 mapMarkers[s.order] = marker;
                 bounds.push([s.lat, s.lng]);
                 polyline.push([s.lat, s.lng]);

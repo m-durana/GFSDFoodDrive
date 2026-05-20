@@ -21,6 +21,13 @@ class FamilyStatusController extends Controller
 
         $family = Family::where('status_token', $token)->with('children')->firstOrFail();
 
+        // REL-06: token-bearer page honours the family's preferred_language when
+        // the visitor hasn't already pinned a locale via ?lang= or the cookie.
+        $hasExplicitLocale = request()->query('lang') || request()->cookie('gfsd_lang');
+        if (!$hasExplicitLocale && strtolower((string) $family->preferred_language) === 'spanish') {
+            app()->setLocale('es');
+        }
+
         $totalChildren = $family->children->count();
         $childrenWithGifts = $family->children->filter(function ($child) {
             return ($child->gift_level && $child->gift_level->value >= 1) || $child->adoption_token !== null;
@@ -28,56 +35,63 @@ class FamilyStatusController extends Controller
 
         $steps = [
             [
-                'label' => 'Registered',
+                'label' => __('Registered'),
                 'complete' => true,
-                'description' => 'Your family has been registered with the food drive.',
+                'description' => __('Your family has been registered with the food drive.'),
             ],
             [
-                'label' => 'Number Assigned',
+                'label' => __('Number Assigned'),
                 'complete' => $family->family_number !== null,
                 'description' => $family->family_number !== null
-                    ? "Your family number is #{$family->family_number}."
-                    : 'Your family number will be assigned soon.',
+                    ? __('Your family number is #:n.', ['n' => $family->family_number])
+                    : __('Your family number will be assigned soon.'),
             ],
             [
-                'label' => 'Gifts Being Collected',
+                'label' => __('Gifts Being Collected'),
                 'complete' => $childrenWithGifts > 0,
                 'description' => $childrenWithGifts > 0
-                    ? "Gifts are being collected for {$childrenWithGifts} of {$totalChildren} " . ($totalChildren === 1 ? 'child' : 'children') . '.'
-                    : 'Gift collection has not started yet.',
+                    ? __('Gifts are being collected for :with of :total :children.', [
+                        'with' => $childrenWithGifts,
+                        'total' => $totalChildren,
+                        'children' => $totalChildren === 1 ? __('child') : __('children'),
+                    ])
+                    : __('Gift collection has not started yet.'),
             ],
             [
-                'label' => 'Boxes Being Packed',
+                'label' => __('Boxes Being Packed'),
                 'complete' => $family->packingList && in_array($family->packingList->status->value, ['complete', 'verified']),
                 'description' => $family->packingList
                     ? ($family->packingList->status->value === 'verified'
-                        ? 'Your box has been packed and verified!'
+                        ? __('Your box has been packed and verified!')
                         : ($family->packingList->status->value === 'complete'
-                            ? 'Your box is packed and awaiting verification.'
-                            : 'Your box is being prepared.'))
-                    : 'Box packing has not started yet.',
+                            ? __('Your box is packed and awaiting verification.')
+                            : __('Your box is being prepared.')))
+                    : __('Box packing has not started yet.'),
                 'visible' => Setting::get('packing_system_enabled', '1') === '1',
             ],
             [
-                'label' => 'Delivery Scheduled',
+                'label' => __('Delivery Scheduled'),
                 'complete' => $family->delivery_date !== null,
                 'description' => $family->delivery_date !== null
-                    ? "Delivery is scheduled for {$family->delivery_date}" . ($family->delivery_time ? " ({$family->delivery_time})" : '') . '.'
-                    : 'Delivery date has not been set yet.',
+                    ? __('Delivery is scheduled for :date:time.', [
+                        'date' => $family->delivery_date,
+                        'time' => $family->delivery_time ? " ({$family->delivery_time})" : '',
+                    ])
+                    : __('Delivery date has not been set yet.'),
             ],
             [
-                'label' => 'Out for Delivery',
+                'label' => __('Out for Delivery'),
                 'complete' => $family->delivery_status === DeliveryStatus::InTransit,
                 'description' => $family->delivery_status === DeliveryStatus::InTransit
-                    ? 'Your delivery is on its way!'
-                    : 'Your delivery has not left yet.',
+                    ? __('Your delivery is on its way!')
+                    : __('Your delivery has not left yet.'),
             ],
             [
-                'label' => 'Delivered',
+                'label' => __('Delivered'),
                 'complete' => $family->delivery_status === DeliveryStatus::Delivered,
                 'description' => $family->delivery_status === DeliveryStatus::Delivered
-                    ? 'Your delivery has been completed!'
-                    : 'Waiting for delivery.',
+                    ? __('Your delivery has been completed!')
+                    : __('Waiting for delivery.'),
             ],
         ];
 

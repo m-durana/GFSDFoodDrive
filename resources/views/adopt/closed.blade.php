@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="{{ app()->getLocale() }}" class="">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Adopt a Tag - Closed - GFSD Food Drive</title>
+    <title>{{ __('Adopt a Tag') }} - {{ __('Closed') }} - {{ __('GFSD Food Drive') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     <script>
@@ -17,26 +17,26 @@
     <div class="min-h-screen flex flex-col items-center justify-center px-4">
         <div class="max-w-lg w-full text-center">
             <div class="text-6xl mb-6">🎄</div>
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">Adopt-a-Tag Has Closed</h1>
+            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">{{ __('Adopt-a-Tag Has Closed') }}</h1>
             <p class="text-lg text-base-content/70 mb-6">
-                The adoption deadline was <strong class="text-primary dark:text-primary">{{ $deadline->format('F j, Y') }}</strong>.
-                Thank you to everyone who adopted a tag this year!
+                {!! __('The adoption deadline was :date.', ['date' => '<strong class="text-primary dark:text-primary">'.$deadline->format('F j, Y').'</strong>']) !!}
+                {{ __('Thank you to everyone who adopted a tag this year!') }}
             </p>
 
             @if($deliveryDates)
                 <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 mb-6">
                     <p class="text-sm font-medium text-green-800 dark:text-green-200">
-                        Delivery dates: <strong>{{ $deliveryDates }}</strong>
+                        {!! __('Delivery dates: :dates', ['dates' => '<strong>'.$deliveryDates.'</strong>']) !!}
                     </p>
                     <p class="text-xs text-green-600 dark:text-green-400 mt-1">
-                        If you already adopted a tag, please make sure your gifts are dropped off before delivery day.
+                        {{ __('If you already adopted a tag, please make sure your gifts are dropped off before delivery day.') }}
                     </p>
                 </div>
             @endif
 
             <div class="space-y-3">
                 <a href="{{ route('home') }}" class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:opacity-90 font-medium transition">
-                    Back to Homepage
+                    {{ __('Back to Homepage') }}
                 </a>
             </div>
 

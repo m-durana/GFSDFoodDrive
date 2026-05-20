@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="{{ app()->getLocale() }}" class="">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Adopt a Tag - GFSD Food Drive</title>
+    <title>{{ __('Adopt a Tag') }} - {{ __('GFSD Food Drive') }}</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700&display=swap" rel="stylesheet" />
     <script>
@@ -18,8 +18,14 @@
         <!-- Header -->
         <header class="bg-primary dark:bg-primary/30 text-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
-                <h1 class="text-3xl sm:text-4xl font-bold">GFSD Food Drive</h1>
-                <p class="text-primary-content/80 text-lg mt-1">Adopt a Tag</p>
+                <div class="flex justify-end mb-2">
+                    @php $other = app()->getLocale() === 'es' ? 'en' : 'es'; @endphp
+                    <a href="?{{ http_build_query(array_merge(request()->query(), ['lang' => $other])) }}" class="text-primary-content/80 hover:text-white text-xs underline">
+                        {{ $other === 'es' ? 'Español' : 'English' }}
+                    </a>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold">{{ __('GFSD Food Drive') }}</h1>
+                <p class="text-primary-content/80 text-lg mt-1">{{ __('Adopt a Tag') }}</p>
                 @if($customMessage)
                     <p class="mt-4 text-primary-content max-w-2xl mx-auto">{{ $customMessage }}</p>
                 @endif
@@ -33,11 +39,11 @@
                 <div class="rounded-lg shadow-xs p-4 mb-6 text-center border {{ $daysLeft <= 3 ? 'bg-primary/5 dark:bg-primary/20 border-primary/40 dark:border-primary' : 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700' }}">
                     <p class="text-sm font-medium {{ $daysLeft <= 3 ? 'text-primary dark:text-primary' : 'text-amber-700 dark:text-amber-300' }}">
                         @if($daysLeft <= 0)
-                            Adoption deadline is <strong>today</strong>! Last chance to adopt a tag!
+                            {!! __('Adoption deadline is :today! Last chance to adopt a tag!', ['today' => '<strong>'.__('today').'</strong>']) !!}
                         @elseif($daysLeft === 1)
-                            Only <strong>1 day</strong> left to adopt a tag! Deadline: {{ $adoptionDeadline->format('F j, Y') }}
+                            {!! __('Only :n left to adopt a tag! Deadline: :date', ['n' => '<strong>'.__('1 day').'</strong>', 'date' => $adoptionDeadline->format('F j, Y')]) !!}
                         @else
-                            <strong>{{ $daysLeft }} days</strong> left to adopt a tag. Deadline: {{ $adoptionDeadline->format('F j, Y') }}
+                            {!! __(':n left to adopt a tag. Deadline: :date', ['n' => '<strong>'.__(':days days', ['days' => $daysLeft]).'</strong>', 'date' => $adoptionDeadline->format('F j, Y')]) !!}
                         @endif
                     </p>
                 </div>
@@ -46,8 +52,10 @@
             <!-- Stats bar -->
             <div class="bg-base-100 rounded-lg shadow-xs p-4 mb-6 text-center border border-base-300">
                 <p class="text-lg font-medium">
-                    <span class="text-primary dark:text-primary font-bold text-2xl">{{ $totalAvailable }}</span>
-                    of {{ $totalChildren }} tags still need adopters!
+                    {!! __(':available of :total tags still need adopters!', [
+                        'available' => '<span class="text-primary dark:text-primary font-bold text-2xl">'.$totalAvailable.'</span>',
+                        'total' => $totalChildren,
+                    ]) !!}
                 </p>
             </div>
 
@@ -61,28 +69,28 @@
             <form method="GET" action="{{ route('adopt.index') }}" class="bg-base-100 rounded-lg shadow-xs p-4 mb-6 border border-base-300">
                 <div class="flex flex-wrap gap-3 items-end">
                     <div>
-                        <label class="block text-xs font-medium text-base-content/60 mb-1">Gender</label>
+                        <label class="block text-xs font-medium text-base-content/60 mb-1">{{ __('Gender') }}</label>
                         <select name="gender" class="rounded-md border-base-300 dark:bg-gray-700 text-sm">
-                            <option value="">All</option>
-                            <option value="Male" {{ request('gender') === 'Male' ? 'selected' : '' }}>Boy</option>
-                            <option value="Female" {{ request('gender') === 'Female' ? 'selected' : '' }}>Girl</option>
-                            <option value="Other" {{ request('gender') === 'Other' ? 'selected' : '' }}>Other</option>
+                            <option value="">{{ __('All') }}</option>
+                            <option value="Male" {{ request('gender') === 'Male' ? 'selected' : '' }}>{{ __('Boy') }}</option>
+                            <option value="Female" {{ request('gender') === 'Female' ? 'selected' : '' }}>{{ __('Girl') }}</option>
+                            <option value="Other" {{ request('gender') === 'Other' ? 'selected' : '' }}>{{ __('Other') }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-base-content/60 mb-1">Age Min</label>
+                        <label class="block text-xs font-medium text-base-content/60 mb-1">{{ __('Age Min') }}</label>
                         <input type="number" name="age_min" value="{{ request('age_min') }}" min="0" max="18" placeholder="0"
                             class="w-20 rounded-md border-base-300 dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-base-content/60 mb-1">Age Max</label>
+                        <label class="block text-xs font-medium text-base-content/60 mb-1">{{ __('Age Max') }}</label>
                         <input type="number" name="age_max" value="{{ request('age_max') }}" min="0" max="18" placeholder="18"
                             class="w-20 rounded-md border-base-300 dark:bg-gray-700 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-base-content/60 mb-1">School</label>
+                        <label class="block text-xs font-medium text-base-content/60 mb-1">{{ __('School') }}</label>
                         <select name="school" class="rounded-md border-base-300 dark:bg-gray-700 text-sm">
-                            <option value="">All Schools</option>
+                            <option value="">{{ __('All Schools') }}</option>
                             @foreach($schools as $school)
                                 <option value="{{ $school }}" {{ request('school') === $school ? 'selected' : '' }}>{{ $school }}</option>
                             @endforeach
@@ -90,10 +98,10 @@
                     </div>
                     <div>
                         <button type="submit" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
-                            Filter
+                            {{ __('Filter') }}
                         </button>
                         @if(request()->hasAny(['gender', 'age_min', 'age_max', 'school']))
-                            <a href="{{ route('adopt.index') }}" class="ml-2 text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-200">Clear</a>
+                            <a href="{{ route('adopt.index') }}" class="ml-2 text-sm text-base-content/60 hover:text-gray-700 dark:hover:text-gray-200">{{ __('Clear') }}</a>
                         @endif
                     </div>
                 </div>
@@ -105,8 +113,8 @@
                     <svg class="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
                     </svg>
-                    <p class="text-lg font-medium">No tags available right now</p>
-                    <p class="mt-1">Check back later or adjust your filters!</p>
+                    <p class="text-lg font-medium">{{ __('No tags available right now') }}</p>
+                    <p class="mt-1">{{ __('Check back later or adjust your filters!') }}</p>
                 </div>
             @else
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -124,10 +132,10 @@
                                     </div>
                                     <div>
                                         <p class="font-semibold text-base-content">
-                                            Age {{ $child->age ?? '?' }}
+                                            {{ __('Age :age', ['age' => $child->age ?? '?']) }}
                                         </p>
                                         <p class="text-xs text-base-content/60">
-                                            {{ $child->gender ?? 'Child' }}@if($child->all_sizes), {{ $child->all_sizes }}@endif
+                                            {{ $child->gender ? __($child->gender) : __('Child') }}@if($child->all_sizes), {{ $child->all_sizes }}@endif
                                         </p>
                                         @if($child->school)
                                             <p class="text-xs text-base-content/50">{{ $child->school }}</p>
@@ -147,13 +155,13 @@
 
                             @if($child->clothes_size || $child->all_sizes)
                                 <p class="mt-2 text-xs text-base-content/60">
-                                    Size: {{ $child->clothes_size ?: $child->all_sizes }}
+                                    {{ __('Size:') }} {{ $child->clothes_size ?: $child->all_sizes }}
                                 </p>
                             @endif
 
                             <div class="mt-4">
                                 <span class="inline-flex items-center px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-md">
-                                    Adopt This Tag
+                                    {{ __('Adopt This Tag') }}
                                 </span>
                             </div>
                         </a>
@@ -164,8 +172,8 @@
 
         <x-site-footer variant="dark">
             <x-slot name="links">
-                <a href="{{ route('home') }}" class="hover:text-white transition">Home</a>
-                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">Contact</a>
+                <a href="{{ route('home') }}" class="hover:text-white transition">{{ __('Home') }}</a>
+                <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="hover:text-white transition">{{ __('Contact') }}</a>
             </x-slot>
         </x-site-footer>
     </div>
