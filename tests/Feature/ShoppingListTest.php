@@ -176,7 +176,7 @@ class ShoppingListTest extends TestCase
 
         $response = $this->actingAs($this->santa)->delete(route('santa.destroyGroceryItem', $item));
         $response->assertRedirect();
-        $this->assertDatabaseMissing('grocery_items', ['id' => $item->id]);
+        $this->assertSoftDeleted('grocery_items', ['id' => $item->id]);
     }
 
     public function test_export_formula_csv(): void

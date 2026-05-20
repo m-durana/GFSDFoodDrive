@@ -163,7 +163,7 @@ class ChildCrudTest extends TestCase
         );
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('children', ['id' => $child->id]);
+        $this->assertSoftDeleted('children', ['id' => $child->id]);
     }
 
     public function test_multiple_children_can_be_added(): void

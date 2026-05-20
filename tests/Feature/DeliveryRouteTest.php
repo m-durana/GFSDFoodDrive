@@ -81,7 +81,7 @@ class DeliveryRouteTest extends TestCase
 
         $response = $this->actingAs($this->santa)->delete(route('santa.deliveryRoutes.destroy', $route));
         $response->assertRedirect();
-        $this->assertDatabaseMissing('delivery_routes', ['id' => $route->id]);
+        $this->assertSoftDeleted('delivery_routes', ['id' => $route->id]);
         $this->assertNull($f1->fresh()->delivery_route_id);
         $this->assertNull($f1->fresh()->route_order);
     }

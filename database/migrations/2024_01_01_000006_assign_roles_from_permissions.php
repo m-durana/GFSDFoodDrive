@@ -34,10 +34,14 @@ return new class extends Migration
             9 => 'santa',
         ];
 
+        // Use the raw query builder so we don't accidentally apply model-level
+        // global scopes (e.g. SoftDeletes) before those columns have been added
+        // in a later migration during a fresh migrate run.
         foreach ($permissionMap as $level => $roleName) {
-            $users = User::where('permission', $level)->get();
-            foreach ($users as $user) {
-                if (method_exists($user, 'assignRole')) {
+            $userIds = DB::table('users')->where('permission', $level)->pluck('id');
+            foreach ($userIds as $userId) {
+                $user = User::withoutGlobalScopes()->find($userId);
+                if ($user && method_exists($user, 'assignRole')) {
                     $user->assignRole($roleName);
                 }
             }

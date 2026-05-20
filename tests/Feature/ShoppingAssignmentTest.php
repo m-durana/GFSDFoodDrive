@@ -100,7 +100,7 @@ class ShoppingAssignmentTest extends TestCase
         $response = $this->actingAs($this->santa)->delete("/santa/shopping-day/assignments/{$assignment->id}");
 
         $response->assertRedirect(route('santa.shopping', ['tab' => 'assignments']));
-        $this->assertDatabaseMissing('shopping_assignments', ['id' => $assignment->id]);
+        $this->assertSoftDeleted('shopping_assignments', ['id' => $assignment->id]);
     }
 
     public function test_mobile_assignment_view_accessible_by_token(): void

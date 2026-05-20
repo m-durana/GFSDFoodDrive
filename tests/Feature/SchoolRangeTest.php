@@ -106,6 +106,6 @@ class SchoolRangeTest extends TestCase
         $response = $this->actingAs($this->santa)->delete("/santa/school-ranges/{$range->id}");
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('school_ranges', ['id' => $range->id]);
+        $this->assertSoftDeleted('school_ranges', ['id' => $range->id]);
     }
 }

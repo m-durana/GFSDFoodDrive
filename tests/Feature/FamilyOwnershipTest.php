@@ -350,7 +350,7 @@ class FamilyOwnershipTest extends TestCase
         );
 
         $response->assertRedirect();
-        $this->assertDatabaseMissing('children', ['id' => $child->id]);
+        $this->assertSoftDeleted('children', ['id' => $child->id]);
     }
 
     // --- A-INTAKE-10 toggleDone --------------------------------------------
