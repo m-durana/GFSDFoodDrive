@@ -45,9 +45,9 @@
                 <button onclick="setMode('shopping')" id="btn-shopping"
                     class="px-2.5 lg:px-3 py-1.5 rounded-md font-medium transition">Stock</button>
             </div>
-            <div class="flex items-center gap-3">
-                <span id="clock" class="text-xs lg:text-sm text-gray-400 font-mono"></span>
-                <a href="{{ route('santa.index') }}" class="text-xs text-gray-500 hover:text-gray-300">Exit</a>
+            <div class="flex items-center gap-3 shrink-0">
+                <span id="clock" class="hidden sm:inline text-xs lg:text-sm text-gray-400 font-mono"></span>
+                <a href="{{ route('santa.index') }}" class="text-xs text-gray-500 hover:text-gray-300 whitespace-nowrap">Exit</a>
             </div>
         </div>
     </div>
