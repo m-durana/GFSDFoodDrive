@@ -89,6 +89,7 @@ class GroceryItem extends Model
     {
         $items = static::orderBy('sort_order')->orderBy('category')->orderBy('name')->get();
         $size = max($family->number_of_family_members ?? 1, 1);
+        $restrictions = $family->dietary_restrictions ?? [];
         $list = [];
 
         foreach ($items as $item) {
@@ -97,6 +98,11 @@ class GroceryItem extends Model
                 if (!static::familyMatchesCondition($family, $item->condition_field)) {
                     continue;
                 }
+            }
+
+            // SH-02: skip items that conflict with the family's dietary restrictions.
+            if (! $item->isCompatibleWith($restrictions)) {
+                continue;
             }
 
             $qty = $item->quantityForSize($size);

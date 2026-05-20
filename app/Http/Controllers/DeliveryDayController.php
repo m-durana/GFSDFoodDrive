@@ -528,7 +528,7 @@ class DeliveryDayController extends Controller
 
     private function shouldShowHouseholdDetails(): bool
     {
-        return auth()->user()?->isSanta() ?? false;
+        return auth()->user()?->canSeePii() ?? false;
     }
 
     private function orderByNearestNeighbor($families, ?float $startLat, ?float $startLng)

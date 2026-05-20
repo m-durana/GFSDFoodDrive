@@ -29,6 +29,23 @@ class FamilyController extends Controller
     }
 
     /**
+     * Edit/update is more sensitive than show because it surfaces PII in form
+     * inputs. Only Santa, System Coordinator, or the owning Advisor may edit.
+     * Regular Coordinators are blocked.
+     */
+    private function authorizeFamilyEdit(Request $request, Family $family): void
+    {
+        $user = $request->user();
+        if ($user->canSeePii()) {
+            return;
+        }
+        if ($user->isAdvisor() && $family->user_id === $user->id) {
+            return;
+        }
+        abort(403, 'You do not have permission to edit this family.');
+    }
+
+    /**
      * Abort 404 if $child does not belong to $family. 404 rather than 403 so
      * we do not leak the existence of another family's child via URL probing.
      */
@@ -116,14 +133,14 @@ class FamilyController extends Controller
 
     public function edit(Request $request, Family $family): View
     {
-        $this->authorizeFamilyAccess($request, $family);
+        $this->authorizeFamilyEdit($request, $family);
 
         return view('family.edit', compact('family'));
     }
 
     public function update(StoreFamilyRequest $request, Family $family): RedirectResponse
     {
-        $this->authorizeFamilyAccess($request, $family);
+        $this->authorizeFamilyEdit($request, $family);
         $data = $request->validated();
 
         // Compute totals

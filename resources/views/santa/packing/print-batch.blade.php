@@ -57,7 +57,7 @@
                 <div class="header-left">
                     <h1>
                         Family #{{ $list->family?->family_number }}
-                        @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
+                        @if(auth()->user()?->canSeePii())
                             | {{ $list->family?->family_name }}
                         @endif
                     </h1>

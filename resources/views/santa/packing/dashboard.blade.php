@@ -375,7 +375,8 @@
                     recent.forEach(item => {
                         if (!this.seenCompletions.has(item.id)) {
                             this.seenCompletions.add(item.id);
-                            this.showToast(`#${item.family_number} ${item.family_name} packing complete!`);
+                            const label = item.family_name ? `${item.family_name}` : '';
+                            this.showToast(`#${item.family_number}${label ? ' ' + label : ''} packing complete!`);
                         }
                     });
                 },

@@ -43,13 +43,14 @@ class GiftBankController extends Controller
             'assigned' => GiftBankItem::assigned()->count(),
         ];
 
+        $canSeePii = auth()->user()?->canSeePii() ?? false;
         $childrenForAssign = Child::with('family')
             ->whereHas('family', fn($q) => $q->whereNotNull('family_number'))
             ->get(['id', 'family_id', 'gender', 'age'])
             ->map(fn($c) => [
                 'id' => $c->id,
                 'family_number' => $c->family->family_number,
-                'family_name' => $c->family->family_name,
+                'family_name' => $canSeePii ? $c->family->family_name : '',
                 'gender' => $c->gender,
                 'age' => $c->age,
             ]);

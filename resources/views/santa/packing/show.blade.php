@@ -4,7 +4,7 @@
             <div>
                 <h2 class="font-semibold text-xl text-base-content leading-tight">
                     Packing List:
-                    @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
+                    @if(auth()->user()?->canSeePii())
                         {{ $packingList->family?->family_name }}
                     @else
                         Family #{{ $packingList->family?->family_number }}
@@ -75,7 +75,7 @@
                     <div>
                         <h3 class="text-sm font-medium text-base-content/60">Family</h3>
                         <p class="mt-1 text-lg font-semibold text-base-content">
-                            @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
+                            @if(auth()->user()?->canSeePii())
                                 {{ $packingList->family?->family_name }}
                             @else
                                 Family #{{ $packingList->family?->family_number }}

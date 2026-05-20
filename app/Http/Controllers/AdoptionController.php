@@ -143,9 +143,15 @@ class AdoptionController extends Controller
     {
         $child = Child::where('adoption_token', $token)->firstOrFail();
 
+        // G-06/W-08 unification: gift_level is monotonic on the "gift received" axis.
+        // If the warehouse has already logged a higher level (Full = 3) for this child
+        // via a backfill or substitution, the adopter's drop-off shouldn't downgrade it.
+        $current = $child->gift_level?->value ?? 0;
+        $next = max($current, GiftLevel::Moderate->value);
+
         $child->update([
             'gift_dropped_off' => true,
-            'gift_level' => GiftLevel::Moderate,
+            'gift_level' => $next,
         ]);
 
         return redirect()->route('adopt.confirmation', $token)

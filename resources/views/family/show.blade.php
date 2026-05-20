@@ -1,9 +1,13 @@
+@php
+    $viewer = auth()->user();
+    $showPii = ($viewer?->canSeePii() ?? false) || ($viewer && $viewer->isAdvisor() && $family->user_id === $viewer->id);
+@endphp
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-base-content leading-tight">
-                {{ $family->family_name }}
-                @if($family->family_number)
+                {{ $showPii ? $family->family_name : ('Family #' . $family->family_number) }}
+                @if($showPii && $family->family_number)
                     <span class="text-sm font-normal text-base-content/60">#{{ $family->family_number }}</span>
                 @endif
             </h2>
@@ -20,9 +24,11 @@
                         </button>
                     @endif
                 </form>
+                @if($showPii)
                 <a href="{{ route('family.edit', $family) }}" class="inline-flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-500 text-xs font-medium transition">
                     Edit Family
                 </a>
+                @endif
             </div>
         </div>
     </x-slot>
@@ -42,10 +48,14 @@
                 <div class="bg-base-100 shadow-xs sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-base-content mb-3">Contact Information</h3>
                     <dl class="space-y-2 text-sm">
-                        <div><dt class="text-base-content/60 inline">Address:</dt> <dd class="inline text-base-content">{{ $family->address }}</dd></div>
-                        <div><dt class="text-base-content/60 inline">Phone:</dt> <dd class="inline text-base-content">{{ $family->phone1 }}</dd></div>
-                        @if($family->phone2)<div><dt class="text-base-content/60 inline">Alt Phone:</dt> <dd class="inline text-base-content">{{ $family->phone2 }}</dd></div>@endif
-                        @if($family->email)<div><dt class="text-base-content/60 inline">Email:</dt> <dd class="inline text-base-content">{{ $family->email }}</dd></div>@endif
+                        @if($showPii)
+                            <div><dt class="text-base-content/60 inline">Address:</dt> <dd class="inline text-base-content">{{ $family->address }}</dd></div>
+                            <div><dt class="text-base-content/60 inline">Phone:</dt> <dd class="inline text-base-content">{{ $family->phone1 }}</dd></div>
+                            @if($family->phone2)<div><dt class="text-base-content/60 inline">Alt Phone:</dt> <dd class="inline text-base-content">{{ $family->phone2 }}</dd></div>@endif
+                            @if($family->email)<div><dt class="text-base-content/60 inline">Email:</dt> <dd class="inline text-base-content">{{ $family->email }}</dd></div>@endif
+                        @else
+                            <div class="text-base-content/60 italic">Contact details hidden. Identify household by <strong>Family #{{ $family->family_number }}</strong>.</div>
+                        @endif
                         @if($family->preferred_language)<div><dt class="text-base-content/60 inline">Language:</dt> <dd class="inline text-base-content">{{ $family->preferred_language }}</dd></div>@endif
                     </dl>
 

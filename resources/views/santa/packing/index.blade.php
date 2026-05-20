@@ -172,7 +172,7 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="text-sm font-medium text-base-content">
-                                        @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
+                                        @if(auth()->user()?->canSeePii())
                                             {{ $list->family?->family_name ?? 'Unknown' }}
                                         @else
                                             Family #{{ $list->family?->family_number ?? '—' }}

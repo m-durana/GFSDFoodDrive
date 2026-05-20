@@ -18,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 class DeliveryRouteController extends Controller
@@ -176,15 +177,38 @@ class DeliveryRouteController extends Controller
             return view('delivery-routes.verify', compact('route'));
         }
 
-        return view('delivery-routes.driver', compact('route'));
+        // Privacy: drivers see the address only for navigation. Phone is shown
+        // only if the operator has enabled drivers_can_see_phone (default OFF).
+        $driversCanSeePhone = (bool) Setting::get('drivers_can_see_phone', '0');
+
+        return view('delivery-routes.driver', compact('route', 'driversCanSeePhone'));
     }
 
     public function verifyDriverPin(VerifyDriverPinRequest $request, string $token): RedirectResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
 
+        // Toggleable brute-force lockout (default ON). Locks out an IP+route after
+        // 5 failed PIN attempts for 15 minutes. Setting key: driver_pin_lockout_enabled.
+        $lockoutEnabled = (bool) Setting::get('driver_pin_lockout_enabled', '1');
+        $throttleKey = 'driver-pin:'.$route->id.':'.$request->ip();
+
+        if ($lockoutEnabled && RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return back()->withErrors([
+                'pin' => "Too many incorrect attempts. Try again in {$seconds} seconds.",
+            ])->withInput();
+        }
+
         if (! $route->verifyDriverPin($request->input('pin'))) {
+            if ($lockoutEnabled) {
+                RateLimiter::hit($throttleKey, 900); // 15 minutes
+            }
             return back()->withErrors(['pin' => 'Invalid route PIN.'])->withInput();
+        }
+
+        if ($lockoutEnabled) {
+            RateLimiter::clear($throttleKey);
         }
 
         $request->session()->put($this->driverRouteSessionKey($route), true);

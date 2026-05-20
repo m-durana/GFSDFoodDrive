@@ -16,7 +16,9 @@
                             <h3 class="text-lg font-medium text-base-content">
                                 Family #{{ $child->family->family_number ?? 'N/A' }}
                             </h3>
-                            <p class="text-sm text-base-content/60">{{ $child->family->family_name }}</p>
+                            @if(auth()->user()?->canSeePii())
+                                <p class="text-sm text-base-content/60">{{ $child->family->family_name }}</p>
+                            @endif
                         </div>
                         @if($child->gift_dropped_off)
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">

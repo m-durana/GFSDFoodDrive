@@ -144,7 +144,12 @@ class CoordinatorController extends Controller
 
         $paperSize = Setting::get('paper_size', 'letter');
 
-        $viewData = compact('families');
+        // Only Santa + System Coordinator should see real names, phones, addresses on the
+        // delivery-day PDF. Coordinators downloading this PDF (which is handed to drivers)
+        // get a family-number-only variant.
+        $showPii = $request->user()?->canSeePii() ?? false;
+
+        $viewData = compact('families', 'showPii');
 
         if ($request->boolean('sync')) {
             set_time_limit(120);

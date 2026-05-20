@@ -93,8 +93,17 @@
                                 {!! $isDone ? '&#10003;' : $family->route_order !!}
                             </span>
                             <div>
-                                <div class="font-semibold text-slate-900">Stop {{ $family->route_order }}</div>
-                                <div class="text-xs text-slate-500">{{ $family->address }}</div>
+                                <div class="font-semibold text-slate-900">Stop {{ $family->route_order }} · Family #{{ $family->family_number }}</div>
+                                <details class="text-xs text-slate-500 mt-0.5">
+                                    <summary class="cursor-pointer text-blue-600 underline list-none">Show address</summary>
+                                    <span class="mt-0.5 block">{{ $family->address }}</span>
+                                </details>
+                                @if(($driversCanSeePhone ?? false) && ($family->phone1 || $family->phone2))
+                                    <div class="text-xs text-slate-500 mt-0.5">
+                                        @if($family->phone1)<a href="tel:{{ $family->phone1 }}" class="text-blue-600 underline">{{ $family->phone1 }}</a>@endif
+                                        @if($family->phone2) · <a href="tel:{{ $family->phone2 }}" class="text-blue-600 underline">{{ $family->phone2 }}</a>@endif
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>

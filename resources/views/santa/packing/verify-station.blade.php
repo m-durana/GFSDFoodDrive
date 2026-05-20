@@ -86,7 +86,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                 </svg>
                                 <div>
-                                    <span class="font-medium text-gray-200">{{ $list->family?->family_name ?? 'Unknown' }}</span>
+                                    @if(auth()->user()?->canSeePii())
+                                        <span class="font-medium text-gray-200">{{ $list->family?->family_name ?? 'Unknown' }}</span>
+                                    @else
+                                        <span class="font-medium text-gray-200">Family #{{ $list->family?->family_number ?? '---' }}</span>
+                                    @endif
                                     <span class="text-gray-500 ml-2">#{{ $list->family?->family_number ?? '---' }}</span>
                                 </div>
                             </div>
@@ -120,7 +124,11 @@
                          onclick="verifyByToken('{{ $list->qr_token }}')">
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-sm font-medium text-gray-200">{{ $list->family?->family_name ?? 'Unknown' }}</div>
+                                @if(auth()->user()?->canSeePii())
+                                    <div class="text-sm font-medium text-gray-200">{{ $list->family?->family_name ?? 'Unknown' }}</div>
+                                @else
+                                    <div class="text-sm font-medium text-gray-200">Family #{{ $list->family?->family_number ?? '---' }}</div>
+                                @endif
                                 <div class="text-xs text-gray-500">#{{ $list->family?->family_number ?? '---' }}</div>
                             </div>
                             <div class="text-xs text-gray-500">

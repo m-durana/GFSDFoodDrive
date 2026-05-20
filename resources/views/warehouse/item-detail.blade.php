@@ -193,8 +193,11 @@
                                         <td class="py-2 px-4 text-base-content/70 whitespace-nowrap">{{ $tx->created_at->format('M j, g:ia') }}</td>
                                         <td class="py-2 px-4">
                                             @php
-                                                $typeEnum = \App\Enums\TransactionType::tryFrom($tx->transaction_type);
-                                                $typeLabel = $typeEnum ? $typeEnum->label() : $tx->transaction_type;
+                                                // transaction_type is already cast to TransactionType (see WarehouseTransaction::$casts).
+                                                $typeEnum = $tx->transaction_type instanceof \App\Enums\TransactionType
+                                                    ? $tx->transaction_type
+                                                    : \App\Enums\TransactionType::tryFrom((string) $tx->transaction_type);
+                                                $typeLabel = $typeEnum ? $typeEnum->label() : (string) $tx->transaction_type;
                                                 $typeColor = match($tx->transaction_type) {
                                                     'in', 'return' => 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
                                                     'out', 'distributed' => 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary',
@@ -208,7 +211,7 @@
                                         <td class="py-2 px-4 text-base-content/70">{{ $tx->donor_name ?? '&mdash;' }}</td>
                                         <td class="py-2 px-4 text-base-content/70">
                                             @if($tx->family)
-                                                #{{ $tx->family->family_number }} {{ $tx->family->family_name }}
+                                                #{{ $tx->family->family_number }}@if(auth()->user()?->canSeePii()) {{ $tx->family->family_name }}@endif
                                             @else
                                                 &mdash;
                                             @endif

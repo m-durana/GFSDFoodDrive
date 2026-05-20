@@ -32,10 +32,14 @@ class PackingApiController extends Controller
             return response()->json(['error' => 'Packing list not found.'], 404);
         }
 
+        // PII policy: token-bearer (typically a NINJA scanner) is not authenticated
+        // for full UI. Strip family name unless the active user is Santa/SystemCoord.
+        $canSeePii = auth()->user()?->canSeePii() ?? false;
+
         return response()->json([
             'id' => $list->id,
             'family' => [
-                'name' => $list->family?->family_name,
+                'name' => $canSeePii ? $list->family?->family_name : null,
                 'number' => $list->family?->family_number,
                 'members' => $list->family?->number_of_family_members,
             ],

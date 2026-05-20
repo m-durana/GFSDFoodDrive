@@ -139,6 +139,27 @@ class PackingService
         return DB::transaction(function () use ($item, $packer) {
             $item = PackingItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
 
+            // Guard parity with PackingApiController@quickPack: refuse to pack
+            // an item marked Unfulfilled, and short-circuit on a re-click of an
+            // already fully-packed item so PackingSession.items_packed doesn't
+            // double-count. (Both guards previously lived only in the API path.)
+            if ($item->status === PackingItemStatus::Unfulfilled) {
+                return [
+                    'success' => false,
+                    'item' => $item,
+                    'message' => 'Cannot pack an unfulfilled item.',
+                ];
+            }
+
+            if ($item->quantity_packed >= $item->quantity_needed) {
+                return [
+                    'success' => true,
+                    'warning' => true,
+                    'item' => $item,
+                    'message' => 'Item already fully packed.',
+                ];
+            }
+
             $newQuantity = min($item->quantity_needed, $item->quantity_packed + 1);
             $newStatus = $newQuantity >= $item->quantity_needed
                 ? PackingItemStatus::Packed
@@ -407,13 +428,14 @@ class PackingService
         }
 
         // Recently completed lists (last 60 seconds)
+        $canSeePii = auth()->user()?->canSeePii() ?? false;
         $recentlyCompleted = PackingList::with('family:id,family_name,family_number')
             ->where('status', PackingStatus::Complete)
             ->where('completed_at', '>=', now()->subSeconds(60))
             ->get()
             ->map(fn ($l) => [
                 'id' => $l->id,
-                'family_name' => $l->family?->family_name,
+                'family_name' => $canSeePii ? $l->family?->family_name : '',
                 'family_number' => $l->family?->family_number,
                 'completed_at' => $l->completed_at->toIso8601String(),
             ])
@@ -670,13 +692,14 @@ class PackingService
         $dayEnd = $date->copy()->endOfDay();
 
         // Families packed (completed during this date)
+        $canSeePiiSummary = auth()->user()?->canSeePii() ?? false;
         $familiesPacked = PackingList::with('family:id,family_name,family_number')
             ->where('completed_at', '>=', $dayStart)
             ->where('completed_at', '<=', $dayEnd)
             ->get()
             ->map(fn ($l) => [
                 'id' => $l->id,
-                'family_name' => $l->family?->family_name,
+                'family_name' => $canSeePiiSummary ? $l->family?->family_name : '',
                 'family_number' => $l->family?->family_number,
                 'completed_at' => $l->completed_at?->toDateTimeString(),
             ])

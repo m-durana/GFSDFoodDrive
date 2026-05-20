@@ -38,12 +38,20 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @php
+                                            $viewer = auth()->user();
+                                            $viewerCanSeePii = $viewer?->canSeePii() ?? false;
+                                        @endphp
                                         @foreach($families as $family)
-                                            <tr x-show="!search || '{{ $family->family_number }}'.includes(search) || '{{ strtolower(addslashes($family->family_name)) }}'.includes(search.toLowerCase()) || '{{ $family->phone1 }}'.includes(search)">
+                                            @php
+                                                // Advisor exception: see names for families they entered themselves.
+                                                $showPii = $viewerCanSeePii || ($viewer && $viewer->isAdvisor() && $family->user_id === $viewer->id);
+                                            @endphp
+                                            <tr x-show="!search || '{{ $family->family_number }}'.includes(search) @if($showPii) || '{{ strtolower(addslashes($family->family_name)) }}'.includes(search.toLowerCase()) || '{{ $family->phone1 }}'.includes(search) @endif">
                                                 <td data-sort-value="{{ $family->family_number ?? 0 }}">{{ $family->family_number ?? '-' }}</td>
-                                                <td class="font-medium">{{ $family->family_name }}</td>
-                                                <td>{{ $family->address }}</td>
-                                                <td>{{ $family->phone1 }}</td>
+                                                <td class="font-medium">{{ $showPii ? $family->family_name : '—' }}</td>
+                                                <td>{{ $showPii ? $family->address : '—' }}</td>
+                                                <td>{{ $showPii ? $family->phone1 : '—' }}</td>
                                                 @if((auth()->user()->isCoordinator() || auth()->user()->isSanta()) && \App\Models\Setting::get('packing_system_enabled', '1') === '1')
                                                     <td>
                                                         @if($family->packingList)

@@ -69,7 +69,7 @@
                 <h1>Packing List</h1>
                 <p>
                     Family #{{ $packingList->family?->family_number }}
-                    @if(\App\Models\Setting::get('packing_show_names', '1') === '1')
+                    @if(auth()->user()?->canSeePii())
                         | {{ $packingList->family?->family_name }}
                     @endif
                 </p>

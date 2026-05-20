@@ -8,20 +8,21 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
     <div class="max-w-lg mx-auto px-4 py-4">
-        <!-- Header -->
-        <div class="bg-primary text-white rounded-xl p-4 mb-4 shadow-xs">
+        <!-- Header. Uses explicit colors because this page loads tailwindcss via CDN
+             without daisyUI, so `bg-primary` / `text-primary-content` don't resolve. -->
+        <div class="bg-blue-700 text-white rounded-xl p-4 mb-4 shadow-xs">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-xl font-bold">Family #{{ $family->family_number }}</h1>
-                    <p class="text-primary-content/80 text-sm">{{ $family->family_name }} &middot; {{ $family->number_of_family_members }} members</p>
+                    <p class="text-white/80 text-sm">{{ $family->number_of_family_members }} members</p>
                 </div>
                 <div class="text-right">
                     <div class="text-3xl font-bold" id="progress-count">0</div>
-                    <div class="text-primary-content/80 text-xs">of {{ $totalItems }} items</div>
+                    <div class="text-white/80 text-xs">of {{ $totalItems }} items</div>
                 </div>
             </div>
             <!-- Progress bar -->
-            <div class="mt-3 bg-primary/30 rounded-full h-2">
+            <div class="mt-3 bg-blue-900/30 rounded-full h-2">
                 <div class="bg-white rounded-full h-2 transition-all duration-300" id="progress-bar" style="width: 0%"></div>
             </div>
         </div>

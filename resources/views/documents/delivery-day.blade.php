@@ -186,33 +186,47 @@
 
             <hr class="section-divider">
 
+            @php $showPii = $showPii ?? false; @endphp
+
             <!-- Family Information -->
             <div class="info-row">
                 <span class="label">Name(s):</span>
-                <span class="value">{{ $family->family_name }}</span>
+                <span class="value">{{ $showPii ? $family->family_name : '#' . $family->family_number }}</span>
             </div>
 
-            <div class="info-row">
-                <span class="label">Phone:</span>
-                <span class="value">{{ $family->phone1 }}</span>
-            </div>
-
-            @if($family->phone2)
+            @if($showPii)
                 <div class="info-row">
-                    <span class="label">Alt Phone:</span>
-                    <span class="value">{{ $family->phone2 }}</span>
+                    <span class="label">Phone:</span>
+                    <span class="value">{{ $family->phone1 }}</span>
+                </div>
+
+                @if($family->phone2)
+                    <div class="info-row">
+                        <span class="label">Alt Phone:</span>
+                        <span class="value">{{ $family->phone2 }}</span>
+                    </div>
+                @endif
+
+                <div class="info-row">
+                    <span class="label">Additional Phone:</span>
+                    <span class="value empty">&nbsp;</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Physical Address:</span>
+                    <span class="value">{{ $family->address }}</span>
+                </div>
+            @else
+                <div class="info-row">
+                    <span class="label">Phone:</span>
+                    <span class="value empty">&nbsp;</span>
+                </div>
+
+                <div class="info-row">
+                    <span class="label">Physical Address:</span>
+                    <span class="value empty">&nbsp;</span>
                 </div>
             @endif
-
-            <div class="info-row">
-                <span class="label">Additional Phone:</span>
-                <span class="value empty">&nbsp;</span>
-            </div>
-
-            <div class="info-row">
-                <span class="label">Physical Address:</span>
-                <span class="value">{{ $family->address }}</span>
-            </div>
 
             <div class="info-row">
                 <span class="label">New Address:</span>
