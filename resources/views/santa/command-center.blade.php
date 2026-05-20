@@ -158,7 +158,7 @@
             <!-- Row 1: Key stats -->
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
                 <div class="relative">
-                    <svg class="w-20 h-20 transform -rotate-90">
+                    <svg viewBox="0 0 80 80" class="w-20 h-20 transform -rotate-90">
                         <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
                         <circle id="shopping-ring" cx="40" cy="40" r="34" stroke="#22c55e" stroke-width="6" fill="none"
                             stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
@@ -181,7 +181,7 @@
             </div>
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
                 <div class="relative">
-                    <svg class="w-20 h-20 transform -rotate-90">
+                    <svg viewBox="0 0 80 80" class="w-20 h-20 transform -rotate-90">
                         <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
                         <circle id="packing-ring" cx="40" cy="40" r="34" stroke="#3b82f6" stroke-width="6" fill="none"
                             stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
@@ -251,7 +251,7 @@
             <!-- Top stats row -->
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
                 <div class="relative">
-                    <svg class="w-16 h-16 lg:w-20 lg:h-20 transform -rotate-90">
+                    <svg viewBox="0 0 80 80" class="w-16 h-16 lg:w-20 lg:h-20 transform -rotate-90">
                         <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
                         <circle id="delivery-ring" cx="40" cy="40" r="34" stroke="#3b82f6" stroke-width="6" fill="none"
                             stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
