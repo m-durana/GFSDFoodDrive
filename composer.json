@@ -9,9 +9,11 @@
         "barryvdh/laravel-dompdf": "^3.0",
         "chillerlan/php-qrcode": "^5.0",
         "laravel/framework": "^11.0",
+        "laravel/horizon": "^5.47",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.9",
         "phpoffice/phpspreadsheet": "^5.4",
+        "predis/predis": "^3.4",
         "sentry/sentry-laravel": "^4.25",
         "spatie/laravel-permission": "^6.0",
         "twilio/sdk": "^8.11"

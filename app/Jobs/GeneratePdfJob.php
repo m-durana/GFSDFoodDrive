@@ -54,6 +54,26 @@ class GeneratePdfJob implements ShouldQueue
                 'status' => 'error',
                 'message' => 'PDF generation failed: ' . $e->getMessage(),
             ], 600);
+            // REL-13: page the on-call channel via Sentry — silent PDF failures
+            // during intake week are an operational risk.
+            if (app()->bound('sentry')) {
+                app('sentry')->captureException($e);
+            }
+            throw $e;
         }
+    }
+
+    /**
+     * REL-13: Horizon retry policy — backoff on transient failures (dompdf
+     * memory spikes, disk latency), but cap so we don't retry indefinitely.
+     */
+    public function backoff(): array
+    {
+        return [10, 30, 60];
+    }
+
+    public function tries(): int
+    {
+        return 3;
     }
 }

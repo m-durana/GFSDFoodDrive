@@ -29,6 +29,32 @@
                 </div>
             </div>
 
+            {{-- REL-10: per-section KPIs, scoped to the sections the viewer can access. --}}
+            @if(!empty($sectionKpis))
+                <div class="space-y-4">
+                    <h3 class="text-lg font-medium text-base-content">Your Sections</h3>
+                    @foreach($sectionKpis as $slug => $block)
+                        <div class="bg-base-100 shadow-xs sm:rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="font-semibold text-base-content">{{ $block['label'] }}</h4>
+                                <span class="text-[10px] uppercase tracking-wider text-base-content/40">{{ $slug }}</span>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                @foreach($block['tiles'] as $tile)
+                                    <div class="bg-base-200 rounded-md p-3 text-center">
+                                        <div class="text-xl font-bold text-base-content">{{ $tile['v'] }}</div>
+                                        <div class="text-xs text-base-content/60 mt-0.5">{{ $tile['l'] }}</div>
+                                        @if(!empty($tile['sub']))
+                                            <div class="text-[10px] text-base-content/40 mt-0.5">{{ $tile['sub'] }}</div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
             <!-- Document Generation -->
             <div class="bg-base-100 shadow-xs sm:rounded-lg">
                 <div class="p-6">
