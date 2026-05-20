@@ -136,15 +136,8 @@ class SantaController extends Controller
         ]);
     }
 
-    public function storeSchoolRange(Request $request): RedirectResponse
+    public function storeSchoolRange(\App\Http\Requests\SchoolRangeRequest $request): RedirectResponse
     {
-        $request->validate([
-            'school_name' => ['required', 'string', 'max:255'],
-            'range_start' => ['required', 'integer', 'min:0'],
-            'range_end' => ['required', 'integer', 'min:0', 'gt:range_start'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-        ]);
-
         SchoolRange::create([
             'school_name' => $request->school_name,
             'range_start' => $request->range_start,
@@ -156,15 +149,8 @@ class SantaController extends Controller
             ->with('success', "School range '{$request->school_name}' added.");
     }
 
-    public function updateSchoolRange(Request $request, SchoolRange $schoolRange): RedirectResponse
+    public function updateSchoolRange(\App\Http\Requests\SchoolRangeRequest $request, SchoolRange $schoolRange): RedirectResponse
     {
-        $request->validate([
-            'school_name' => ['required', 'string', 'max:255'],
-            'range_start' => ['required', 'integer', 'min:0'],
-            'range_end' => ['required', 'integer', 'min:0', 'gt:range_start'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-        ]);
-
         $schoolRange->update($request->only('school_name', 'range_start', 'range_end', 'sort_order'));
 
         return redirect()->route('santa.schoolRanges')
@@ -811,21 +797,8 @@ class SantaController extends Controller
         ));
     }
 
-    public function updateGroceryItem(Request $request, GroceryItem $groceryItem): RedirectResponse
+    public function updateGroceryItem(\App\Http\Requests\UpdateGroceryItemRequest $request, GroceryItem $groceryItem): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:canned,dry,personal,condiment'],
-            'qty_1' => ['required', 'integer', 'min:0'],
-            'qty_2' => ['required', 'integer', 'min:0'],
-            'qty_3' => ['required', 'integer', 'min:0'],
-            'qty_4' => ['required', 'integer', 'min:0'],
-            'qty_5' => ['required', 'integer', 'min:0'],
-            'qty_6' => ['required', 'integer', 'min:0'],
-            'qty_7' => ['required', 'integer', 'min:0'],
-            'qty_8' => ['required', 'integer', 'min:0'],
-        ]);
-
         $groceryItem->update($request->only([
             'name', 'category',
             'qty_1', 'qty_2', 'qty_3', 'qty_4',
@@ -836,13 +809,8 @@ class SantaController extends Controller
             ->with('success', "Item '{$groceryItem->name}' updated.");
     }
 
-    public function storeGroceryItem(Request $request): RedirectResponse
+    public function storeGroceryItem(\App\Http\Requests\StoreGroceryItemRequest $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:canned,dry,personal,condiment'],
-        ]);
-
         $maxOrder = GroceryItem::max('sort_order') ?? 0;
 
         GroceryItem::create([
