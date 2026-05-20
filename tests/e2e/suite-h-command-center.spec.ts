@@ -6,7 +6,7 @@ test.describe('Suite H — Command Center', () => {
   });
 
   test('command center loads with a stats grid', async ({ page }) => {
-    const res = await page.goto('/command-center');
+    const res = await page.goto('/santa/command-center');
     expect(res && res.status() < 500).toBe(true);
     await expect(page).not.toHaveURL(/\/login/);
   });

@@ -10,7 +10,7 @@ test.describe('Suite D — Packing Day', () => {
   });
 
   test('packing landing page loads for santa', async ({ page }) => {
-    const res = await page.goto('/packing');
+    const res = await page.goto('/santa/packing');
     // Packing UI may be behind a feature flag (PackingSystemEnabled middleware)
     expect(res && res.status() < 500).toBe(true);
   });
@@ -33,7 +33,7 @@ test.describe('Suite D — Packing Day (mobile viewport)', () => {
 
   test('mobile scanner page renders at 390x844 (iPhone-class)', async ({ page }) => {
     await loginAs(page, 'santa');
-    const res = await page.goto('/packing');
+    const res = await page.goto('/santa/packing');
     expect(res && res.status() < 500).toBe(true);
   });
 });

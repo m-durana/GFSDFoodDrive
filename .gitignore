@@ -52,6 +52,8 @@ ROADMAP.md
 /test-results
 /blob-report
 /playwright/.cache
+/tests/e2e/screenshots
+/storage/framework/e2e-reset.lock
 
 # OS / editor junk
 .DS_Store
