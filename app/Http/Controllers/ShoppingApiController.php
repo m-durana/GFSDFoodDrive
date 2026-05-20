@@ -54,14 +54,9 @@ class ShoppingApiController extends Controller
         ]);
     }
 
-    public function toggle(string $token, Request $request): JsonResponse
+    public function toggle(string $token, \App\Http\Requests\ToggleShoppingItemRequest $request): JsonResponse
     {
         $assignment = ShoppingAssignment::where('token', $token)->firstOrFail();
-
-        $request->validate([
-            'item_key' => ['required', 'string', 'max:255'],
-            'ninja_name' => ['required', 'string', 'max:255'],
-        ]);
 
         if (! in_array($request->item_key, $this->validItemKeys($assignment), true)) {
             throw ValidationException::withMessages([

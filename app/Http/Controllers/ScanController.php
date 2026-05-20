@@ -23,14 +23,8 @@ class ScanController extends Controller
     /**
      * Update gift status from the scan page.
      */
-    public function update(Request $request, Child $child): RedirectResponse
+    public function update(\App\Http\Requests\UpdateScanGiftStatusRequest $request, Child $child): RedirectResponse
     {
-        $request->validate([
-            'gift_level' => ['required', 'integer', 'in:0,1,2,3'],
-            'gifts_received' => ['nullable', 'string', 'max:1000'],
-            'adopter_name' => ['nullable', 'string', 'max:255'],
-        ]);
-
         $child->update([
             'gift_level' => $request->gift_level,
             'gifts_received' => $request->gifts_received,

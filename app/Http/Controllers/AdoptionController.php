@@ -84,15 +84,9 @@ class AdoptionController extends Controller
         return view('adopt.show', compact('child'));
     }
 
-    public function claim(Request $request, Child $child): RedirectResponse
+    public function claim(\App\Http\Requests\ClaimAdoptionRequest $request, Child $child): RedirectResponse
     {
         abort_unless(Setting::get('adopt_a_tag_enabled', '0') === '1', 404);
-
-        $request->validate([
-            'adopter_name' => ['required', 'string', 'max:255'],
-            'adopter_email' => ['required', 'email', 'max:255'],
-            'adopter_phone' => ['nullable', 'string', 'max:255'],
-        ]);
 
         $deadline = Setting::get('adopt_a_tag_deadline');
         $token = Str::random(32);

@@ -57,18 +57,9 @@ class GiftBankController extends Controller
         return view('warehouse.gift-bank', compact('items', 'totals', 'childrenForAssign'));
     }
 
-    public function store(Request $request): JsonResponse|\Illuminate\Http\RedirectResponse
+    public function store(\App\Http\Requests\StoreGiftBankItemRequest $request): JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $validated = $request->validate([
-            'description' => ['required', 'string', 'max:500'],
-            'age_range' => ['nullable', 'string', 'max:50'],
-            'gender_suitability' => ['nullable', 'string', 'in:male,female,neutral'],
-            'gift_type' => ['nullable', 'string', 'max:100'],
-            'donor_name' => ['nullable', 'string', 'max:200'],
-            'quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
-            'notes' => ['nullable', 'string', 'max:2000'],
-        ]);
-
+        $validated = $request->validated();
         $validated['received_by'] = $request->user()->id;
 
         $item = GiftBankItem::create($validated);

@@ -277,14 +277,8 @@ class WarehouseController extends Controller
             ->with('success', $message);
     }
 
-    public function updateItemLocation(WarehouseItem $item, Request $request): \Illuminate\Http\RedirectResponse
+    public function updateItemLocation(WarehouseItem $item, \App\Http\Requests\UpdateWarehouseItemLocationRequest $request): \Illuminate\Http\RedirectResponse
     {
-        $request->validate([
-            'location_zone' => 'nullable|string|max:10',
-            'location_shelf' => 'nullable|string|max:10',
-            'location_bin' => 'nullable|string|max:20',
-        ]);
-
         $item->update([
             'location_zone' => $request->input('location_zone'),
             'location_shelf' => $request->input('location_shelf'),

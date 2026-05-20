@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\AssignFamilyNumber;
+use App\Http\Requests\StoreChildRequest;
 use App\Http\Requests\StoreFamilyRequest;
+use App\Http\Requests\UpdateChildRequest;
 use App\Models\Child;
 use App\Models\Family;
 use Illuminate\Http\RedirectResponse;
@@ -141,20 +143,10 @@ class FamilyController extends Controller
             ->with('success', "Family '{$family->family_name}' updated successfully.");
     }
 
-    public function storeChild(Request $request, Family $family): RedirectResponse
+    public function storeChild(StoreChildRequest $request, Family $family): RedirectResponse
     {
         $this->authorizeFamilyAccess($request, $family);
-        $validated = $request->validate([
-            'gender' => ['required', 'string', 'in:Male,Female,Other'],
-            'age' => ['required', 'string', 'max:50'],
-            'school' => ['nullable', 'string', 'max:255'],
-            'clothes_size' => ['nullable', 'string', 'max:255'],
-            'clothing_styles' => ['nullable', 'string', 'max:1000'],
-            'clothing_options' => ['nullable', 'string', 'max:1000'],
-            'gift_preferences' => ['nullable', 'string', 'max:1000'],
-            'toy_ideas' => ['nullable', 'string', 'max:1000'],
-            'all_sizes' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $oldEldest = $family->children->sortByDesc(fn($c) => (int) $c->age)->first();
         $family->children()->create($validated);
@@ -171,29 +163,11 @@ class FamilyController extends Controller
             ->with('success', 'Child added successfully.');
     }
 
-    public function updateChild(Request $request, Family $family, Child $child): RedirectResponse
+    public function updateChild(UpdateChildRequest $request, Family $family, Child $child): RedirectResponse
     {
         $this->authorizeFamilyAccess($request, $family);
         $this->authorizeChildBinding($family, $child);
-        $validated = $request->validate([
-            'gender' => ['required', 'string', 'in:Male,Female,Other'],
-            'age' => ['required', 'string', 'max:50'],
-            'school' => ['nullable', 'string', 'max:255'],
-            'clothes_size' => ['nullable', 'string', 'max:255'],
-            'clothing_styles' => ['nullable', 'string', 'max:1000'],
-            'clothing_options' => ['nullable', 'string', 'max:1000'],
-            'gift_preferences' => ['nullable', 'string', 'max:1000'],
-            'toy_ideas' => ['nullable', 'string', 'max:1000'],
-            'all_sizes' => ['nullable', 'string', 'max:1000'],
-            'gifts_received' => ['nullable', 'string', 'max:1000'],
-            'gift_level' => ['nullable', 'integer', 'min:0', 'max:3'],
-            'where_is_tag' => ['nullable', 'string', 'max:255'],
-            'adopter_name' => ['nullable', 'string', 'max:255'],
-            'adopter_email' => ['nullable', 'email', 'max:255'],
-            'adopter_phone' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        $child->update($validated);
+        $child->update($request->validated());
 
         return redirect()->route('family.show', $family)
             ->with('success', 'Child updated successfully.');
