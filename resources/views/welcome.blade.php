@@ -12,9 +12,14 @@
     {{-- Navigation --}}
     <nav class="fixed top-0 inset-x-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-            @php $siteLogo = \App\Models\Setting::get('site_logo', 'logos/current-logo.png'); @endphp
+            @php
+                $siteLogo = \App\Models\Setting::get('site_logo', 'logos/current-logo.png');
+                $hasSiteLogo = file_exists(storage_path('app/public/' . $siteLogo));
+            @endphp
             <div class="flex items-center gap-3">
-                <img src="{{ asset('storage/' . $siteLogo) }}" alt="GFSD Food Drive" class="h-10 w-auto" onerror="this.style.display='none'">
+                @if ($hasSiteLogo)
+                    <img src="{{ asset('storage/' . $siteLogo) }}" alt="GFSD Food Drive" class="h-10 w-auto">
+                @endif
                 <span class="font-bold text-lg text-primary dark:text-primary">GFSD Food &amp; Gift Drive</span>
             </div>
             <div class="flex items-center gap-4 text-sm">

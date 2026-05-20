@@ -330,9 +330,16 @@
                                 <p class="text-sm text-base-content/60 mb-4">
                                     Upload this year's logo. It will appear on the homepage, nav bar, and as the favicon for all pages.
                                 </p>
-                                @php $currentLogo = Setting::get('site_logo', 'logos/current-logo.png'); @endphp
+                                @php
+                                    $currentLogo = Setting::get('site_logo', 'logos/current-logo.png');
+                                    $hasCurrentLogo = file_exists(storage_path('app/public/' . $currentLogo));
+                                @endphp
                                 <div class="flex items-center gap-6">
-                                    <img src="{{ asset('storage/' . $currentLogo) }}" alt="Current Logo" class="h-20 w-auto rounded-sm border border-base-300 bg-white p-2" onerror="this.style.display='none'">
+                                    @if ($hasCurrentLogo)
+                                        <img src="{{ asset('storage/' . $currentLogo) }}" alt="Current Logo" class="h-20 w-auto rounded-sm border border-base-300 bg-white p-2">
+                                    @else
+                                        <div class="h-20 w-20 flex items-center justify-center rounded-sm border border-dashed border-base-300 bg-base-200 text-base-content/40 text-xs text-center px-2">No logo uploaded</div>
+                                    @endif
                                     <div>
                                         <input type="file" name="site_logo" accept="image/*"
                                             class="block text-sm text-base-content/60 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary/5 file:text-primary hover:file:bg-primary/10 dark:file:bg-primary/20 dark:file:text-primary">
