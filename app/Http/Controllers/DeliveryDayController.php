@@ -218,7 +218,7 @@ class DeliveryDayController extends Controller
     public function addLog(Request $request, Family $family): RedirectResponse
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:delivered,left_at_door,no_answer,attempted,note'],
+            'status' => ['required', 'string', \Illuminate\Validation\Rule::in(\App\Enums\DeliveryLogStatus::values())],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DeliveryLogStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -13,6 +14,13 @@ class DeliveryLog extends Model
         'status',
         'notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'status' => DeliveryLogStatus::class,
+        ];
+    }
 
     public function family(): BelongsTo
     {

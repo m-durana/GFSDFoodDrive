@@ -44,7 +44,7 @@
                     @foreach($family->deliveryLogs->take(2) as $log)
                         <div class="text-[10px] text-base-content/60">
                             {{ $log->created_at->format('g:ia') }}
-                            — {{ ucfirst(str_replace('_', ' ', $log->status)) }}
+                            — {{ ucfirst(str_replace('_', ' ', $log->status instanceof \BackedEnum ? $log->status->value : (string) $log->status)) }}
                             @if($log->user) by {{ $log->user->first_name }}@endif
                             @if($log->notes) — {{ $log->notes }}@endif
                         </div>

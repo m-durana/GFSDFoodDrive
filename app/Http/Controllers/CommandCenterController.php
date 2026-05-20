@@ -216,7 +216,7 @@ class CommandCenterController extends Controller
             ->map(fn($log) => [
                 'family' => $log->family ? "#{$log->family->family_number} {$log->family->family_name}" : '—',
                 'user' => $log->user ? $log->user->first_name : '—',
-                'status' => ucfirst(str_replace('_', ' ', $log->status)),
+                'status' => $log->status?->label() ?? '—',
                 'notes' => $log->notes,
                 'time' => $log->created_at->diffForHumans(),
             ])
