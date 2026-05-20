@@ -3,6 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DeliveryStatus;
+use App\Http\Requests\OptimizeDeliveryRoutesRequest;
+use App\Http\Requests\StoreDeliveryRouteRequest;
+use App\Http\Requests\UpdateDeliveryRouteFamiliesRequest;
+use App\Http\Requests\UpdateDriverLocationRequest;
+use App\Http\Requests\VerifyDriverPinRequest;
 use App\Models\DeliveryLog;
 use App\Models\DeliveryRoute;
 use App\Models\Family;
@@ -13,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DeliveryRouteController extends Controller
@@ -33,22 +37,8 @@ class DeliveryRouteController extends Controller
     /**
      * Create a new route manually.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(StoreDeliveryRouteRequest $request): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'driver_user_id' => [
-                'nullable',
-                Rule::exists('users', 'id')->where(fn($q) => $q->where('permission', '>=', 8)),
-            ],
-            'driver_name' => ['nullable', 'string', 'max:255'],
-            'family_ids' => ['nullable', 'array'],
-            'family_ids.*' => [
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         $route = DeliveryRoute::create([
             'name' => $request->name,
             'driver_user_id' => $request->driver_user_id,
@@ -90,18 +80,8 @@ class DeliveryRouteController extends Controller
     /**
      * Optimize routes using OpenRouteService VROOM API.
      */
-    public function optimize(Request $request): RedirectResponse
+    public function optimize(OptimizeDeliveryRoutesRequest $request): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'route_ids' => ['required', 'array', 'min:1'],
-            'route_ids.*' => [
-                Rule::exists('delivery_routes', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-            'start_lat' => ['required', 'numeric'],
-            'start_lng' => ['required', 'numeric'],
-        ]);
-
         $orsKey = Setting::get('openrouteservice_key', '');
         if (empty($orsKey)) {
             return redirect()->route('delivery.index', ['tab' => 'routes'])
@@ -155,16 +135,8 @@ class DeliveryRouteController extends Controller
     /**
      * Add/remove families from a route.
      */
-    public function updateFamilies(Request $request, DeliveryRoute $deliveryRoute): RedirectResponse
+    public function updateFamilies(UpdateDeliveryRouteFamiliesRequest $request, DeliveryRoute $deliveryRoute): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'family_ids' => ['required', 'array'],
-            'family_ids.*' => [
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         // Unassign current families
         Family::where('delivery_route_id', $deliveryRoute->id)->update([
             'delivery_route_id' => null,
@@ -207,13 +179,9 @@ class DeliveryRouteController extends Controller
         return view('delivery-routes.driver', compact('route'));
     }
 
-    public function verifyDriverPin(Request $request, string $token): RedirectResponse
+    public function verifyDriverPin(VerifyDriverPinRequest $request, string $token): RedirectResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
-
-        $request->validate([
-            'pin' => ['required', 'digits:6'],
-        ]);
 
         if (! $route->verifyDriverPin($request->input('pin'))) {
             return back()->withErrors(['pin' => 'Invalid route PIN.'])->withInput();
@@ -265,15 +233,10 @@ class DeliveryRouteController extends Controller
     /**
      * Update driver location from the public driver view (token-authenticated).
      */
-    public function updateDriverLocation(Request $request, string $token): JsonResponse
+    public function updateDriverLocation(UpdateDriverLocationRequest $request, string $token): JsonResponse
     {
         $route = DeliveryRoute::where('access_token', $token)->firstOrFail();
         $this->abortUnlessDriverRouteVerified($route);
-
-        $request->validate([
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-        ]);
 
         // Update the route's driver user if there is one
         if ($route->driver_user_id) {
