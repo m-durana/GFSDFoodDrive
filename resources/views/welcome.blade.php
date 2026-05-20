@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" data-theme="gfsd">
+<html lang="{{ app()->getLocale() }}" class="scroll-smooth" data-theme="gfsd">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GFSD Food &amp; Gift Drive &mdash; Love in Action</title>
+    <title>GFSD Food &amp; Gift Drive &mdash; {{ __('Love in Action') }}</title>
     @include('partials.favicon')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -23,18 +23,27 @@
                 <span class="font-bold text-lg text-primary dark:text-primary">GFSD Food &amp; Gift Drive</span>
             </div>
             <div class="flex items-center gap-4 text-sm">
-                <a href="#about" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">About</a>
-                <a href="#get-involved" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">Get Involved</a>
-                <a href="#contact" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">Contact</a>
+                <a href="#about" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">{{ __('About') }}</a>
+                <a href="#get-involved" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">{{ __('Get Involved') }}</a>
+                <a href="#contact" class="hidden md:inline text-base-content/70 hover:text-gray-900 dark:hover:text-gray-200 transition">{{ __('Contact') }}</a>
+                {{-- REL-06: EN/ES toggle. Persists via the gfsd_lang cookie set by SetPublicLocale. --}}
+                @php
+                    $locale = app()->getLocale();
+                    $other = $locale === 'es' ? 'en' : 'es';
+                    $otherLabel = $other === 'es' ? __('Español') : __('English');
+                @endphp
+                <a href="?lang={{ $other }}" class="hidden md:inline text-xs text-base-content/60 hover:text-base-content border border-base-300 rounded-md px-2 py-1 transition" rel="alternate" hreflang="{{ $other }}">
+                    {{ $otherLabel }}
+                </a>
                 @auth
                     <a href="{{ route('dashboard') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25a2.25 2.25 0 0 1-2.25-2.25v-2.25Z" /></svg>
-                        Dashboard
+                        {{ __('Dashboard') }}
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:opacity-90 text-sm font-medium transition">
                         <svg class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" /></svg>
-                        Staff Login
+                        {{ __('Staff Login') }}
                     </a>
                 @endauth
             </div>
@@ -51,28 +60,27 @@
         </div>
         <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <img src="{{ asset('storage/' . $siteLogo) }}" alt="GFSD Food Drive Logo" class="mx-auto h-28 sm:h-36 w-auto mb-6 drop-shadow-lg" onerror="this.style.display='none'">
-            <p class="text-sm uppercase tracking-widest text-primary-content/80 mb-4">Granite Falls School District</p>
+            <p class="text-sm uppercase tracking-widest text-primary-content/80 mb-4">{{ __('Granite Falls School District') }}</p>
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
-                Food &amp; Gift Drive
+                {{ __('Food & Gift Drive') }}
             </h1>
-            <p class="text-2xl sm:text-3xl font-light text-primary-content italic">Love in Action</p>
+            <p class="text-2xl sm:text-3xl font-light text-primary-content italic">{{ __('Love in Action') }}</p>
             <p class="text-base sm:text-lg text-primary-content/80 max-w-2xl mx-auto mt-6">
-                The GFSD Food &amp; Gift Drive collects non-perishable food items, toiletries, and gifts
-                for families in our community. More families than ever before need help this winter.
+                {{ __('The GFSD Food & Gift Drive collects non-perishable food items, toiletries, and gifts for families in our community. More families than ever before need help this winter.') }}
             </p>
             <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
                 @if($adoptionEnabled)
                     <a href="{{ route('adopt.index') }}" class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 bg-white text-primary rounded-lg hover:bg-primary/10 text-base font-semibold shadow-lg transition">
-                        &#127873; Adopt a Tag
+                        &#127873; {{ __('Adopt a Tag') }}
                     </a>
                 @endif
                 @if($selfRegistrationEnabled)
                     <a href="{{ route('self-service.create') }}" class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 bg-primary text-white border-2 border-white/30 rounded-lg hover:opacity-90 text-base font-semibold transition">
-                        &#128221; Register Your Family
+                        &#128221; {{ __('Register Your Family') }}
                     </a>
                 @endif
                 <a href="#get-involved" class="w-full sm:w-auto inline-flex justify-center items-center px-8 py-3 border-2 border-white/40 text-white rounded-lg hover:bg-white/10 text-base font-semibold transition">
-                    How to Help
+                    {{ __('How to Help') }}
                 </a>
             </div>
         </div>
@@ -82,15 +90,13 @@
     <section id="about" class="py-16 sm:py-24 bg-gray-50 dark:bg-gray-900">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-base-content">About the Food Drive</h2>
+                <h2 class="text-3xl font-bold text-base-content">{{ __('About the Food Drive') }}</h2>
                 <div class="mt-2 h-1 w-16 bg-primary mx-auto rounded-sm"></div>
             </div>
 
             <div class="max-w-3xl mx-auto text-center mb-12">
                 <p class="text-base-content/70 leading-relaxed">
-                    Welcome to the <strong class="text-base-content">Granite Falls School District Food &amp; Gift Drive</strong>!
-                    Every year, students, staff, and community volunteers come together to make the holiday season
-                    brighter for families in need. Food and toiletries can be dropped off at Granite Falls High School (GFHS).
+                    {{ __('Every year, students, staff, and community volunteers come together to make the holiday season brighter for families in need. Food and toiletries can be dropped off at Granite Falls High School (GFHS).') }}
                 </p>
             </div>
 
@@ -99,30 +105,27 @@
                     <div class="mx-auto w-16 h-16 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center mb-4">
                         <svg class="h-8 w-8 text-primary dark:text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" /></svg>
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">Community Driven</h3>
+                    <h3 class="font-semibold text-lg mb-2">{{ __('Community Driven') }}</h3>
                     <p class="text-sm text-base-content/70">
-                        Run by students, staff, and volunteers from across the Granite Falls School District.
-                        Every effort counts toward helping our neighbors.
+                        {{ __('Run by students, staff, and volunteers from across the Granite Falls School District. Every effort counts toward helping our neighbors.') }}
                     </p>
                 </div>
                 <div class="text-center">
                     <div class="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-4">
                         <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 1 0 9.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1 1 14.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" /></svg>
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">Gifts &amp; Food</h3>
+                    <h3 class="font-semibold text-lg mb-2">{{ __('Gifts & Food') }}</h3>
                     <p class="text-sm text-base-content/70">
-                        Pick up a Giving Tree tag at your child's school to buy gifts for children in need.
-                        You can adopt individual children or an entire family. Cash donations go toward fresh food.
+                        {{ __('Pick up a Giving Tree tag at your child\'s school to buy gifts for children in need. You can adopt individual children or an entire family. Cash donations go toward fresh food.') }}
                     </p>
                 </div>
                 <div class="text-center">
                     <div class="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
                         <svg class="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" /></svg>
                     </div>
-                    <h3 class="font-semibold text-lg mb-2">Delivered with Care</h3>
+                    <h3 class="font-semibold text-lg mb-2">{{ __('Delivered with Care') }}</h3>
                     <p class="text-sm text-base-content/70">
-                        Volunteer delivery teams bring everything directly to families' homes,
-                        ensuring every household is reached during the holiday season.
+                        {{ __('Volunteer delivery teams bring everything directly to families\' homes, ensuring every household is reached during the holiday season.') }}
                     </p>
                 </div>
             </div>
@@ -133,10 +136,10 @@
     <section id="get-involved" class="py-16 sm:py-24">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-base-content">How You Can Help</h2>
+                <h2 class="text-3xl font-bold text-base-content">{{ __('How You Can Help') }}</h2>
                 <div class="mt-2 h-1 w-16 bg-primary mx-auto rounded-sm"></div>
                 <p class="mt-4 text-base-content/70 max-w-xl mx-auto">
-                    There are many ways to get involved with the Food &amp; Gift Drive. Every contribution makes a difference.
+                    {{ __('There are many ways to get involved with the Food & Gift Drive. Every contribution makes a difference.') }}
                 </p>
             </div>
 
@@ -148,9 +151,9 @@
                                 <svg class="h-6 w-6 text-primary dark:text-primary" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>
                             </div>
                             <div>
-                                <h3 class="font-semibold text-lg text-base-content group-hover:text-primary dark:group-hover:text-primary transition">Adopt a Tag</h3>
+                                <h3 class="font-semibold text-lg text-base-content group-hover:text-primary dark:group-hover:text-primary transition">{{ __('Adopt a Tag') }}</h3>
                                 <p class="text-sm text-base-content/70 mt-1">
-                                    Pick up a Giving Tree tag and buy a gift for a child in need. You can adopt individual children or an entire family.
+                                    {{ __('Pick up a Giving Tree tag and buy a gift for a child in need. You can adopt individual children or an entire family.') }}
                                 </p>
                             </div>
                         </div>
@@ -164,10 +167,9 @@
                                 <svg class="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" /></svg>
                             </div>
                             <div>
-                                <h3 class="font-semibold text-lg text-base-content group-hover:text-primary dark:group-hover:text-primary transition">Register Your Family</h3>
+                                <h3 class="font-semibold text-lg text-base-content group-hover:text-primary dark:group-hover:text-primary transition">{{ __('Register Your Family') }}</h3>
                                 <p class="text-sm text-base-content/70 mt-1">
-                                    If your family could use help this holiday season, sign up to receive food and gifts.
-                                    All information is kept confidential.
+                                    {{ __('If your family could use help this holiday season, sign up to receive food and gifts. All information is kept confidential.') }}
                                 </p>
                             </div>
                         </div>
@@ -180,10 +182,9 @@
                             <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-lg text-base-content">Donate</h3>
+                            <h3 class="font-semibold text-lg text-base-content">{{ __('Donate') }}</h3>
                             <p class="text-sm text-base-content/70 mt-1">
-                                Cash donations supplement non-perishable food with fresh food items.
-                                Drop off non-perishable items and toiletries at GFHS (Granite Falls High School).
+                                {{ __('Cash donations supplement non-perishable food with fresh food items. Drop off non-perishable items and toiletries at GFHS (Granite Falls High School).') }}
                             </p>
                         </div>
                     </div>
@@ -195,10 +196,10 @@
                             <svg class="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.05 4.575a1.575 1.575 0 1 0-3.15 0v3m3.15-3v-1.5a1.575 1.575 0 0 1 3.15 0v1.5m-3.15 0 .075 5.925m3.075.75V4.575m0 0a1.575 1.575 0 0 1 3.15 0V15M6.9 7.575a1.575 1.575 0 1 0-3.15 0v8.175a6.75 6.75 0 0 0 6.75 6.75h2.018a5.25 5.25 0 0 0 3.712-1.538l1.732-1.732a5.25 5.25 0 0 0 1.538-3.712l.003-2.024a.668.668 0 0 0-.294-.554 1.575 1.575 0 0 0-2.471.949l-.345 1.38c-.072.288-.307.484-.6.484H9.075l.186-7.413Z" /></svg>
                         </div>
                         <div>
-                            <h3 class="font-semibold text-lg text-base-content">Volunteer</h3>
+                            <h3 class="font-semibold text-lg text-base-content">{{ __('Volunteer') }}</h3>
                             <p class="text-sm text-base-content/70 mt-1">
-                                Help sort donations, wrap gifts, or join a delivery team.
-                                Contact us at <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="text-primary hover:underline">{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}</a> to sign up.
+                                @php $contactEmail = \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu'); @endphp
+                                {!! __('Help sort donations, wrap gifts, or join a delivery team. Contact us at :email to sign up.', ['email' => '<a href="mailto:'.e($contactEmail).'" class="text-primary hover:underline">'.e($contactEmail).'</a>']) !!}
                             </p>
                         </div>
                     </div>
@@ -208,12 +209,12 @@
             {{-- Family Status Check --}}
             @if(\App\Models\Setting::get('family_status_enabled', '0') === '1')
                 <div class="mt-10 text-center">
-                    <p class="text-sm text-base-content/60 mb-2">Already registered?</p>
+                    <p class="text-sm text-base-content/60 mb-2">{{ __('Already registered?') }}</p>
                     <p class="text-sm text-base-content/70">
-                        Check your family's status using the link you received when you registered.
+                        {{ __('Check your family\'s status using the link you received when you registered.') }}
                     </p>
                     <p class="text-xs text-base-content/50 mt-2">
-                        The link should look like: <code class="bg-base-200 px-1.5 py-0.5 rounded-sm text-xs">{{ url('/') }}/family-status/abc123...</code>
+                        {{ __('The link should look like:') }} <code class="bg-base-200 px-1.5 py-0.5 rounded-sm text-xs">{{ url('/') }}/family-status/abc123...</code>
                     </p>
                 </div>
             @endif
@@ -224,10 +225,10 @@
     <section class="py-16 sm:py-24 bg-gray-50 dark:bg-gray-900">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-base-content">Coordinator Team</h2>
+                <h2 class="text-3xl font-bold text-base-content">{{ __('Coordinator Team') }}</h2>
                 <div class="mt-2 h-1 w-16 bg-primary mx-auto rounded-sm"></div>
                 <p class="mt-4 text-base-content/70 max-w-xl mx-auto">
-                    The Food Drive is organized by a dedicated team of student coordinators working alongside staff advisors.
+                    {{ __('The Food Drive is organized by a dedicated team of student coordinators working alongside staff advisors.') }}
                 </p>
             </div>
 
@@ -247,7 +248,7 @@
                             <img src="{{ $coord->avatar_url }}" alt="{{ $coord->first_name }}"
                                 class="mx-auto w-14 h-14 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 mb-3">
                             <div class="font-medium text-sm text-base-content">{{ $coord->first_name }} {{ $coord->last_name }}</div>
-                            <div class="text-xs text-primary dark:text-primary mt-0.5">{{ $coord->position ?: ($coord->permission === 9 ? 'Director' : ($coord->permission === 8 ? 'Coordinator' : 'Advisor')) }}</div>
+                            <div class="text-xs text-primary dark:text-primary mt-0.5">{{ $coord->position ?: ($coord->permission === 9 ? __('Director') : ($coord->permission === 8 ? __('Coordinator') : __('Advisor'))) }}</div>
                             @if($coord->permission === 7 && $coord->school_source)
                                 <div class="text-xs text-base-content/60 mt-0.5">{{ $coord->school_source }}</div>
                             @endif
@@ -256,7 +257,7 @@
                 </div>
             @else
                 <div class="text-center text-base-content/50">
-                    <p class="text-sm">Coordinator team will be announced soon.</p>
+                    <p class="text-sm">{{ __('Coordinator team will be announced soon.') }}</p>
                 </div>
             @endif
         </div>
@@ -266,7 +267,7 @@
     <section id="contact" class="py-16 sm:py-24">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-base-content">Contact Us</h2>
+                <h2 class="text-3xl font-bold text-base-content">{{ __('Contact Us') }}</h2>
                 <div class="mt-2 h-1 w-16 bg-primary mx-auto rounded-sm"></div>
             </div>
 
@@ -274,16 +275,16 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div class="bg-base-100 border border-base-300 rounded-xl p-6 text-center">
                         <svg class="mx-auto h-8 w-8 text-primary dark:text-primary mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" /></svg>
-                        <h3 class="font-medium text-base-content mb-1">Email</h3>
+                        <h3 class="font-medium text-base-content mb-1">{{ __('Email') }}</h3>
                         <a href="mailto:{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}" class="text-sm text-primary dark:text-primary hover:underline">{{ \App\Models\Setting::get('primary_contact_email', 'fooddrive@gfalls.wednet.edu') }}</a>
-                        <p class="text-xs text-base-content/60 mt-1">Questions about donations or receiving food and gifts</p>
+                        <p class="text-xs text-base-content/60 mt-1">{{ __('Questions about donations or receiving food and gifts') }}</p>
                         @if(\App\Models\Setting::get('primary_contact_phone'))
                             <p class="text-sm text-base-content/70 mt-2">{{ \App\Models\Setting::get('primary_contact_phone') }}</p>
                         @endif
                     </div>
                     <div class="bg-base-100 border border-base-300 rounded-xl p-6 text-center">
                         <svg class="mx-auto h-8 w-8 text-primary dark:text-primary mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>
-                        <h3 class="font-medium text-base-content mb-1">Drop-Off Location</h3>
+                        <h3 class="font-medium text-base-content mb-1">{{ __('Drop-Off Location') }}</h3>
                         <p class="text-sm text-base-content/70">Granite Falls High School (GFHS)</p>
                         <p class="text-xs text-base-content/60 mt-1">1401 100th St NE, Granite Falls, WA 98252</p>
                     </div>
@@ -319,9 +320,9 @@
         <section class="py-12 sm:py-16 bg-gray-50 dark:bg-gray-900">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center mb-8">
-                    <h2 class="text-2xl font-bold text-base-content">Our Sponsors</h2>
+                    <h2 class="text-2xl font-bold text-base-content">{{ __('Our Sponsors') }}</h2>
                     <div class="mt-2 h-1 w-12 bg-primary mx-auto rounded-sm"></div>
-                    <p class="mt-3 text-sm text-base-content/60">Thank you to our generous sponsors for supporting the Food &amp; Gift Drive.</p>
+                    <p class="mt-3 text-sm text-base-content/60">{{ __('Thank you to our generous sponsors for supporting the Food & Gift Drive.') }}</p>
                 </div>
                 <div class="flex flex-wrap items-center justify-center gap-8">
                     @foreach($sponsorLogos as $sponsor)
@@ -360,14 +361,14 @@
                 <img src="{{ asset('storage/' . $siteLogo) }}" alt="" class="h-8 w-auto" onerror="this.outerHTML='<span class=\'text-xl\'>&#10052;</span>'">
                 <span class="font-bold text-white">GFSD Food &amp; Gift Drive</span>
             </div>
-            <p class="text-sm mt-1">Granite Falls School District &mdash; Love in Action</p>
+            <p class="text-sm mt-1">{{ __('Granite Falls School District') }} &mdash; {{ __('Love in Action') }}</p>
         </x-slot>
         <x-slot name="links">
-            <a href="{{ route('login') }}" class="hover:text-white transition">Staff Login</a>
+            <a href="{{ route('login') }}" class="hover:text-white transition">{{ __('Staff Login') }}</a>
             @if($adoptionEnabled)
-                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">Adopt a Tag</a>
+                <a href="{{ route('adopt.index') }}" class="hover:text-white transition">{{ __('Adopt a Tag') }}</a>
             @endif
-            <a href="https://granite.gfalls.wednet.edu/fooddrive/" target="_blank" class="hover:text-white transition">Official Website</a>
+            <a href="https://granite.gfalls.wednet.edu/fooddrive/" target="_blank" class="hover:text-white transition">{{ __('Official Website') }}</a>
         </x-slot>
     </x-site-footer>
 </body>

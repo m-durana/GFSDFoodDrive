@@ -85,8 +85,10 @@ if (! app()->environment('production')) {
     ]);
 }
 
-// Root route: show public homepage for everyone
-Route::get('/', function () {
+// Root route: show public homepage for everyone.
+// REL-06: public-locale middleware picks en/es per ?lang=, cookie, or
+// Accept-Language so the landing page renders in the visitor's language.
+Route::middleware('public-locale')->get('/', function () {
     $selfRegistrationEnabled = \App\Models\Setting::get('self_registration_enabled', false);
     $adoptionEnabled = \App\Models\Setting::get('adopt_a_tag_enabled', '0') === '1';
     return view('welcome', compact('selfRegistrationEnabled', 'adoptionEnabled'));
@@ -259,6 +261,10 @@ Route::middleware('signed')->group(function () {
     Route::put('/scan/{child}', [ScanController::class, 'update'])->name('scan.update')->middleware('throttle:30,1');
 });
 
+// REL-06: every public/token-bearer surface below picks en/es via the
+// public-locale middleware. Staff/Santa pages stay English.
+Route::middleware('public-locale')->group(function () {
+
 // Mobile shopping companion (public routes for volunteers/NINJAs)
 Route::get('/shopping/a/{token}', [ShoppingController::class, 'assignmentByToken'])->name('shopping.assignment');
 Route::get('/shopping/{family_number}', [ShoppingController::class, 'checklist'])->name('shopping.checklist');
@@ -294,6 +300,8 @@ Route::post('/delivery/route/{token}/returning', [DeliveryRouteController::class
 Route::get('/register-family', [SelfServiceController::class, 'create'])->name('self-service.create');
 Route::post('/register-family', [SelfServiceController::class, 'store'])->middleware('throttle:public-form-submit')->name('self-service.store');
 Route::get('/register-family/success', [SelfServiceController::class, 'success'])->name('self-service.success');
+
+}); // end REL-06 public-locale group
 
 // Warehouse routes: accessible by Coordinator and Santa roles.
 // Within the group, individual subgroups are scoped to specific sections

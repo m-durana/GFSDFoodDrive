@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'permission' => \App\Http\Middleware\CheckPermission::class,
             'section' => \App\Http\Middleware\CoordinatorSection::class,
+            // REL-06: public / token-bearer locale resolver (en, es).
+            'public-locale' => \App\Http\Middleware\SetPublicLocale::class,
         ]);
         // Audit every state-changing request by an authenticated user.
         // Sudoer actions are tagged separately. See LogMutatingActivity.
