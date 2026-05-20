@@ -11,6 +11,10 @@ use Illuminate\Support\Str;
 
 class PackingList extends Model
 {
+    use \App\Traits\Auditable;
+
+    protected $auditExclude = ['qr_token'];
+
     protected static function booted(): void
     {
         static::addGlobalScope(new SeasonScope);

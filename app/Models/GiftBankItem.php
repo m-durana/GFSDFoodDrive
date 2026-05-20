@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GiftBankItem extends Model
 {
+    use \App\Traits\Auditable;
+
     protected static function booted(): void
     {
         static::addGlobalScope(new SeasonScope);

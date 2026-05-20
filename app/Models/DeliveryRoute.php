@@ -15,7 +15,13 @@ use Illuminate\Support\Str;
 
 class DeliveryRoute extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\Auditable;
+
+    protected $auditExclude = [
+        'driver_lat',
+        'driver_lng',
+        'driver_location_at',
+    ];
 
     protected static function booted(): void
     {

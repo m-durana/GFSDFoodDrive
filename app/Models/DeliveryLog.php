@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DeliveryLog extends Model
 {
+    use \App\Traits\Auditable;
+
     protected $fillable = [
         'family_id',
         'user_id',
