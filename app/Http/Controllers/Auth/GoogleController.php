@@ -144,6 +144,11 @@ class GoogleController extends Controller
                 ->with('status', 'Session expired. Please sign in with Google again.');
         }
 
+        // NOTE: inline validate() preserved intentionally — the session
+        // expiration check above must run before validation so an expired
+        // session redirects to /login rather than emitting a 422 about the
+        // posted form fields. Promoting to a FormRequest would invert that
+        // order. See SHIP_LOG.md Wave 4.
         $request->validate([
             'requested_role' => 'required|in:family,coordinator',
             'school_source' => 'nullable|string|max:255',

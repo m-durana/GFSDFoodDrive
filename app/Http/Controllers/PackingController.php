@@ -127,13 +127,8 @@ class PackingController extends Controller
         return view('santa.packing.print', compact('packingList', 'qrCode', 'foodItems', 'giftItems', 'babyItems', 'printType'));
     }
 
-    public function printBatch(Request $request): View
+    public function printBatch(\App\Http\Requests\PrintPackingBatchRequest $request): View
     {
-        $request->validate([
-            'list_ids' => 'required|array',
-            'list_ids.*' => 'exists:packing_lists,id',
-        ]);
-
         $printType = $request->input('type', 'both');
         if (! in_array($printType, ['food', 'gift', 'both'])) {
             $printType = 'both';
@@ -232,10 +227,8 @@ class PackingController extends Controller
         return view('santa.packing.summary', compact('summary', 'date'));
     }
 
-    public function updateNotes(PackingList $packingList, Request $request): RedirectResponse
+    public function updateNotes(PackingList $packingList, \App\Http\Requests\UpdatePackingNotesRequest $request): RedirectResponse
     {
-        $request->validate(['notes' => 'nullable|string|max:1000']);
-
         $packingList->update(['notes' => $request->notes]);
 
         return redirect()->route('packing.show', $packingList)

@@ -61,14 +61,12 @@ class PackingApiController extends Controller
     /**
      * Scan a barcode into a packing list.
      */
-    public function scan(string $listId, Request $request): JsonResponse
+    public function scan(string $listId, \App\Http\Requests\ScanPackingItemRequest $request): JsonResponse
     {
         $list = $this->resolveList($listId);
         if (!$list) {
             return response()->json(['error' => 'Packing list not found.'], 404);
         }
-
-        $request->validate(['barcode' => 'required|string']);
 
         $result = $this->packingService->scanItemIntoPack($list, $request->barcode, auth()->user());
 
@@ -128,17 +126,12 @@ class PackingApiController extends Controller
     /**
      * Record a substitution for a packing item.
      */
-    public function substitute(string $listId, PackingItem $packingItem, Request $request): JsonResponse
+    public function substitute(string $listId, PackingItem $packingItem, \App\Http\Requests\SubstitutePackingItemRequest $request): JsonResponse
     {
         $list = $this->resolveList($listId);
         if (!$list || $packingItem->packing_list_id !== $list->id) {
             return response()->json(['error' => 'Not found.'], 404);
         }
-
-        $request->validate([
-            'notes' => 'required|string|max:500',
-            'new_item_id' => 'nullable|integer|exists:warehouse_items,id',
-        ]);
 
         $newItem = null;
         if ($request->new_item_id) {
