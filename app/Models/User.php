@@ -10,10 +10,16 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, \App\Traits\Auditable;
 
     // After running `composer update`, uncomment the line below to enable Spatie roles:
     use \Spatie\Permission\Traits\HasRoles;
+
+    protected $auditExclude = [
+        'last_lat',
+        'last_lng',
+        'last_location_at',
+    ];
 
     protected $fillable = [
         'username',

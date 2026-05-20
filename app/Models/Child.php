@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy(ChildObserver::class)]
 class Child extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\Auditable;
 
     protected static function booted(): void
     {

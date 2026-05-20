@@ -16,7 +16,13 @@ use Illuminate\Support\Str;
 #[ObservedBy(FamilyObserver::class)]
 class Family extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\Auditable;
+
+    protected $auditExclude = [
+        'updated_at',
+        'created_at',
+        'status_token',
+    ];
 
     protected static function booted(): void
     {
