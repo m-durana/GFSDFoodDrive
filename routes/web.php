@@ -34,14 +34,51 @@ if (! app()->environment('production')) {
         }
         @set_time_limit(300);
         @ini_set('memory_limit', '512M');
-        \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
-            '--seed' => true,
-            '--force' => true,
-        ]);
-        return response()->json([
-            'ok' => true,
-            'output' => \Illuminate\Support\Facades\Artisan::output(),
-        ]);
+
+        // Serialize concurrent resets. Two Playwright agents calling this
+        // simultaneously would otherwise race on migrate:fresh's drop/recreate
+        // and return 500. Use an atomic file-based lock so it works regardless
+        // of cache driver (file/array/redis).
+        $lockPath = storage_path('framework/e2e-reset.lock');
+        if (! is_dir(dirname($lockPath))) {
+            @mkdir(dirname($lockPath), 0775, true);
+        }
+        $fh = @fopen($lockPath, 'c');
+        if ($fh === false) {
+            abort(500, 'Could not open e2e reset lock file');
+        }
+        // Wait up to 60s for the lock; if another reset is in flight we want
+        // to queue, not 500.
+        $acquired = false;
+        $deadline = microtime(true) + 60.0;
+        while (microtime(true) < $deadline) {
+            if (flock($fh, LOCK_EX | LOCK_NB)) {
+                $acquired = true;
+                break;
+            }
+            usleep(100_000); // 100ms
+        }
+        if (! $acquired) {
+            fclose($fh);
+            return response()->json([
+                'ok' => false,
+                'error' => 'Another reset in progress; timed out waiting for lock',
+            ], 429);
+        }
+
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate:fresh', [
+                '--seed' => true,
+                '--force' => true,
+            ]);
+            return response()->json([
+                'ok' => true,
+                'output' => \Illuminate\Support\Facades\Artisan::output(),
+            ]);
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
+        }
     })->withoutMiddleware([
         \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
     ]);
