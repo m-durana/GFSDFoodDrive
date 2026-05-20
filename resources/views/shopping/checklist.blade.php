@@ -8,6 +8,8 @@
     {{-- REL-40: opt into Tailwind class-based dark mode so prefers-color-scheme
          and the manual toggle below can both flip via the `dark` class on <html>. --}}
     <script>tailwind.config = { darkMode: 'class' };</script>
+    {{-- REL-43: prevent iOS focus-zoom on form controls (this page is CDN-only, no Vite app.css). --}}
+    <style>@media (max-width:767px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}</style>
     <script>
         (function () {
             try {

@@ -11,6 +11,8 @@
         .stop-delivered { opacity: 0.7; border-left: 4px solid #22c55e !important; }
         .heading-to { animation: pulse-blue 2s ease-in-out infinite; border-left: 4px solid #3b82f6 !important; }
         @keyframes pulse-blue { 0%, 100% { border-left-color: #3b82f6; } 50% { border-left-color: #93c5fd; } }
+        /* REL-43: prevent iOS focus-zoom on form controls. */
+        @media (max-width:767px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-900">

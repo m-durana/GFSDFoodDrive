@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ __('Route PIN') }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    {{-- REL-43: prevent iOS focus-zoom on form controls. --}}
+    <style>@media (max-width:767px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}</style>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-900 flex items-center justify-center px-4">
     <main class="w-full max-w-sm bg-white border border-slate-200 rounded-2xl shadow-xs p-6">

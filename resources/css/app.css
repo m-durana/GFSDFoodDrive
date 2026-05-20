@@ -225,3 +225,15 @@ input[type="number"] {
         padding-bottom: env(safe-area-inset-bottom);
     }
 }
+
+/* REL-43: iOS Safari zooms the page when a focused form control has font-size
+   < 16px. Several views use `text-sm` (14px) on inputs/selects/textareas, which
+   triggers a zoom-then-reset jitter on every focus. Force 16px on mobile only;
+   tablet+ keeps the original utility-class sizing. */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}

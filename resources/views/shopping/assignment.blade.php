@@ -9,6 +9,8 @@
         @supports (padding: env(safe-area-inset-bottom)) {
             .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         }
+        /* REL-43: prevent iOS focus-zoom on form controls. */
+        @media (max-width:767px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}}
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen pb-safe">
