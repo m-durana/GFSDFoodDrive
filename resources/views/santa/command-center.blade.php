@@ -10,47 +10,54 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
-        body { background: #111827; overflow: hidden; }
-        #map { height: 100%; width: 100%; border-radius: 0.5rem; }
+        body { background: #111827; }
+        /* REL-37: only lock the viewport on tablet+ — phones need to scroll. */
+        @media (min-width: 1024px) { body { overflow: hidden; } }
+        #map { height: 100%; width: 100%; min-height: 280px; border-radius: 0.5rem; }
         .pulse { animation: pulse 2s ease-in-out infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .progress-ring { transition: stroke-dashoffset 0.5s ease; }
     </style>
 </head>
-<body class="text-white h-screen flex flex-col">
+<body class="text-white min-h-screen lg:h-screen flex flex-col">
 
     <!-- Top Bar -->
-    <div class="flex items-center justify-between px-6 py-3 bg-gray-900 border-b border-gray-800 shrink-0">
-        <div class="flex items-center space-x-4">
-            <h1 class="text-xl font-bold text-primary">GFSD Food Drive</h1>
-            <span class="text-gray-500">|</span>
-            <span class="text-sm text-gray-400">Command Center</span>
-            <span class="inline-flex items-center gap-1.5 text-xs ml-2">
+    {{-- REL-37: stack vertically on mobile so brand + live + mode toggle + clock
+         don't collide; lay out as a single row on tablet+. --}}
+    <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between px-3 lg:px-6 py-2 lg:py-3 bg-gray-900 border-b border-gray-800 shrink-0">
+        <div class="flex items-center flex-wrap gap-x-3 gap-y-1">
+            <h1 class="text-base lg:text-xl font-bold text-primary">GFSD Food Drive</h1>
+            <span class="hidden lg:inline text-gray-500">|</span>
+            <span class="text-xs lg:text-sm text-gray-400">Command Center</span>
+            <span class="inline-flex items-center gap-1.5 text-xs lg:ml-2">
                 <span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span></span>
                 <span class="font-semibold text-primary uppercase tracking-wider">Live</span>
                 <span id="live-age" class="text-gray-500 ml-0.5">just now</span>
             </span>
         </div>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-between lg:justify-end gap-3 lg:gap-4">
             <!-- Mode Toggle -->
             <div class="flex bg-gray-800 rounded-lg p-0.5 text-xs">
                 <button onclick="setMode('delivery')" id="btn-delivery"
-                    class="px-3 py-1.5 rounded-md font-medium transition">Delivery</button>
+                    class="px-2.5 lg:px-3 py-1.5 rounded-md font-medium transition">Delivery</button>
                 <button onclick="setMode('overview')" id="btn-overview"
-                    class="px-3 py-1.5 rounded-md font-medium transition">Overview</button>
+                    class="px-2.5 lg:px-3 py-1.5 rounded-md font-medium transition">Overview</button>
                 <button onclick="setMode('shopping')" id="btn-shopping"
-                    class="px-3 py-1.5 rounded-md font-medium transition">Stock</button>
+                    class="px-2.5 lg:px-3 py-1.5 rounded-md font-medium transition">Stock</button>
             </div>
-            <span id="clock" class="text-sm text-gray-400 font-mono"></span>
-            <a href="{{ route('santa.index') }}" class="text-xs text-gray-500 hover:text-gray-300">Exit</a>
+            <div class="flex items-center gap-3">
+                <span id="clock" class="text-xs lg:text-sm text-gray-400 font-mono"></span>
+                <a href="{{ route('santa.index') }}" class="text-xs text-gray-500 hover:text-gray-300">Exit</a>
+            </div>
         </div>
     </div>
 
     <!-- Main Content Area -->
-    <div class="flex-1 overflow-hidden p-4">
+    {{-- REL-37: on mobile we allow vertical scroll; tablet+ keeps a single viewport. --}}
+    <div class="flex-1 lg:overflow-hidden p-3 lg:p-4">
 
         <!-- OVERVIEW MODE -->
-        <div id="mode-overview" class="hidden h-full grid grid-cols-6 grid-rows-3 gap-3">
+        <div id="mode-overview" class="hidden lg:h-full grid grid-cols-2 lg:grid-cols-6 lg:grid-rows-3 gap-3">
             <!-- Top stats row - 6 key metrics -->
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
                 <div class="text-3xl font-bold text-white" id="stat-families">—</div>
@@ -80,17 +87,17 @@
             </div>
 
             <!-- Row 2: Charts + Delivery summary -->
-            <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
+            <div class="bg-gray-800 rounded-lg p-4 col-span-2 lg:row-span-2 overflow-hidden flex flex-col h-64 lg:h-auto">
                 <h3 class="text-sm font-medium text-gray-400 mb-2 shrink-0">Gift Level Distribution</h3>
                 <div class="flex-1 min-h-0 relative"><canvas id="gift-chart"></canvas></div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
+            <div class="bg-gray-800 rounded-lg p-4 col-span-2 lg:row-span-2 overflow-hidden flex flex-col h-64 lg:h-auto">
                 <h3 class="text-sm font-medium text-gray-400 mb-2 shrink-0">Delivery Progress</h3>
                 <div class="flex-1 min-h-0 relative"><canvas id="delivery-chart"></canvas></div>
             </div>
 
             <!-- Row 2-3 right: Delivery + Operations at-a-glance -->
-            <div class="bg-gray-800 rounded-lg p-4 col-span-2 row-span-2 overflow-hidden flex flex-col">
+            <div class="bg-gray-800 rounded-lg p-4 col-span-2 lg:row-span-2 overflow-hidden flex flex-col">
                 <h3 class="text-sm font-medium text-gray-400 mb-3 shrink-0">Operations Snapshot</h3>
                 <div class="space-y-3 flex-1 overflow-y-auto">
                     <!-- Delivery metrics -->
@@ -147,7 +154,7 @@
         </div>
 
         <!-- STOCK MODE -->
-        <div id="mode-shopping" class="hidden h-full grid grid-cols-6 grid-rows-3 gap-3">
+        <div id="mode-shopping" class="hidden lg:h-full grid grid-cols-2 lg:grid-cols-6 lg:grid-rows-3 gap-3">
             <!-- Row 1: Key stats -->
             <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center">
                 <div class="relative">
@@ -196,13 +203,13 @@
             </div>
 
             <!-- Row 2: Warehouse categories + Packing breakdown -->
-            <div class="bg-gray-800 rounded-lg p-3 col-span-3 overflow-y-auto">
+            <div class="bg-gray-800 rounded-lg p-3 col-span-2 lg:col-span-3 overflow-y-auto max-h-64 lg:max-h-none">
                 <h3 class="text-xs font-medium text-gray-400 mb-2">Warehouse Inventory</h3>
                 <div id="stock-categories" class="space-y-2">
                     <div class="text-gray-500 text-xs">Loading...</div>
                 </div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 col-span-3 overflow-y-auto">
+            <div class="bg-gray-800 rounded-lg p-3 col-span-2 lg:col-span-3 overflow-y-auto max-h-72 lg:max-h-none">
                 <h3 class="text-xs font-medium text-gray-400 mb-2">Packing Status</h3>
                 <div class="grid grid-cols-4 gap-2 mb-3" id="packing-status-cards">
                     <div class="bg-gray-700/50 rounded-sm p-2 text-center">
@@ -230,7 +237,7 @@
             </div>
 
             <!-- Row 3: NINJA progress bars -->
-            <div class="bg-gray-800 rounded-lg p-3 col-span-6 overflow-y-auto">
+            <div class="bg-gray-800 rounded-lg p-3 col-span-2 lg:col-span-6 overflow-y-auto max-h-64 lg:max-h-none">
                 <h3 class="text-xs font-medium text-gray-400 mb-2">Volunteer Shopping Progress</h3>
                 <div id="ninja-bars" class="space-y-2">
                     <div class="text-gray-500 text-xs">Loading...</div>
@@ -239,54 +246,55 @@
         </div>
 
         <!-- DELIVERY MODE -->
-        <div id="mode-delivery" class="hidden h-full grid grid-cols-12 grid-rows-[auto_1fr] gap-4">
+        {{-- REL-37: 2-col mobile grid for stats; 12-col tablet+. Map + side panels stack on mobile. --}}
+        <div id="mode-delivery" class="hidden lg:h-full grid grid-cols-2 lg:grid-cols-12 lg:grid-rows-[auto_1fr] gap-3 lg:gap-4">
             <!-- Top stats row -->
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
                 <div class="relative">
-                    <svg class="w-20 h-20 transform -rotate-90">
+                    <svg class="w-16 h-16 lg:w-20 lg:h-20 transform -rotate-90">
                         <circle cx="40" cy="40" r="34" stroke="#374151" stroke-width="6" fill="none"/>
                         <circle id="delivery-ring" cx="40" cy="40" r="34" stroke="#3b82f6" stroke-width="6" fill="none"
                             stroke-dasharray="213.63" stroke-dashoffset="213.63" class="progress-ring" stroke-linecap="round"/>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center">
-                        <span id="delivery-pct" class="text-lg font-bold">0%</span>
+                        <span id="delivery-pct" class="text-base lg:text-lg font-bold">0%</span>
                     </div>
                 </div>
                 <div class="text-xs text-gray-400 mt-1">Delivered</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
-                <div class="text-3xl font-bold text-blue-400 pulse" id="delivery-in-transit">0</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
+                <div class="text-2xl lg:text-3xl font-bold text-blue-400 pulse" id="delivery-in-transit">0</div>
                 <div class="text-xs text-gray-400 mt-1">In Transit</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
-                <div class="text-3xl font-bold text-gray-400" id="delivery-pending">0</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
+                <div class="text-2xl lg:text-3xl font-bold text-gray-400" id="delivery-pending">0</div>
                 <div class="text-xs text-gray-400 mt-1">Pending</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
-                <div class="text-3xl font-bold text-green-400" id="delivery-done">0</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
+                <div class="text-2xl lg:text-3xl font-bold text-green-400" id="delivery-done">0</div>
                 <div class="text-xs text-gray-400 mt-1">Complete</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
-                <div class="text-3xl font-bold text-amber-400" id="delivery-per-hour">0</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
+                <div class="text-2xl lg:text-3xl font-bold text-amber-400" id="delivery-per-hour">0</div>
                 <div class="text-xs text-gray-400 mt-1">Delivered/hr</div>
             </div>
-            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center col-span-2">
-                <div class="text-3xl font-bold text-purple-400" id="delivery-active-drivers">0</div>
+            <div class="bg-gray-800 rounded-lg p-3 flex flex-col justify-center items-center lg:col-span-2">
+                <div class="text-2xl lg:text-3xl font-bold text-purple-400" id="delivery-active-drivers">0</div>
                 <div class="text-xs text-gray-400 mt-1">Active Drivers</div>
             </div>
 
-            <div class="col-span-8 grid grid-rows-[1fr_auto] gap-4 min-h-0">
-                <div class="bg-gray-800 rounded-lg overflow-hidden min-h-0">
-                    <div class="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+            <div class="col-span-2 lg:col-span-8 grid lg:grid-rows-[1fr_auto] gap-3 lg:gap-4 lg:min-h-0">
+                <div class="bg-gray-800 rounded-lg overflow-hidden lg:min-h-0 h-72 lg:h-auto flex flex-col">
+                    <div class="px-4 py-3 border-b border-gray-700 flex items-center justify-between shrink-0">
                         <div>
                             <h3 class="text-sm font-medium text-gray-300">Delivery Map</h3>
-                            <p class="text-xs text-gray-500">Routes, families, and live vehicle positions</p>
+                            <p class="text-xs text-gray-500 hidden sm:block">Routes, families, and live vehicle positions</p>
                         </div>
-                        <a href="{{ route('delivery.index') }}" class="text-xs text-blue-300 hover:text-blue-200">Open Dispatch</a>
+                        <a href="{{ route('delivery.index') }}" class="text-xs text-blue-300 hover:text-blue-200 whitespace-nowrap">Open Dispatch</a>
                     </div>
-                    <div id="map"></div>
+                    <div id="map" class="flex-1 min-h-0"></div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto lg:min-h-0 max-h-64 lg:max-h-none">
                     <h3 class="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
                     <div id="activity-feed" class="space-y-2">
                         <div class="text-gray-500 text-sm">Loading...</div>
@@ -294,9 +302,9 @@
                 </div>
             </div>
 
-            <div class="col-span-4 flex flex-col gap-4 min-h-0">
-                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
-                    <div class="flex items-center justify-between mb-3">
+            <div class="col-span-2 lg:col-span-4 flex flex-col gap-3 lg:gap-4 lg:min-h-0">
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto lg:min-h-0 max-h-96 lg:max-h-none">
+                    <div class="flex items-center justify-between mb-3 gap-2 flex-wrap">
                         <h3 class="text-sm font-medium text-gray-400">Active Routes</h3>
                         <div class="flex gap-1">
                             <button onclick="setRouteSort('name')" id="sort-name" class="text-[10px] px-1.5 py-0.5 rounded-sm text-gray-500 hover:text-gray-300">Name</button>
@@ -308,7 +316,7 @@
                         <div class="text-gray-500 text-sm">Loading...</div>
                     </div>
                 </div>
-                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto min-h-0">
+                <div class="bg-gray-800 rounded-lg p-4 overflow-y-auto lg:min-h-0 max-h-64 lg:max-h-none">
                     <h3 class="text-sm font-medium text-gray-400 mb-3">Dispatch Queue</h3>
                     <div id="dispatch-queue" class="space-y-2">
                         <div class="text-gray-500 text-sm">Loading...</div>
@@ -726,17 +734,17 @@
                                 <div class="h-2 rounded-full transition-all" style="width:${r.pct}%;background:${r.color || '#3b82f6'}"></div>
                             </div>
                             ${headingHtml}
-                            <div class="flex items-center gap-2 mt-2 text-[10px]">
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px]">
                                 ${r.access_token ? `<a href="/delivery/route/${r.access_token}" target="_blank"
-                                    class="text-green-500 hover:text-green-300 transition">Driver</a>` : ''}
+                                    class="text-green-500 hover:text-green-300 transition py-1">Driver</a>` : ''}
                                 <button onclick="copyRouteLink('${r.access_token || ''}')"
-                                    class="text-gray-500 hover:text-gray-300 transition">Copy</button>
+                                    class="text-gray-500 hover:text-gray-300 transition py-1">Copy</button>
                                 <button onclick="markRouteReturning(${r.id})"
-                                    class="text-indigo-400 hover:text-indigo-300 transition">Return</button>
+                                    class="text-indigo-400 hover:text-indigo-300 transition py-1">Return</button>
                                 <button onclick="recalcRoute(${r.id}, this)"
-                                    class="text-yellow-500 hover:text-yellow-300 transition">Recalc</button>
+                                    class="text-yellow-500 hover:text-yellow-300 transition py-1">Recalc</button>
                                 <button onclick="deleteRoute(${r.id})"
-                                    class="text-primary hover:text-primary transition">Delete</button>
+                                    class="text-primary hover:text-primary transition py-1">Delete</button>
                             </div>
                         </div>
                     `;
