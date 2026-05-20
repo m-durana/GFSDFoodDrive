@@ -30,8 +30,8 @@ class CoordinatorSections
         'food'        => 'Food (food warehouse, kiosk, inventory, shopping)',
         'packing'     => 'Packing (per-family packing lists, scanner, verify station)',
         'delivery'    => 'Delivery (dispatch map, route building, driver assignment)',
-        'business'    => 'Business (seasons, reports, backups, analytics)',
-        'media'       => 'Media (marketing + video; usually no app access needed)',
+        'business'    => 'Business / Marketing / Media (seasons, reports, backups, analytics, marketing, video)',
+        'system'      => 'System (operator-only: coordinator PDF generators, advanced settings)',
     ];
 
     /**
@@ -48,13 +48,14 @@ class CoordinatorSections
      * same thing under two different names.
      */
     public const DEFAULT_MAP = [
-        'System Engineer'           => ['giving-tree', 'food', 'packing', 'delivery', 'business', 'media'],
+        'System Engineer'           => ['giving-tree', 'food', 'packing', 'delivery', 'business', 'system'],
         'Giving Tree Coordinator'   => ['giving-tree'],
         'Food Manager'              => ['food', 'packing'],
         'Activities Coordinator'    => ['business'],
         'Business Operator'         => ['business'],
-        'Video Producer'            => ['media'],
-        'Marketing Director'        => ['media'],
+        // Marketing/Media positions (REL-46b: media merged into business).
+        'Video Producer'            => ['business'],
+        'Marketing Director'        => ['business'],
     ];
 
     /**

@@ -21,6 +21,7 @@ use App\Http\Controllers\ShoppingController;
 use App\Http\Controllers\GiftBankController;
 use App\Http\Controllers\PackingController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\Santa\RolesController as SantaRolesController;
 use Illuminate\Support\Facades\Route;
 
 // E2E test harness: reset DB to a known seeded state. Guarded to non-prod
@@ -138,6 +139,12 @@ Route::middleware(['auth', 'permission:family,santa'])->prefix('family')->name('
 Route::middleware(['auth', 'permission:santa'])->prefix('santa')->name('santa.')->group(function () {
     Route::get('/', [SantaController::class, 'index'])->name('index');
     Route::get('/families', [SantaController::class, 'allFamilies'])->name('families');
+
+    // REL-46c: Santa-editable Spatie roles.
+    Route::get('/roles', [SantaRolesController::class, 'index'])->name('roles.index');
+    Route::post('/roles', [SantaRolesController::class, 'store'])->name('roles.store');
+    Route::put('/roles/{role}', [SantaRolesController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{role}', [SantaRolesController::class, 'destroy'])->name('roles.destroy');
     Route::get('/number-assignment', [SantaController::class, 'numberAssignment'])->name('numberAssignment');
     Route::post('/number-assignment', [SantaController::class, 'updateFamilyNumber'])->name('updateFamilyNumber');
     Route::post('/number-assignment/auto-assign', [SantaController::class, 'autoAssign'])->name('autoAssign');
@@ -233,11 +240,17 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->group(function () {
 // Coordinator routes: accessible by Coordinator and Santa roles
 Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('coordinator')->name('coordinator.')->group(function () {
     Route::get('/', [CoordinatorController::class, 'index'])->name('index');
-    Route::get('/gift-tags', [CoordinatorController::class, 'giftTags'])->name('giftTags');
-    Route::get('/family-summary', [CoordinatorController::class, 'familySummary'])->name('familySummary');
-    Route::get('/delivery-day', [CoordinatorController::class, 'deliveryDay'])->name('deliveryDay');
-    Route::get('/pdf-status/{jobKey}', [CoordinatorController::class, 'pdfStatus'])->name('pdfStatus');
-    Route::get('/pdf-download/{jobKey}', [CoordinatorController::class, 'pdfDownload'])->name('pdfDownload');
+
+    // PDF generators (REL-46a): system-section only. Santa + System Coordinator
+    // implicitly pass the section gate; regular Coordinators are blocked unless
+    // Santa has remapped their position to include `system` in the section map.
+    Route::middleware('section:system')->group(function () {
+        Route::get('/gift-tags', [CoordinatorController::class, 'giftTags'])->name('giftTags');
+        Route::get('/family-summary', [CoordinatorController::class, 'familySummary'])->name('familySummary');
+        Route::get('/delivery-day', [CoordinatorController::class, 'deliveryDay'])->name('deliveryDay');
+        Route::get('/pdf-status/{jobKey}', [CoordinatorController::class, 'pdfStatus'])->name('pdfStatus');
+        Route::get('/pdf-download/{jobKey}', [CoordinatorController::class, 'pdfDownload'])->name('pdfDownload');
+    });
 });
 
 // QR Code scan routes (public, secured by signed URLs)

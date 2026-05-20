@@ -19,13 +19,21 @@ class CoordinatorDocumentsTest extends TestCase
     {
         parent::setUp();
 
+        // REL-46a: coordinator PDF routes now require the `system` section.
+        // Position this fixture as "System Engineer" so the existing
+        // "PDF endpoint returns 200" assertions continue to exercise the
+        // PDF-generation path. A separate test below covers the 403 case.
         $this->coordinator = User::create([
             'username' => 'coord_test',
             'first_name' => 'Test',
             'last_name' => 'Coord',
             'password' => 'password123',
             'permission' => 8,
+            'position' => 'System Engineer',
         ]);
+        if (method_exists($this->coordinator, 'assignRole')) {
+            $this->coordinator->assignRole('system_coordinator');
+        }
 
         $this->santa = User::create([
             'username' => 'santa_test',

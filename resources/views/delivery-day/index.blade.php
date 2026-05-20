@@ -130,21 +130,39 @@
                                             &middot; {{ $routeDone }}/{{ $routeTotal }}
                                         </div>
                                     </div>
+                                    {{-- REL-41 + REL-38: primary action (Driver) stays inline,
+                                         secondary actions collapse into a daisyUI dropdown so the
+                                         row never overflows on desktop or mobile. --}}
                                     <div class="flex items-center gap-1 shrink-0">
                                         <a href="{{ route('delivery.driverView', $route->access_token) }}" target="_blank"
                                             class="text-xs text-blue-600 dark:text-blue-400 hover:underline px-1" title="Open driver view">Driver</a>
-                                        <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => showToast('Link copied!'))"
-                                            class="text-xs text-gray-400 hover:text-gray-600 px-1" title="Copy driver link">Copy</button>
-                                        <span class="text-xs font-mono text-base-content/60 px-1" title="Driver PIN">PIN {{ $route->driver_pin }}</span>
-                                        <form method="POST" action="{{ route('delivery.markRouteReturning', $route) }}" class="inline" onsubmit="return confirm('Mark as returning?')">
-                                            @csrf
-                                            <button type="submit" class="text-xs text-green-600 dark:text-green-400 hover:underline px-1" title="Mark returning">Return</button>
-                                        </form>
-                                        <button type="button" onclick="recalcRoute({{ $route->id }}, this)" class="text-xs text-orange-500 hover:underline px-1" title="Recalculate">Recalc</button>
-                                        <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" class="inline" onsubmit="return confirm('Delete route?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="text-xs text-primary hover:underline px-1" title="Delete route">Del</button>
-                                        </form>
+                                        <span class="hidden sm:inline text-xs font-mono text-base-content/60 px-1" title="Driver PIN">PIN {{ $route->driver_pin }}</span>
+                                        <div class="dropdown dropdown-end">
+                                            <button type="button" tabindex="0" class="text-xs text-base-content/60 hover:text-base-content px-2 py-0.5 rounded hover:bg-base-200" aria-label="More route actions">&#x22EF;</button>
+                                            <ul tabindex="0" class="dropdown-content menu menu-sm bg-base-100 rounded-md shadow-lg z-50 w-40 p-1 border border-base-300">
+                                                <li class="sm:hidden">
+                                                    <span class="text-xs font-mono text-base-content/60">PIN {{ $route->driver_pin }}</span>
+                                                </li>
+                                                <li>
+                                                    <button type="button" onclick="navigator.clipboard.writeText('{{ url(route('delivery.driverView', $route->access_token, false)) }}').then(() => showToast('Link copied!'))" class="text-xs">Copy driver link</button>
+                                                </li>
+                                                <li>
+                                                    <form method="POST" action="{{ route('delivery.markRouteReturning', $route) }}" onsubmit="return confirm('Mark as returning?')">
+                                                        @csrf
+                                                        <button type="submit" class="text-xs text-green-600 dark:text-green-400 w-full text-left">Mark returning</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <button type="button" onclick="recalcRoute({{ $route->id }}, this)" class="text-xs text-orange-600 dark:text-orange-400">Recalculate</button>
+                                                </li>
+                                                <li>
+                                                    <form method="POST" action="{{ route('santa.deliveryRoutes.destroy', $route) }}" onsubmit="return confirm('Delete route?')">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-xs text-primary w-full text-left">Delete route</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                                 @if($routeTotal > 0)

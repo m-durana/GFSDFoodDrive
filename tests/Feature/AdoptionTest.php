@@ -110,7 +110,6 @@ class AdoptionTest extends TestCase
 
     public function test_homepage_uses_adopt_a_tag_feature_flag(): void
     {
-        Setting::set('adoption_enabled', '1');
         Setting::set('adopt_a_tag_enabled', '0');
 
         $this->get(route('home'))

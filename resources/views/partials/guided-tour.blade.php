@@ -96,8 +96,14 @@
         });
     }
 
-    // Show welcome prompt on first visit
-    if (!localStorage.getItem(storageKey)) {
+    // REL-39: don't auto-fire the welcome prompt on phone-sized viewports.
+    // The full-screen tour modal obscured the dispatch board for mobile users
+    // and made the first-login impression feel broken. Desktop unchanged.
+    // Users can still trigger the tour manually via the "?" help link
+    // (window.restartTour is exposed below).
+    const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
+
+    if (!localStorage.getItem(storageKey) && !isMobileViewport) {
         setTimeout(() => {
             const welcome = document.getElementById('tour-welcome');
             if (welcome) welcome.classList.remove('hidden');

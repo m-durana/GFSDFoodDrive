@@ -58,7 +58,6 @@ use Illuminate\\Support\\Str;
 
 // --- Feature flags ---------------------------------------------------------
 Setting::set('adopt_a_tag_enabled', '1');
-Setting::set('adoption_enabled', '1');
 Setting::set('self_registration_enabled', true);
 Setting::set('packing_system_enabled', '1');
 Setting::set('packing_enabled', '1');

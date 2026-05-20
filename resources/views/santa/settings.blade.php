@@ -302,9 +302,20 @@
                                 <p class="text-sm text-base-content/60">
                                     Every user who holds one of the ticked roles immediately gains Santa-equivalent permissions for as long as the box stays checked. Every mutating request (POST/PUT/PATCH/DELETE) is audit-logged with the <code>is_sudoer</code> flag. Use sparingly.
                                 </p>
+                                <p class="text-xs text-base-content/60">
+                                    Need to add a brand-new role? Manage roles on the
+                                    <a href="{{ route('santa.roles.index') }}" class="link link-primary">Roles</a> page.
+                                </p>
                                 @php
                                     $sudoerRoles = \App\Models\User::sudoerRolesList();
-                                    $availableRoles = ['system_coordinator', 'coordinator', 'family', 'ninja'];
+                                    // REL-46c: pull the live role list so newly-created custom roles
+                                    // show up here automatically. Exclude `santa` (already top-tier)
+                                    // and `self_service` (intentionally narrow public-registration role).
+                                    $availableRoles = \Spatie\Permission\Models\Role::orderBy('name')
+                                        ->pluck('name')
+                                        ->reject(fn ($n) => in_array($n, ['santa', 'self_service'], true))
+                                        ->values()
+                                        ->all();
                                 @endphp
                                 <div class="flex flex-col gap-2">
                                     <input type="hidden" name="sudoer_roles_present" value="1">
@@ -331,7 +342,8 @@
                                 <h3 class="text-lg font-medium text-base-content">Coordinator → Section permission map</h3>
                                 <p class="text-sm text-base-content/60">
                                     Maps each coordinator position to the sections of the app they can access. Santa and System Coordinator always see everything; this only governs other Coordinators. Sections:
-                                    <code class="text-xs">giving-tree, food, packing, delivery, business, media</code>.
+                                    <code class="text-xs">giving-tree, food, packing, delivery, business, system</code>.
+                                    <span class="block mt-1">The <code class="text-xs">system</code> section gates Santa-only PDF generators &amp; advanced settings — assign sparingly.</span>
                                 </p>
                                 <p class="text-xs text-base-content/60">Format: one position per line, then <code>=</code>, then a comma-separated list of section slugs. Leave blank to reset to defaults.</p>
                                 @php

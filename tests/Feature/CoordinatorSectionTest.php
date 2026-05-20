@@ -37,8 +37,9 @@ class CoordinatorSectionTest extends TestCase
         $u2 = $this->makeUser('u2', 8, 'Food Manager', 'coordinator');
         $this->assertSame(['food', 'packing'], $u2->sections());
 
+        // REL-46b: media merged into business.
         $u3 = $this->makeUser('u3', 8, 'Marketing Director', 'coordinator');
-        $this->assertSame(['media'], $u3->sections());
+        $this->assertSame(['business'], $u3->sections());
 
         $u4 = $this->makeUser('u4', 8, null, 'coordinator');
         $this->assertSame([], $u4->sections());
@@ -136,5 +137,63 @@ class CoordinatorSectionTest extends TestCase
         $this->actingAs($coord)
             ->get(route('warehouse.gift-bank'))
             ->assertForbidden();
+    }
+
+    // REL-46a: coordinator PDF generators are gated to the `system` section.
+    // Santa + System Engineer must pass; regular coordinators (any other position)
+    // must be 403'd unless Santa has remapped their position to include `system`.
+
+    public function test_system_engineer_can_reach_coordinator_pdf_routes(): void
+    {
+        $sc = $this->makeUser('sc46', 8, 'System Engineer', 'system_coordinator');
+        $this->actingAs($sc);
+        $this->assertNotSame(403, $this->get(route('coordinator.giftTags'))->getStatusCode());
+        $this->assertNotSame(403, $this->get(route('coordinator.familySummary'))->getStatusCode());
+        $this->assertNotSame(403, $this->get(route('coordinator.deliveryDay'))->getStatusCode());
+    }
+
+    public function test_santa_can_reach_coordinator_pdf_routes(): void
+    {
+        $santa = $this->makeUser('santa46', 9, null, 'santa');
+        $this->actingAs($santa);
+        $this->assertNotSame(403, $this->get(route('coordinator.giftTags'))->getStatusCode());
+        $this->assertNotSame(403, $this->get(route('coordinator.familySummary'))->getStatusCode());
+        $this->assertNotSame(403, $this->get(route('coordinator.deliveryDay'))->getStatusCode());
+    }
+
+    public function test_food_manager_is_blocked_from_coordinator_pdf_routes(): void
+    {
+        \App\Models\Setting::clearCache();
+        \App\Models\Setting::forget('coordinator_section_map');
+        $coord = $this->makeUser('food46', 8, 'Food Manager', 'coordinator');
+        $this->actingAs($coord)->get(route('coordinator.giftTags'))->assertForbidden();
+        $this->actingAs($coord)->get(route('coordinator.familySummary'))->assertForbidden();
+        $this->actingAs($coord)->get(route('coordinator.deliveryDay'))->assertForbidden();
+    }
+
+    public function test_giving_tree_coordinator_is_blocked_from_coordinator_pdf_routes(): void
+    {
+        \App\Models\Setting::clearCache();
+        \App\Models\Setting::forget('coordinator_section_map');
+        $coord = $this->makeUser('gt46', 8, 'Giving Tree Coordinator', 'coordinator');
+        $this->actingAs($coord)->get(route('coordinator.giftTags'))->assertForbidden();
+    }
+
+    // REL-46b: media slug is no longer a known section. Even if Santa kept it
+    // in the legacy override map, it filters out, and Marketing/Video positions
+    // now map to `business` by default.
+    public function test_media_slug_is_filtered_and_marketing_maps_to_business(): void
+    {
+        \App\Models\Setting::clearCache();
+        \App\Models\Setting::forget('coordinator_section_map');
+
+        $u = $this->makeUser('mkt', 8, 'Marketing Director', 'coordinator');
+        $this->assertSame(['business'], $u->sections());
+
+        \App\Models\Setting::set('coordinator_section_map', json_encode([
+            'Some Old Position' => ['media', 'business'],
+        ]));
+        $stale = $this->makeUser('stale', 8, 'Some Old Position', 'coordinator');
+        $this->assertSame(['business'], $stale->sections(), 'legacy media slug must be filtered');
     }
 }
