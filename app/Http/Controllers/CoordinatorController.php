@@ -47,7 +47,7 @@ class CoordinatorController extends Controller
         if (!$user) return [];
 
         $allSections = array_keys(\App\Support\CoordinatorSections::SECTIONS);
-        $allowed = $user->isSanta() ? $allSections : $user->coordinatorSections();
+        $allowed = $user->isSanta() ? $allSections : $user->sections();
 
         $kpis = [];
         foreach ($allowed as $slug) {

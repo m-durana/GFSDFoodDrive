@@ -44,6 +44,7 @@ class DeliveryRouteController extends Controller
             'name' => $request->name,
             'driver_user_id' => $request->driver_user_id,
             'driver_name' => $request->driver_name,
+            'driver_phone' => $request->driver_phone,
         ]);
 
         if ($request->has('family_ids')) {
@@ -55,6 +56,12 @@ class DeliveryRouteController extends Controller
             }
             $route->update(['stop_count' => count($request->family_ids)]);
             \App\Jobs\RefreshRouteGeometryJob::dispatch($route->id);
+        }
+
+        // REL-05: notify the driver once per route, only when we have both a
+        // phone number and at least one stop.
+        if ($route->driver_phone && $route->stop_count > 0 && ! $route->driver_notified_at) {
+            \App\Notifications\DriverRouteReady::send($route);
         }
 
         return redirect()->route('delivery.index', ['tab' => 'routes'])

@@ -24,6 +24,7 @@ class StoreDeliveryRouteRequest extends FormRequest
                 Rule::exists('users', 'id')->where(fn($q) => $q->where('permission', '>=', 8)),
             ],
             'driver_name' => ['nullable', 'string', 'max:255'],
+            'driver_phone' => ['nullable', 'string', 'max:32'],
             'family_ids' => ['nullable', 'array'],
             'family_ids.*' => [
                 Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
