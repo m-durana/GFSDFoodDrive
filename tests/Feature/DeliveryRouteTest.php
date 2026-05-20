@@ -156,11 +156,77 @@ class DeliveryRouteTest extends TestCase
         $response->assertOk();
         $response->assertSee('Driver Route');
         $response->assertSee('Stop 1');
+        // Family number is the driver's household identifier (per PROJECT_OVERVIEW §3.2 privacy model).
+        $response->assertSee('Family #42');
+        // Address is still in the page for navigation, but behind a "Show address" reveal.
         $response->assertSee('42 Main St');
+        $response->assertSee('Show address');
         $response->assertDontSee('Sensitive Household');
+        // Phone is hidden unless the operator toggled drivers_can_see_phone on.
         $response->assertDontSee('360-555-4242');
         $response->assertDontSee('Private need note');
-        $response->assertDontSee('#42');
+    }
+
+    public function test_driver_view_shows_phone_when_setting_enabled(): void
+    {
+        \App\Models\Setting::set('drivers_can_see_phone', '1');
+
+        $route = DeliveryRoute::create(['name' => 'Driver Route']);
+        $family = $this->createFamilyWithCoords(42, 47.85, -121.97);
+        $family->update([
+            'phone1' => '360-555-4242',
+            'delivery_route_id' => $route->id,
+            'route_order' => 1,
+        ]);
+
+        $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => $route->driver_pin,
+        ])->assertRedirect(route('delivery.driverView', $route->access_token));
+
+        $this->get(route('delivery.driverView', $route->access_token))
+            ->assertOk()
+            ->assertSee('360-555-4242');
+    }
+
+    public function test_driver_pin_locks_out_after_repeated_failures(): void
+    {
+        \App\Models\Setting::set('driver_pin_lockout_enabled', '1');
+
+        $route = DeliveryRoute::create(['name' => 'Driver Route']);
+        $key = 'driver-pin:'.$route->id.':127.0.0.1';
+        \Illuminate\Support\Facades\RateLimiter::clear($key);
+
+        // Pre-saturate the rate limiter so the next request is the one that locks out.
+        for ($i = 0; $i < 5; $i++) {
+            \Illuminate\Support\Facades\RateLimiter::hit($key, 900);
+        }
+
+        $response = $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => '000000',
+        ]);
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors('pin');
+        $this->assertStringContainsString('Too many', session('errors')->first('pin') ?? '');
+    }
+
+    public function test_driver_pin_lockout_disabled_does_not_throttle(): void
+    {
+        \App\Models\Setting::set('driver_pin_lockout_enabled', '0');
+
+        $route = DeliveryRoute::create(['name' => 'Driver Route']);
+        $key = 'driver-pin:'.$route->id.':127.0.0.1';
+
+        for ($i = 0; $i < 10; $i++) {
+            \Illuminate\Support\Facades\RateLimiter::hit($key, 900);
+        }
+
+        $response = $this->post(route('delivery.verifyDriverPin', $route->access_token), [
+            'pin' => '000000',
+        ]);
+
+        // No "Too many" error — falls through to normal "Invalid route PIN".
+        $this->assertStringNotContainsString('Too many', session('errors')->first('pin') ?? 'Invalid route PIN.');
     }
 
     public function test_driver_view_404s_with_invalid_token(): void

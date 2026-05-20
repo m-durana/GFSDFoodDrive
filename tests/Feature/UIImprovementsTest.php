@@ -34,7 +34,7 @@ class UIImprovementsTest extends TestCase
         ]);
         $this->coordinator = User::create([
             'username' => 'coord', 'first_name' => 'Coord', 'last_name' => 'Inator',
-            'password' => 'password', 'permission' => 8,
+            'password' => 'password', 'permission' => 8, 'position' => 'System Engineer',
         ]);
         $this->familyUser = User::create([
             'username' => 'family', 'first_name' => 'Family', 'last_name' => 'User',
@@ -301,23 +301,28 @@ class UIImprovementsTest extends TestCase
         $response->assertOk();
     }
 
-    public function test_packing_show_hides_family_name_when_pii_disabled(): void
+    public function test_packing_show_hides_family_name_for_non_pii_users(): void
     {
-        Setting::set('packing_show_names', '0');
+        // The packing_show_names setting was retired in favor of canSeePii().
+        // Regular coordinators (not System Coordinator) must not see family names.
+        // The fixture coordinator has position 'System Engineer' (= PII access),
+        // so swap to a non-PII position for this test.
+        $this->coordinator->update(['position' => 'Food Manager']);
+
         $this->seedWarehouseCategories();
         $this->seedGroceryItems();
         $family = $this->createFamily(['family_name' => 'SecretFamily']);
         $list = $this->createPackingListWithItems($family);
 
-        $response = $this->actingAs($this->santa)->get(route('packing.show', $list));
+        $response = $this->actingAs($this->coordinator)->get(route('packing.show', $list));
         $response->assertOk();
         $response->assertDontSee('SecretFamily');
         $response->assertSee('Family #' . $family->family_number);
     }
 
-    public function test_packing_show_displays_family_name_when_pii_enabled(): void
+    public function test_packing_show_displays_family_name_for_santa(): void
     {
-        Setting::set('packing_show_names', '1');
+        // Santa is always allowed to see PII (canSeePii() returns true).
         $this->seedWarehouseCategories();
         $this->seedGroceryItems();
         $family = $this->createFamily(['family_name' => 'VisibleFamily']);
@@ -563,6 +568,9 @@ class UIImprovementsTest extends TestCase
     public function test_gift_bank_page_loads(): void
     {
         $this->seedWarehouseCategories();
+        // REL-03: gift-bank is gated to the Giving Tree section. Give the
+        // coordinator the matching position so they can reach it.
+        $this->coordinator->update(['position' => 'Giving Tree Coordinator']);
 
         $response = $this->actingAs($this->coordinator)->get(route('warehouse.gift-bank'));
         $response->assertOk();
@@ -629,27 +637,17 @@ class UIImprovementsTest extends TestCase
         $this->assertEquals('1', Setting::get('packing_show_names'));
     }
 
-    public function test_packing_show_names_toggle_via_settings_post(): void
+    public function test_packing_show_names_setting_retired(): void
     {
-        // POST with packing_show_names unchecked (boolean false)
-        $response = $this->actingAs($this->santa)->post(route('santa.updateSettings'), [
-            'packing_show_names' => false,
-            'season_year' => date('Y'),
-        ]);
-
-        $response->assertRedirect();
-        Setting::clearCache();
-        $this->assertEquals('0', Setting::get('packing_show_names'));
-
-        // POST with packing_show_names checked (boolean true)
-        $response = $this->actingAs($this->santa)->post(route('santa.updateSettings'), [
+        // Setting was retired 2026-05-20 — replaced by User::canSeePii().
+        // POSTing the field must NOT persist anything (no-op).
+        $this->actingAs($this->santa)->post(route('santa.updateSettings'), [
             'packing_show_names' => '1',
             'season_year' => date('Y'),
-        ]);
+        ])->assertRedirect();
 
-        $response->assertRedirect();
         Setting::clearCache();
-        $this->assertEquals('1', Setting::get('packing_show_names'));
+        $this->assertNull(Setting::get('packing_show_names'));
     }
 
     public function test_all_settings_persist_in_single_post(): void
@@ -669,7 +667,7 @@ class UIImprovementsTest extends TestCase
         $this->assertEquals('All-In-One Footer', Setting::get('footer_text'));
         $this->assertEquals('6', Setting::get('backup_interval_hours'));
         $this->assertEquals('/custom/path', Setting::get('backup_path'));
-        $this->assertEquals('1', Setting::get('packing_show_names'));
+        // packing_show_names retired — should not persist; canSeePii() owns this now.
         $this->assertEquals('1', Setting::get('packing_system_enabled'));
     }
 }

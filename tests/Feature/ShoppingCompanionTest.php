@@ -59,7 +59,8 @@ class ShoppingCompanionTest extends TestCase
         $response = $this->get('/shopping/55');
         $response->assertStatus(200);
         $response->assertSee('Family #55');
-        $response->assertSee('Shoppers');
+        // Privacy: shopping volunteers see family numbers, not real family names.
+        $response->assertDontSee('Shoppers');
         $response->assertSee('Canned Beans');
         $response->assertSee('Rice');
     }

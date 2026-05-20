@@ -31,7 +31,7 @@ class WarehouseExtendedTest extends TestCase
         parent::setUp();
         $this->coordinator = User::create([
             'username' => 'coord', 'first_name' => 'C', 'last_name' => 'O',
-            'password' => 'password', 'permission' => 8,
+            'password' => 'password', 'permission' => 8, 'position' => 'System Engineer',
         ]);
         $this->familyUser = User::create([
             'username' => 'family', 'first_name' => 'F', 'last_name' => 'U',

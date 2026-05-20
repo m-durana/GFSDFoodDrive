@@ -687,7 +687,9 @@ class MobileScanTest extends TestCase
             'items',
         ]);
 
-        $this->assertEquals($family->family_name, $response->json('family.name'));
+        // PII policy: unauthenticated (token-bearer) calls do not expose the family name.
+        // Only the family number identifier is returned to the scanner.
+        $this->assertNull($response->json('family.name'));
         $this->assertEquals($family->family_number, $response->json('family.number'));
     }
 

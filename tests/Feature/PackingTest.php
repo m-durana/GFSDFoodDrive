@@ -35,7 +35,7 @@ class PackingTest extends TestCase
         ]);
         $this->coordinator = User::create([
             'username' => 'coord', 'first_name' => 'Coord', 'last_name' => 'Inator',
-            'password' => 'password', 'permission' => 8,
+            'password' => 'password', 'permission' => 8, 'position' => 'System Engineer',
         ]);
         $this->familyUser = User::create([
             'username' => 'family', 'first_name' => 'Family', 'last_name' => 'User',

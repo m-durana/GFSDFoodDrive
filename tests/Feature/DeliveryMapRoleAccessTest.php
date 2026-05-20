@@ -26,6 +26,9 @@ class DeliveryMapRoleAccessTest extends TestCase
             'last_name' => 'U',
             'password' => 'password123',
             'permission' => $permission,
+            // System Engineer = all sections per CoordinatorSections::DEFAULT_MAP.
+            // Without a position, coordinators are blocked by section middleware.
+            'position' => $permission === 8 ? 'System Engineer' : null,
         ]);
     }
 
@@ -39,6 +42,9 @@ class DeliveryMapRoleAccessTest extends TestCase
     public function test_coordinator_can_read_map_data(): void
     {
         $coord = $this->user(8, 'map_coord2');
+        // Drop to a non-PII position so the redaction assertions are meaningful.
+        // The default fixture position 'System Engineer' grants PII access.
+        $coord->update(['position' => 'Food Manager']);
         Family::create([
             'family_name' => 'Private Household',
             'family_number' => 77,
