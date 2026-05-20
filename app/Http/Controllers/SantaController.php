@@ -7,7 +7,13 @@ use App\Actions\MergeFamilies;
 use App\Enums\GiftLevel;
 use App\Http\Requests\ApproveAccessRequestRequest;
 use App\Http\Requests\BulkUpdateUsersRequest;
+use App\Http\Requests\CreateShoppingAssignmentRequest;
+use App\Http\Requests\DismissDuplicateRequest;
+use App\Http\Requests\ImportGroceryItemsRequest;
+use App\Http\Requests\MergeFamiliesRequest;
+use App\Http\Requests\ResetUserPasswordRequest;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateFamilyNumberRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\AccessRequest;
 use App\Services\GeocodingService;
@@ -85,17 +91,8 @@ class SantaController extends Controller
         ));
     }
 
-    public function updateFamilyNumber(Request $request): RedirectResponse
+    public function updateFamilyNumber(UpdateFamilyNumberRequest $request): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'family_id' => [
-                'required',
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-            'family_number' => ['required', 'integer', 'min:1'],
-        ]);
-
         $family = Family::findOrFail($request->family_id);
 
         // Check uniqueness
@@ -276,14 +273,17 @@ class SantaController extends Controller
             Setting::forget('google_client_secret');
         }
 
-        // Logo upload
+        // Logo upload — conditional file-only validation kept inline because
+        // this lives inside the giant settings save method and only fires
+        // when the user happens to upload a logo (most settings saves don't
+        // include any files). See SHIP_LOG.md Wave 4.
         if ($request->hasFile('site_logo')) {
             $request->validate(['site_logo' => ['image', 'max:2048']]);
             $path = $request->file('site_logo')->storeAs('logos', 'current-logo.png', 'public');
             Setting::set('site_logo', $path);
         }
 
-        // Sponsor logo uploads
+        // Sponsor logo uploads — same justification as site_logo above.
         if ($request->hasFile('sponsor_logos')) {
             $request->validate(['sponsor_logos.*' => ['image', 'max:2048']]);
             $existing = json_decode(Setting::get('sponsor_logos', '[]'), true) ?: [];
@@ -840,12 +840,8 @@ class SantaController extends Controller
             ->with('success', "Item '{$name}' removed.");
     }
 
-    public function importGroceryItems(Request $request): RedirectResponse
+    public function importGroceryItems(ImportGroceryItemsRequest $request): RedirectResponse
     {
-        $request->validate([
-            'csv_file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
-        ]);
-
         $file = $request->file('csv_file');
         $handle = fopen($file->getRealPath(), 'r');
 
@@ -993,41 +989,16 @@ class SantaController extends Controller
         return view('santa.duplicates', compact('pairs'));
     }
 
-    public function dismissDuplicate(Request $request): RedirectResponse
+    public function dismissDuplicate(DismissDuplicateRequest $request): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'family_a_id' => [
-                'required',
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-            'family_b_id' => [
-                'required',
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         DismissedDuplicate::dismiss($request->family_a_id, $request->family_b_id);
 
         return redirect()->route('santa.duplicates')
             ->with('success', 'Pair dismissed as not duplicates.');
     }
 
-    public function mergeFamilies(Request $request, MergeFamilies $action): RedirectResponse
+    public function mergeFamilies(MergeFamiliesRequest $request, MergeFamilies $action): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'keep_id' => [
-                'required',
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-            'merge_id' => [
-                'required',
-                'different:keep_id',
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         $keep = Family::findOrFail($request->keep_id);
         $merge = Family::findOrFail($request->merge_id);
 
@@ -1155,32 +1126,8 @@ class SantaController extends Controller
         ));
     }
 
-    public function createAssignment(Request $request): RedirectResponse
+    public function createAssignment(CreateShoppingAssignmentRequest $request): RedirectResponse
     {
-        $rules = [
-            'user_id' => ['nullable', 'exists:users,id'],
-            'ninja_name' => ['required_without:user_id', 'nullable', 'string', 'max:255'],
-            'split_type' => ['required', 'string', 'in:family_range,category,deficit,smart_split,subcategory'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ];
-
-        // Conditional validation based on split_type
-        if ($request->split_type === 'family_range') {
-            $rules['family_start'] = ['required', 'integer', 'min:1'];
-            $rules['family_end'] = ['required', 'integer', 'min:1'];
-        } elseif ($request->split_type === 'category') {
-            $rules['categories'] = ['required', 'array', 'min:1'];
-            $rules['categories.*'] = ['string'];
-        } elseif ($request->split_type === 'smart_split') {
-            $rules['num_shoppers'] = ['required', 'integer', 'min:2', 'max:10'];
-        } elseif ($request->split_type === 'subcategory') {
-            $rules['subcategory_category'] = ['required', 'string'];
-            $rules['subcategory_items'] = ['required', 'array', 'min:1'];
-            $rules['subcategory_items.*'] = ['integer', 'exists:grocery_items,id'];
-        }
-
-        $request->validate($rules);
-
         // Handle smart_split: create N assignments via greedy bin-packing
         if ($request->split_type === 'smart_split') {
             return $this->createSmartSplitAssignments($request);
@@ -1502,12 +1449,8 @@ class SantaController extends Controller
     /**
      * Reset a user's password (admin-initiated).
      */
-    public function resetPassword(Request $request, User $user): RedirectResponse
+    public function resetPassword(ResetUserPasswordRequest $request, User $user): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
         $user->update([
             'password' => $request->password,
         ]);
