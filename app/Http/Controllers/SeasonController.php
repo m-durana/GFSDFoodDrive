@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ExecuteImportRequest;
+use App\Http\Requests\ImportAllAccessRequest;
 use App\Http\Requests\ImportExcelRequest;
+use App\Http\Requests\ImportLegacyRequest;
+use App\Http\Requests\PreviewAccessTableRequest;
 use App\Jobs\ImportDataJob;
 use App\Models\Child;
 use App\Models\Family;
@@ -182,15 +186,8 @@ class SeasonController extends Controller
     /**
      * Preview a specific table from an Access database.
      */
-    public function previewAccessTable(Request $request)
+    public function previewAccessTable(PreviewAccessTableRequest $request)
     {
-        $request->validate([
-            'path' => ['required', 'string'],
-            'table' => ['required', 'string'],
-            'type' => ['required', 'in:family,child'],
-            'season_year' => ['required', 'integer', 'between:2000,2099'],
-        ]);
-
         $fullPath = storage_path('app/' . $request->input('path'));
         if (! file_exists($fullPath)) {
             return redirect()->route('santa.seasons.import')->with('error', 'Upload expired. Please upload again.');
@@ -225,16 +222,8 @@ class SeasonController extends Controller
         return response()->json($data);
     }
 
-    public function executeImport(Request $request)
+    public function executeImport(ExecuteImportRequest $request)
     {
-        $request->validate([
-            'path' => ['required', 'string'],
-            'type' => ['required', 'in:family,child'],
-            'season_year' => ['required', 'integer', 'between:2000,2099'],
-            'access_table' => ['nullable', 'string'],
-            'background' => ['nullable', 'boolean'],
-        ]);
-
         $fullPath = storage_path('app/' . $request->input('path'));
         if (! file_exists($fullPath)) {
             return back()->with('error', 'Upload expired. Please upload the file again.');
@@ -359,13 +348,8 @@ class SeasonController extends Controller
     /**
      * Import all tables (Family Table + Child Table) from an Access database in one click.
      */
-    public function importAllAccess(Request $request)
+    public function importAllAccess(ImportAllAccessRequest $request)
     {
-        $request->validate([
-            'path' => ['required', 'string'],
-            'season_year' => ['required', 'integer', 'between:2000,2099'],
-        ]);
-
         $fullPath = storage_path('app/' . $request->input('path'));
         if (! file_exists($fullPath)) {
             return back()->with('error', 'Upload expired. Please upload again.');
@@ -440,13 +424,8 @@ class SeasonController extends Controller
     /**
      * Import a pre-loaded legacy database file (from .claude/Legacy DBS/).
      */
-    public function importLegacy(Request $request)
+    public function importLegacy(ImportLegacyRequest $request)
     {
-        $request->validate([
-            'legacy_path' => 'required|string',
-            'season_year' => 'required|integer|min:2000|max:2099',
-        ]);
-
         $filePath = $request->input('legacy_path');
         $seasonYear = (int) $request->input('season_year');
 
