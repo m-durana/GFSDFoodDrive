@@ -3,6 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\DeliveryStatus;
+use App\Http\Requests\AddFamiliesToRouteRequest;
+use App\Http\Requests\BulkAssignTeamRequest;
+use App\Http\Requests\QuickAssignRouteRequest;
+use App\Http\Requests\UpdateFamilyDeliveryStatusRequest;
+use App\Http\Requests\UpdateFamilyTeamRequest;
+use App\Http\Requests\UpdateUserLocationRequest;
 use App\Models\DeliveryLog;
 use App\Models\DeliveryRoute;
 use App\Models\DeliveryTeam;
@@ -14,7 +20,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DeliveryDayController extends Controller
@@ -124,12 +129,8 @@ class DeliveryDayController extends Controller
         ));
     }
 
-    public function updateStatus(Request $request, Family $family): RedirectResponse
+    public function updateStatus(UpdateFamilyDeliveryStatusRequest $request, Family $family): RedirectResponse
     {
-        $request->validate([
-            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered'],
-        ]);
-
         DB::transaction(function () use ($request, $family) {
             $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
@@ -147,13 +148,8 @@ class DeliveryDayController extends Controller
             ->with('success', "Status updated for '{$family->family_name}'.");
     }
 
-    public function updateStatusAjax(Request $request, Family $family): JsonResponse
+    public function updateStatusAjax(UpdateFamilyDeliveryStatusRequest $request, Family $family): JsonResponse
     {
-        $request->validate([
-            'delivery_status' => ['required', 'string', 'in:pending,in_transit,delivered'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
-
         DB::transaction(function () use ($request, $family) {
             $family = Family::whereKey($family->id)->lockForUpdate()->firstOrFail();
 
@@ -175,37 +171,16 @@ class DeliveryDayController extends Controller
         ]);
     }
 
-    public function updateTeam(Request $request, Family $family): RedirectResponse
+    public function updateTeam(UpdateFamilyTeamRequest $request, Family $family): RedirectResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'delivery_team' => ['nullable', 'string', 'max:255'],
-            'delivery_team_id' => [
-                'nullable',
-                Rule::exists('delivery_teams', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         $family->update($request->only('delivery_team', 'delivery_team_id'));
 
         return redirect()->back()
             ->with('success', "Team assigned for '{$family->family_name}'.");
     }
 
-    public function bulkAssignTeam(Request $request): JsonResponse
+    public function bulkAssignTeam(BulkAssignTeamRequest $request): JsonResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'family_ids' => ['required', 'array', 'min:1'],
-            'family_ids.*' => [
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-            'delivery_team_id' => [
-                'nullable',
-                Rule::exists('delivery_teams', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         Family::whereIn('id', $request->family_ids)
             ->update(['delivery_team_id' => $request->delivery_team_id]);
 
@@ -350,13 +325,8 @@ class DeliveryDayController extends Controller
         ]);
     }
 
-    public function updateLocation(Request $request): JsonResponse
+    public function updateLocation(UpdateUserLocationRequest $request): JsonResponse
     {
-        $request->validate([
-            'latitude' => ['required', 'numeric', 'between:-90,90'],
-            'longitude' => ['required', 'numeric', 'between:-180,180'],
-        ]);
-
         $request->user()->update([
             'last_lat' => $request->latitude,
             'last_lng' => $request->longitude,
@@ -374,19 +344,8 @@ class DeliveryDayController extends Controller
     /**
      * Auto-assign a batch of nearby undelivered families to a new driver route.
      */
-    public function quickAssign(Request $request): JsonResponse
+    public function quickAssign(QuickAssignRouteRequest $request): JsonResponse
     {
-        $request->validate([
-            'driver_name' => ['required', 'string', 'max:255'],
-            'driver_user_id' => [
-                'nullable',
-                Rule::exists('users', 'id')->where(fn($q) => $q->where('permission', '>=', 8)),
-            ],
-            'batch_size' => ['nullable', 'integer', 'min:1', 'max:20'],
-            'start_lat' => ['nullable', 'numeric'],
-            'start_lng' => ['nullable', 'numeric'],
-        ]);
-
         $batchSize = $request->input('batch_size', 5);
 
         $assignment = DB::transaction(function () use ($request, $batchSize) {
@@ -494,16 +453,8 @@ class DeliveryDayController extends Controller
         ]);
     }
 
-    public function addFamiliesToRoute(Request $request, DeliveryRoute $deliveryRoute): JsonResponse
+    public function addFamiliesToRoute(AddFamiliesToRouteRequest $request, DeliveryRoute $deliveryRoute): JsonResponse
     {
-        $seasonYear = (int) Setting::get('season_year', date('Y'));
-        $request->validate([
-            'family_ids' => ['required', 'array', 'min:1'],
-            'family_ids.*' => [
-                Rule::exists('families', 'id')->where(fn($q) => $q->where('season_year', $seasonYear)),
-            ],
-        ]);
-
         $added = DB::transaction(function () use ($request, $deliveryRoute) {
             $deliveryRoute = DeliveryRoute::whereKey($deliveryRoute->id)->lockForUpdate()->firstOrFail();
             $maxOrder = Family::where('delivery_route_id', $deliveryRoute->id)
