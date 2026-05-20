@@ -247,6 +247,8 @@ Route::middleware(['auth', 'permission:coordinator,santa'])->prefix('coordinator
     // implicitly pass the section gate; regular Coordinators are blocked unless
     // Santa has remapped their position to include `system` in the section map.
     Route::middleware('section:system')->group(function () {
+        // REL-42: unified PDF landing — replaces the previous "two URL variants" UX.
+        Route::get('/pdfs', fn() => view('coordinator.pdfs'))->name('pdfs');
         Route::get('/gift-tags', [CoordinatorController::class, 'giftTags'])->name('giftTags');
         Route::get('/family-summary', [CoordinatorController::class, 'familySummary'])->name('familySummary');
         Route::get('/delivery-day', [CoordinatorController::class, 'deliveryDay'])->name('deliveryDay');

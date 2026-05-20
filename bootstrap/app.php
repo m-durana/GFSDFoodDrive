@@ -21,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // Audit every state-changing request by an authenticated user.
         // Sudoer actions are tagged separately. See LogMutatingActivity.
         $middleware->appendToGroup('web', \App\Http\Middleware\LogMutatingActivity::class);
+        // REL-28: HSTS + CSP + hardening headers on every HTML response.
+        $middleware->appendToGroup('web', \App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // REL-11 Sentry — DSN in .env (SENTRY_LARAVEL_DSN).
