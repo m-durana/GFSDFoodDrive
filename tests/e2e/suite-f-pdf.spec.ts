@@ -31,7 +31,25 @@ test.describe('Suite F — PDF Generation', () => {
     await expectPdf(page, '/coordinator/delivery-day?sync=1');
   });
 
-  test.skip('queued PDF batch of 100 tags completes within 60s', async () => {
-    // Async-job SLA — gated on Horizon landing (REL-13).
+  test('queued PDF endpoint hands back a job key + status URL', async ({ page }) => {
+    // Async-job smoke (REL-13). We don't drive a worker from Playwright on
+    // Windows (Horizon needs pcntl/posix), so we only verify the dispatch
+    // contract: the endpoint must return JSON with a job key + status URL.
+    // The 60s-completion SLA is exercised by the prod Horizon dashboard, not here.
+    const res = await page.request.get('/coordinator/gift-tags');
+    if (res.status() === 403 || res.status() === 404) return; // gated or no data
+    expect(res.status()).toBe(200);
+    const ct = res.headers()['content-type'] ?? '';
+    expect(ct).toContain('application/json');
+    const body = await res.json();
+    expect(body).toHaveProperty('job_key');
+    expect(body).toHaveProperty('status_url');
+    expect(body).toHaveProperty('download_url');
+    expect(body.job_key).toMatch(/^[A-Za-z0-9]{16}$/);
+
+    const statusRes = await page.request.get(body.status_url);
+    expect(statusRes.status()).toBe(200);
+    const status = await statusRes.json();
+    expect(['queued', 'running', 'complete', 'failed', 'unknown']).toContain(status.status);
   });
 });
