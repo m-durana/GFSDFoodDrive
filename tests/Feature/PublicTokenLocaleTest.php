@@ -50,7 +50,7 @@ class PublicTokenLocaleTest extends TestCase
 
         $response = $this->get(route('adopt.index', ['lang' => 'es']));
         $response->assertOk();
-        $response->assertSee('La adopción en línea está deshabilitada actualmente', false);
+        $response->assertSee('La adopción en línea no está disponible en este momento', false);
     }
 
     public function test_self_service_closed_renders_spanish(): void
