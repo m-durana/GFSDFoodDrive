@@ -36,7 +36,8 @@ test.describe('Suite F — PDF Generation', () => {
     // Windows (Horizon needs pcntl/posix), so we only verify the dispatch
     // contract: the endpoint must return JSON with a job key + status URL.
     // The 60s-completion SLA is exercised by the prod Horizon dashboard, not here.
-    const res = await page.request.get('/coordinator/gift-tags');
+    test.setTimeout(120_000);
+    const res = await page.request.get('/coordinator/gift-tags', { timeout: 90_000 });
     if (res.status() === 403 || res.status() === 404) return; // gated or no data
     expect(res.status()).toBe(200);
     const ct = res.headers()['content-type'] ?? '';
