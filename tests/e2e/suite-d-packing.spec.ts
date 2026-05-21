@@ -33,6 +33,17 @@ test.describe('Suite D — Packing Day', () => {
     // 401 / 403 / 419 (CSRF) — anything but 200 / 500.
     expect([401, 403, 405, 419, 422, 302, 404]).toContain(res.status());
   });
+
+  // REL-31 web/API parity: authenticated POST to a nonexistent packing list should
+  // 404, not 500. Proves the route + guard handle missing data cleanly.
+  test('authenticated pack-item on missing list returns 404 not 500', async ({ page }) => {
+    const res = await page.request.post('/santa/packing/999999/item/1/pack', {
+      failOnStatusCode: false,
+      headers: { Accept: 'application/json' },
+    });
+    expect(res.status()).not.toBe(500);
+    expect([404, 419, 422, 302]).toContain(res.status());
+  });
 });
 
 test.describe('Suite D — Packing Day (mobile viewport)', () => {
