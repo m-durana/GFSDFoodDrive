@@ -126,9 +126,15 @@ test.describe('Stress — Shopping public token endpoint', () => {
   });
 
   test('shopping API toggle without a valid token returns 4xx', async ({ request }) => {
+    // Accept: application/json so Laravel returns 422/404 JSON instead of a 302
+    // redirect-back-with-errors (which Playwright auto-follows to a 200 page).
     const resp = await request.post(
       '/api/shopping/totally-fake-token-aaaaaaaaaaaaaaaa/check',
-      { data: { item_id: 1, checked: true }, failOnStatusCode: false },
+      {
+        data: { item_key: 'nonexistent', ninja_name: 'Bot' },
+        headers: { Accept: 'application/json' },
+        failOnStatusCode: false,
+      },
     );
     const status = resp.status();
     expect(status).toBeGreaterThanOrEqual(400);

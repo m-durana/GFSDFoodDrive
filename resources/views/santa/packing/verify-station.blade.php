@@ -174,19 +174,30 @@
         }
 
         // --- Generate better sounds using Web Audio API ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Lazy-init: Safari throws on AudioContext construction outside a user gesture,
+        // and even desktop browsers warn about it. Build on first beep, fail silent.
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (audioCtx) return audioCtx;
+            const Ctor = window.AudioContext || window.webkitAudioContext;
+            if (!Ctor) return null;
+            try { audioCtx = new Ctor(); } catch (_) { audioCtx = null; }
+            return audioCtx;
+        }
 
         function playBeep(frequency, duration, type = 'sine') {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
+            const ctx = getAudioCtx();
+            if (!ctx) return;
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
             oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
+            gainNode.connect(ctx.destination);
             oscillator.frequency.value = frequency;
             oscillator.type = type;
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            oscillator.start(audioCtx.currentTime);
-            oscillator.stop(audioCtx.currentTime + duration);
+            gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+            oscillator.start(ctx.currentTime);
+            oscillator.stop(ctx.currentTime + duration);
         }
 
         function playSuccessSound() {

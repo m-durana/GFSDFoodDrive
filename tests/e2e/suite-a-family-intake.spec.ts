@@ -24,14 +24,12 @@ test.describe('Suite A — Family Intake', () => {
     await page.fill('input[name="family_name"]', `E2E Smoke ${stamp}`);
     await page.fill('input[name="address"]', `${stamp} Test Way`);
     await page.fill('input[name="phone1"]', '555-0100');
-    // The form has many other optional fields; required-set only to keep this resilient.
-    // Use button click (not form.submit()) so HTML5 validation + the JS handler both run —
-    // on mobile-safari, form.submit() bypasses validation and the request 422s back.
-    await page.locator('form button[type="submit"], form input[type="submit"]').first().click();
+    // Multi-step form: skip Children + Review by jumping straight to step 2 via the
+    // page's own goToStep() helper, then click "Skip & Save Without Children".
+    await page.evaluate(() => (window as unknown as { goToStep: (n: number) => void }).goToStep(2));
+    await page.getByRole('button', { name: /Skip.*Save Without Children/i }).click();
     await page.waitForLoadState('networkidle');
-    // Should NOT remain on /family/add (created and redirected somewhere). Accept
-    // either redirect to /family or staying on the create page IF validation legitimately
-    // rejected (e.g. seeded duplicate). Just assert no 5xx.
+    // Should NOT remain on /family/add (created and redirected somewhere).
     const url = page.url();
     if (url.includes('/family/add')) {
       // Got bounced back with validation errors — that's not a regression, the form rendered.

@@ -323,14 +323,21 @@
                 init() {
                     // Refresh data from API periodically
                     setInterval(() => this.refreshData(), 30000);
-                    // Initialize audio context on first user interaction
+                    // Initialize audio context on first user interaction (Safari requires a gesture).
                     document.addEventListener('click', () => {
-                        if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                        if (!this.audioCtx) {
+                            const Ctor = window.AudioContext || window.webkitAudioContext;
+                            if (Ctor) { try { this.audioCtx = new Ctor(); } catch (_) {} }
+                        }
                     }, { once: true });
                 },
 
                 playBeep(success) {
-                    if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (!this.audioCtx) {
+                        const Ctor = window.AudioContext || window.webkitAudioContext;
+                        if (!Ctor) return;
+                        try { this.audioCtx = new Ctor(); } catch (_) { return; }
+                    }
                     const ctx = this.audioCtx;
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
