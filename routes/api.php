@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PackingApiController;
 use App\Http\Controllers\ShoppingApiController;
+use App\Http\Middleware\IdempotentRequest;
 use App\Http\Middleware\PackingSystemEnabled;
 use Illuminate\Support\Facades\Route;
 
@@ -22,12 +23,17 @@ Route::prefix('packing')->middleware(PackingSystemEnabled::class)->group(functio
         Route::post('/sessions/clock-out', [PackingApiController::class, 'clockOut'])->name('api.packing.clockOut');
         Route::get('/sessions/active', [PackingApiController::class, 'activeSession'])->name('api.packing.activeSession');
 
-        Route::post('/{list}/scan', [PackingApiController::class, 'scan'])->name('api.packing.scan');
-        Route::post('/{list}/item/{packingItem}/pack', [PackingApiController::class, 'quickPack'])->name('api.packing.quickPack');
+        // REL-07: idempotency wrapper on every mutating action so the offline-scanner
+        // drain can safely retry. Header-driven; passthrough when no header sent.
+        Route::middleware(IdempotentRequest::class)->group(function () {
+            Route::post('/{list}/scan', [PackingApiController::class, 'scan'])->name('api.packing.scan');
+            Route::post('/{list}/item/{packingItem}/pack', [PackingApiController::class, 'quickPack'])->name('api.packing.quickPack');
+            Route::post('/{list}/item/{packingItem}/substitute', [PackingApiController::class, 'substitute'])->name('api.packing.substitute');
+            Route::post('/{list}/complete', [PackingApiController::class, 'complete'])->name('api.packing.complete');
+            Route::post('/{list}/verify', [PackingApiController::class, 'verify'])->name('api.packing.verify');
+        });
+
         Route::get('/{list}/item/{packingItem}/substitutes', [PackingApiController::class, 'substitutes'])->name('api.packing.substitutes');
-        Route::post('/{list}/item/{packingItem}/substitute', [PackingApiController::class, 'substitute'])->name('api.packing.substitute');
-        Route::post('/{list}/complete', [PackingApiController::class, 'complete'])->name('api.packing.complete');
-        Route::post('/{list}/verify', [PackingApiController::class, 'verify'])->name('api.packing.verify');
     });
 
     // Read-only load by QR token — the token itself is the credential.
