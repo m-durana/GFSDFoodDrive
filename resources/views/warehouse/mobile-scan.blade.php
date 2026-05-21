@@ -8,6 +8,9 @@
         <title>Pack - Family #{{ $packingList->family?->family_number }}</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+        {{-- REL-07: offline-capable sync engine. Loads on top of the existing
+             Alpine + fetch flow; existing online paths are untouched. --}}
+        @vite(['resources/js/packing-sync/index.ts'])
         <style>
             body { overscroll-behavior: none; -webkit-tap-highlight-color: transparent; }
             .item-packed { opacity: 0.5; }
@@ -75,6 +78,16 @@
                     <div class="text-sm font-medium" :class="statusColor" x-text="statusLabel"></div>
                     <div class="text-xs text-gray-500">
                         <span x-text="packedCount"></span>/<span x-text="totalCount"></span> items
+                    </div>
+                    {{-- REL-07: offline queue badge + connectivity dot --}}
+                    <div class="mt-1 flex items-center justify-end gap-1.5 text-[10px]" x-show="syncQueued > 0 || !syncOnline">
+                        <span class="inline-block w-1.5 h-1.5 rounded-full"
+                              :class="syncOnline ? 'bg-green-500' : 'bg-red-500'"
+                              :title="syncOnline ? 'Online' : 'Offline'"></span>
+                        <span x-show="syncQueued > 0" class="px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-semibold"
+                              x-text="syncQueued + ' queued'"></span>
+                        <span x-show="syncOnline && syncQueued === 0" class="text-gray-400">online</span>
+                        <span x-show="!syncOnline" class="text-red-600 font-medium">offline</span>
                     </div>
                 </div>
             </div>
@@ -320,6 +333,9 @@
                     localStorage.setItem('packing_volunteer_name', name);
                 },
 
+                syncQueued: 0,
+                syncOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+
                 init() {
                     // Refresh data from API periodically
                     setInterval(() => this.refreshData(), 30000);
@@ -330,6 +346,35 @@
                             if (Ctor) { try { this.audioCtx = new Ctor(); } catch (_) {} }
                         }
                     }, { once: true });
+
+                    // REL-07: subscribe to engine events for badge + conflict toast.
+                    const wire = () => {
+                        if (!window.packingSync) return;
+                        const eng = window.packingSync.engine;
+                        eng.on(event => {
+                            if (event.type === 'queue_change') {
+                                this.syncQueued = event.queue.filter(a => a.status === 'pending' || a.status === 'in_flight').length;
+                            } else if (event.type === 'online_change') {
+                                this.syncOnline = event.online;
+                                if (event.online) this.refreshData();
+                            } else if (event.type === 'conflict') {
+                                this.showToast(event.conflict.message || 'Conflict — review queued action', false);
+                            } else if (event.type === 'dropped') {
+                                this.showToast('Action dropped: ' + (event.action.last_error || 'unknown'), false);
+                            } else if (event.type === 'sync_complete') {
+                                // Pull fresh truth post-drain so optimistic UI gets reconciled.
+                                this.refreshData();
+                            }
+                        });
+                        eng.getQueue().then(q => {
+                            this.syncQueued = q.filter(a => a.status === 'pending' || a.status === 'in_flight').length;
+                        }).catch(() => {});
+                    };
+                    if (window.packingSync) wire();
+                    else window.addEventListener('load', wire, { once: true });
+
+                    window.addEventListener('online', () => { this.syncOnline = true; });
+                    window.addEventListener('offline', () => { this.syncOnline = false; });
                 },
 
                 playBeep(success) {
@@ -400,34 +445,67 @@
 
                 async quickPackItem(item) {
                     if (this.isPacked(item) || item.status === 'unfulfilled') return;
+                    const endpoint = `/api/packing/${this.listId}/item/${item.id}/pack`;
+                    const payload = { volunteer_name: this.volunteerName };
+
+                    // REL-07: if the device is offline, skip the network attempt
+                    // entirely and enqueue. The optimistic UI patch fires either way.
+                    if (typeof navigator !== 'undefined' && navigator.onLine === false && window.packingSync) {
+                        await window.packingSync.engine.enqueue({
+                            list_id: this.listId, endpoint, payload,
+                        });
+                        this.playBeep(true);
+                        this.applyOptimisticPack(item);
+                        this.showToast('Queued offline — will sync', true);
+                        return;
+                    }
 
                     try {
-                        const res = await fetch(`/api/packing/${this.listId}/item/${item.id}/pack`, {
+                        const key = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('k-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+                        const res = await fetch(endpoint, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                            body: JSON.stringify({ volunteer_name: this.volunteerName }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-Idempotency-Key': key,
+                            },
+                            body: JSON.stringify(payload),
                         });
                         const data = await res.json();
 
                         if (data.success) {
                             this.playBeep(true);
-                            item.quantity_packed = Math.min(item.quantity_packed + 1, item.quantity_needed);
-                            if (item.quantity_packed >= item.quantity_needed) {
-                                item.status = 'packed';
-                            }
-                            if (data.warning) {
-                                this.showToast(data.message, true);
-                            } else {
-                                const el = document.getElementById('item-' + item.id);
-                                if (el) { el.classList.add('flash-green'); setTimeout(() => el.classList.remove('flash-green'), 500); }
-                            }
+                            this.applyOptimisticPack(item, data.warning);
                         } else {
                             this.playBeep(false);
                             this.showToast(data.message || 'Failed to pack item', false);
                         }
                     } catch (e) {
-                        this.playBeep(false);
-                        this.showToast('Network error', false);
+                        // Network error: enqueue for later drain.
+                        if (window.packingSync) {
+                            await window.packingSync.engine.enqueue({
+                                list_id: this.listId, endpoint, payload,
+                            });
+                            this.playBeep(true);
+                            this.applyOptimisticPack(item);
+                            this.showToast('Queued offline — will sync', true);
+                        } else {
+                            this.playBeep(false);
+                            this.showToast('Network error', false);
+                        }
+                    }
+                },
+
+                applyOptimisticPack(item, warning) {
+                    item.quantity_packed = Math.min(item.quantity_packed + 1, item.quantity_needed);
+                    if (item.quantity_packed >= item.quantity_needed) {
+                        item.status = 'packed';
+                    }
+                    if (warning) {
+                        this.showToast(warning, true);
+                    } else {
+                        const el = document.getElementById('item-' + item.id);
+                        if (el) { el.classList.add('flash-green'); setTimeout(() => el.classList.remove('flash-green'), 500); }
                     }
                 },
 

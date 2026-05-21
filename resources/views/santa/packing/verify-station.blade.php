@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Verification Station - GFSD Food Drive</title>
     <script>document.documentElement.classList.add('dark');</script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/packing-sync/index.ts'])
 </head>
 <body class="font-sans antialiased bg-gray-900 text-gray-100 min-h-screen flex flex-col">
 
