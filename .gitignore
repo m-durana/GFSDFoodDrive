@@ -70,3 +70,4 @@ desktop.ini
 /.extract_bugs.py
 /.split_bugs.py
 /.fix_links.py
+bash.exe.stackdump
