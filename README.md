@@ -1,63 +1,34 @@
-# GFSDFoodDrive - STILL W.I.P
+# GFSDFoodDrive
 
-The GFSD Food Drive Family Management System helps coordinate the GFSD FoodDrive. 
-- family registration
-- child demographics tracking
-- delivery coordination
-- volunteer management.
-  
-This project is a Laravel port of a legacy PHP application.
+Family management + logistics for the Granite Falls School District annual Food &
+Gift Drive.
 
-## Tech Stack
-- **Backend:** Laravel 11 (PHP 8.2+)
-- **Database:** MySQL
-- **Frontend:** Laravel Blade templates + Tailwind CSS (via Vite)
-- **Authentication:** Laravel Breeze (username-based)
-- **Permissions:** spatie/laravel-permission
+## Roles
 
-## Role System
-Role-based access control system:
-- **Family:** Can add and view their own families and children.
-- **Coordinator:** Can view all families and access coordinator dashboards.
-- **Santa (Admin):** Full admin access: user management, number assignment, and delivery coordination.
+Only Santa + the System Coordinator position see PII; everyone else works in family numbers.
+
+- **Santa** (`santa`): full admin. Can sudoer any user for temporary Santa-equivalent access.
+- **Coordinator** (`coordinator`): permissions follow their **position**, which maps to sections (`giving-tree`, `food`, `packing`, `delivery`, `business`, `system`) via the `coordinator_section_map` Setting. The "System Engineer" position holds all sections + the PII flag.
+- **Advisor** (`family`): school staff entering household data at intake. Scoped to their own school.
+- **NINJA** (`ninja`): student volunteer. Logs in only for the Shopping Day kiosk + warehouse scanners.
+- **Self-Service** (`self_service`): households self-registering via the public form.
 
 ## Development Setup
 
-1. Install PHP 8.2+ and [Composer](https://getcomposer.org/download/), then install dependencies:
-   ```bash
-   composer install
-   npm install
-   ```
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+php artisan db:seed --class=TestDataSeeder   # optional: ~150 families of fake data
+php artisan serve
+npm run dev
+```
 
-2. Configure `.env`:
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
+Create an admin user, then visit http://localhost:8000:
 
-    *Note: Update the `.env` file with your database credentials.*
-
-3. Set up database schema:
-    ```bash
-    php artisan migrate
-    ```
-
-4. *(Optional)* Import legacy data from the original PHP application:
-    ```bash
-    # LEGACY_DB_* variables have to be set in your .env first
-    php artisan db:seed --class=LegacyDataSeeder
-    ```
-
-5. Start the development servers:
-    ```bash
-    php artisan serve
-    npm run dev
-    ```
-
-6. Add an admin user:
-    ```bash
-    php artisan tinker
-    App\Models\User::create(['username' => 'santa', 'first_name' => 'Admin', 'last_name' => 'User', 'password' => bcrypt('password'), 'permission' => 9]);
-    ```
-
-7. Visit https://localhost:8000 and log in with `santa` and `password`
+```bash
+php artisan tinker
+App\Models\User::create(['username' => 'santa', 'first_name' => 'Admin', 'last_name' => 'User', 'password' => bcrypt('password'), 'permission' => 9]);
+```
